@@ -58,7 +58,9 @@
     .hud-gold {
       color: #ffe600;
       font-family: monospace;
-      font-size: 13px;
+      font-size: 14px;
+      font-weight: 900;
+      text-shadow: 0 0 8px rgba(255, 230, 0, 0.4);
     }
     .hud-btn-group {
       display: flex;
@@ -260,7 +262,7 @@
   </div>
 
   <script>
-    // --- SYNTHESIZED 8-BIT AUDIO (With Mute Support) ---
+    // --- SYNTHESIZED 8-BIT AUDIO ---
     let audioCtx = null;
     let isMuted = false;
 
@@ -287,7 +289,7 @@
     const sndPaddle = () => playTone(380, 'sine', 0.08, 0.15);
     const sndLaser = () => playTone(920, 'sawtooth', 0.09, 0.08);
     const sndPower = () => playTone(780, 'square', 0.16, 0.1);
-    const sndBomb = () => playTone(110, 'sawtooth', 0.35, 0.25);
+    const sndBomb = () => playTone(110, 'sawtooth', 0.35, 0.22);
     const sndDie = () => playTone(140, 'sawtooth', 0.4, 0.15);
 
     // --- DOM REFERENCES ---
@@ -311,13 +313,35 @@
 
     let gameState = 'MENU';
     let score = 0;
-    let hiScore = parseInt(localStorage.getItem('sbc_neon_hiscore') || '0', 10);
+
+    // --- PERSISTENT HIGH SCORE ENGINE ---
+    let hiScore = 0;
+    try {
+      hiScore = parseInt(localStorage.getItem('sbc_neon_hiscore') || '0', 10);
+      if (isNaN(hiScore)) hiScore = 0;
+    } catch (e) {
+      hiScore = 0;
+    }
     hudBest.textContent = hiScore;
+
+    function addScore(points) {
+      score += points;
+      hudScore.textContent = score;
+
+      // Update High Score LIVE on every hit!
+      if (score > hiScore) {
+        hiScore = score;
+        hudBest.textContent = hiScore;
+        try {
+          localStorage.setItem('sbc_neon_hiscore', hiScore.toString());
+        } catch (e) {}
+      }
+    }
 
     let particles = [];
     let popups = [];
 
-    // Screen Shake state
+    // Screen Shake
     let shakeTimer = 0;
     let shakeMag = 0;
 
@@ -355,9 +379,10 @@
       hudMode.textContent = 'RETRO';
       hudSpeedBtn.style.display = 'none';
       score = 0;
+      hudScore.textContent = score;
+      hudBest.textContent = hiScore;
       retro.lives = 3;
       retro.level = 1;
-      hudScore.textContent = score;
       hudCenter.innerHTML = `LIVES: <span style="color:#ff007f;">❤️❤️❤️</span>`;
       initRetroBricks();
       resetRetroBall();
@@ -404,7 +429,7 @@
     }
 
     // =====================================
-    // 2. MODERN SWARM ENGINE (Micro-Bricks)
+    // 2. MODERN SWARM ENGINE
     // =====================================
     const SWARM_COLS = 16; 
     const SWARM_PAD = 3;
@@ -435,6 +460,8 @@
       hudSpeedBtn.textContent = '1X';
       swarm.speed = 1;
       score = 0;
+      hudScore.textContent = score;
+      hudBest.textContent = hiScore;
       swarm.level = 1;
       swarm.ballCount = 5;
       swarm.balls = [];
@@ -442,7 +469,6 @@
       swarm.shooter.y = H - 30;
       swarm.aiming = false;
       swarm.launching = false;
-      hudScore.textContent = score;
       hudCenter.innerHTML = `BALLS: <span class="hud-accent">${swarm.ballCount}</span>`;
       swarm.bricks = [];
       swarm.pickups = [];
@@ -504,9 +530,6 @@
       return { fill: '#280d38', border: '#b026ff', text: '#b026ff' };
     }
 
-    // =====================================
-    // PARTICLES (Sparks)
-    // =====================================
     function spawnSparks(x, y, color, count = 8) {
       for (let i = 0; i < count; i++) {
         particles.push({
@@ -641,14 +664,12 @@
       }
     });
 
-    // Mute Button Toggle
     hudMuteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       isMuted = !isMuted;
       hudMuteBtn.textContent = isMuted ? '🔇' : '🔊';
     });
 
-    // Speed button for Swarm
     hudSpeedBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       swarm.speed = swarm.speed === 1 ? 2 : (swarm.speed === 2 ? 3 : 1);
@@ -657,11 +678,6 @@
 
     function showGameOver(modeTitle) {
       gameState = 'MENU';
-      if (score > hiScore) {
-        hiScore = score;
-        localStorage.setItem('sbc_neon_hiscore', hiScore);
-        hudBest.textContent = hiScore;
-      }
       gameoverModeLabel.textContent = `${modeTitle} GAME OVER`;
       gameoverScoreVal.textContent = score;
       gameoverBestTag.textContent = `ALL-TIME BEST: ${hiScore}`;
@@ -683,7 +699,7 @@
             b.hp--;
             if (b.hp <= 0) {
               b.alive = false;
-              score += 20;
+              addScore(20);
               spawnSparks(b.x + b.w / 2, b.y + b.h / 2, b.color);
               addPopup(b.x + b.w / 2, b.y, '+20', '#ff007f');
             }
@@ -698,7 +714,6 @@
         const b = retro.balls[i];
         if (b.stuck) continue;
 
-        // Trail record
         if (!b.trail) b.trail = [];
         b.trail.push({ x: b.x, y: b.y });
         if (b.trail.length > 5) b.trail.shift();
@@ -724,7 +739,7 @@
             brk.hp--;
             if (brk.hp <= 0) {
               brk.alive = false;
-              score += 15;
+              addScore(15);
               spawnSparks(brk.x + brk.w / 2, brk.y + brk.h / 2, brk.color);
               addPopup(brk.x + brk.w / 2, brk.y, '+15', '#00f0ff');
               if (Math.random() < 0.22) {
@@ -789,12 +804,10 @@
         initRetroBricks();
         resetRetroBall();
       }
-
-      hudScore.textContent = score;
     }
 
     // =====================================
-    // SWARM UPDATE (With Shake & Popups)
+    // SWARM GAMEPLAY UPDATE
     // =====================================
     function updateSwarmEngine() {
       if (swarm.launching && swarm.launchedCount < swarm.ballCount) {
@@ -817,7 +830,6 @@
         for (let i = swarm.balls.length - 1; i >= 0; i--) {
           const b = swarm.balls[i];
 
-          // Comet Trail
           if (!b.trail) b.trail = [];
           b.trail.push({ x: b.x, y: b.y });
           if (b.trail.length > 4) b.trail.shift();
@@ -836,10 +848,9 @@
 
             if (b.x + b.r > bx && b.x - b.r < bx + SWARM_BW && b.y + b.r > by && b.y - b.r < by + SWARM_BH) {
               brk.hp--;
-              score++;
+              addScore(1);
               sndHit(450 + Math.min(300, brk.hp * 8));
 
-              // TNT Cluster Detonation + Screen Shake!
               if (brk.isTNT && brk.hp <= 0) {
                 sndBomb();
                 triggerShake(10, 16);
@@ -849,6 +860,7 @@
                 for (let other of swarm.bricks) {
                   if (other.alive && Math.abs(other.c - brk.c) <= 1 && Math.abs(other.row - brk.row) <= 1) {
                     other.hp -= 20;
+                    addScore(5);
                     if (other.hp <= 0) other.alive = false;
                   }
                 }
@@ -899,17 +911,14 @@
           }
         }
       }
-
-      hudScore.textContent = score;
     }
 
     // =====================================
-    // DRAW RENDER LOOP (Screen Shake & Trails)
+    // DRAW LOOP
     // =====================================
     function draw() {
       ctx.save();
 
-      // Screen Shake
       if (shakeTimer > 0) {
         const sx = (Math.random() - 0.5) * shakeMag;
         const sy = (Math.random() - 0.5) * shakeMag;
@@ -950,7 +959,6 @@
           ctx.fillText(p.type[0], p.x, p.y);
         }
 
-        // Draw Retro Balls & Comet Trails
         for (let b of retro.balls) {
           if (b.trail) {
             for (let t = 0; t < b.trail.length; t++) {
@@ -1020,7 +1028,6 @@
           ctx.fillText('+', px, py);
         }
 
-        // Bouncing Aim Trajectory Line
         if (swarm.aiming && !swarm.launching) {
           let curX = swarm.shooter.x;
           let curY = swarm.shooter.y;
@@ -1078,7 +1085,6 @@
           ctx.shadowBlur = 0;
         }
 
-        // Shooter
         ctx.fillStyle = '#00f0ff';
         ctx.shadowBlur = 12;
         ctx.shadowColor = '#00f0ff';
@@ -1087,7 +1093,6 @@
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Swarm Balls & Comet Trails
         for (let b of swarm.balls) {
           if (b.trail) {
             for (let t = 0; t < b.trail.length; t++) {
@@ -1110,7 +1115,6 @@
         updateSwarmEngine();
       }
 
-      // Draw Floating Text Popups (+15, +20, BOOM!)
       for (let i = popups.length - 1; i >= 0; i--) {
         const pop = popups[i];
         pop.y += pop.vy;
@@ -1127,7 +1131,6 @@
       }
       ctx.globalAlpha = 1;
 
-      // Draw Particles
       for (let i = particles.length - 1; i >= 0; i--) {
         const pt = particles[i];
         pt.x += pt.vx;
