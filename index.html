@@ -224,7 +224,7 @@
 
           <button id="btn-swarm" class="menu-card-btn card-swarm">
             <div class="btn-header" style="color:#00f0ff;">⚡ MODERN SWARM</div>
-            <div class="btn-body">16-column dense micro-brick matrix! Aim trajectory, launch 20+ balls, blast high-HP blocks and TNT.</div>
+            <div class="btn-body">Start with 5 balls! Drag to aim, hunt rare +1 pickups, blast micro-bricks & TNT.</div>
           </button>
         </div>
       </div>
@@ -354,17 +354,16 @@
     }
 
     // =====================================
-    // 2. MODERN SWARM ENGINE (MICRO-RECTANGULAR BRICKS)
+    // 2. MODERN SWARM ENGINE (TUNED: 5 BALLS START & RARE PICKUPS)
     // =====================================
-    // 16 columns across! Each brick is ~25.5px wide x 17px tall (~3x by 2x ball width)
     const SWARM_COLS = 16; 
     const SWARM_PAD = 3;
     const SWARM_BW = (W - (SWARM_PAD * (SWARM_COLS + 1))) / SWARM_COLS; // ~25.5px
-    const SWARM_BH = 17; // 17px tall (3:2 rectangular proportion)
+    const SWARM_BH = 17; // 17px tall
 
     const swarm = {
       level: 1,
-      ballCount: 20, // Start with 20 balls for an awesome stream!
+      ballCount: 5, // Starts at 5 balls as requested!
       balls: [],
       bricks: [],
       pickups: [],
@@ -387,7 +386,7 @@
       swarm.speed = 1;
       score = 0;
       swarm.level = 1;
-      swarm.ballCount = 20;
+      swarm.ballCount = 5; // Start with 5 balls
       swarm.balls = [];
       swarm.shooter.x = W / 2;
       swarm.shooter.y = H - 30;
@@ -398,8 +397,8 @@
       swarm.bricks = [];
       swarm.pickups = [];
 
-      // Spawn 6 packed rows of micro-bricks right from the start!
-      for (let i = 0; i < 6; i++) {
+      // Spawn initial balanced waves
+      for (let i = 0; i < 5; i++) {
         addSwarmWave();
       }
 
@@ -408,16 +407,23 @@
     }
 
     function addSwarmWave() {
-      // Shift existing rows down
       for (let b of swarm.bricks) b.row++;
       for (let p of swarm.pickups) p.row++;
 
-      // Spawn new wave across 16 columns
+      // Controlled spawning: at most 1 extra ball pickup per wave!
+      let spawnedPickupThisWave = false;
+
       for (let c = 0; c < SWARM_COLS; c++) {
         const rand = Math.random();
-        if (rand < 0.52) {
-          // Brick (scaled HP)
-          const hp = Math.max(1, Math.round(swarm.level * (1 + Math.random() * 1.5)));
+        if (rand < 0.46) {
+          // Balanced HP scaling starting for 5 balls
+          let hp = 1;
+          if (swarm.level === 1) {
+            hp = Math.random() < 0.4 ? 2 : 1;
+          } else {
+            hp = Math.max(1, Math.round(swarm.level * (0.8 + Math.random() * 1.2)));
+          }
+
           const isTNT = Math.random() < 0.08;
           swarm.bricks.push({
             c: c,
@@ -429,8 +435,9 @@
             isTNT: isTNT,
             alive: true
           });
-        } else if (rand < 0.64) {
-          // +1 Ball Pickup
+        } else if (!spawnedPickupThisWave && rand < 0.52) {
+          // Extra balls are now rare and coveted! (Max 1 per wave)
+          spawnedPickupThisWave = true;
           swarm.pickups.push({
             c: c,
             row: 1,
@@ -444,10 +451,10 @@
 
     function getBrickColors(hp, isTNT) {
       if (isTNT) return { fill: '#ff4400', border: '#ffaa00', text: '#fff' };
-      if (hp <= 3) return { fill: '#0a1d37', border: '#00f0ff', text: '#00f0ff' };
-      if (hp <= 8) return { fill: '#0b2b26', border: '#39ff14', text: '#39ff14' };
-      if (hp <= 18) return { fill: '#332a05', border: '#ffe600', text: '#ffe600' };
-      if (hp <= 35) return { fill: '#331122', border: '#ff007f', text: '#ff007f' };
+      if (hp <= 2) return { fill: '#0a1d37', border: '#00f0ff', text: '#00f0ff' };
+      if (hp <= 6) return { fill: '#0b2b26', border: '#39ff14', text: '#39ff14' };
+      if (hp <= 14) return { fill: '#332a05', border: '#ffe600', text: '#ffe600' };
+      if (hp <= 28) return { fill: '#331122', border: '#ff007f', text: '#ff007f' };
       return { fill: '#280d38', border: '#b026ff', text: '#b026ff' };
     }
 
@@ -713,10 +720,9 @@
     }
 
     // =====================================
-    // SWARM UPDATE (MICRO-BRICKS PHYSICS)
+    // SWARM UPDATE (TUNED 5-BALL START & RARE PICKUPS)
     // =====================================
     function updateSwarmEngine() {
-      // Launch stream of 20+ balls
       if (swarm.launching && swarm.launchedCount < swarm.ballCount) {
         swarm.launchTimer++;
         if (swarm.launchTimer % 3 === 0) {
@@ -726,7 +732,7 @@
             y: swarm.shooter.y,
             vx: Math.cos(swarm.aimAngle) * spd,
             vy: Math.sin(swarm.aimAngle) * spd,
-            r: 3.5 // 7px diameter ball!
+            r: 3.5
           });
           swarm.launchedCount++;
         }
@@ -742,7 +748,6 @@
           if (b.x + b.r > W) { b.x = W - b.r; b.vx *= -1; }
           if (b.y - b.r < 0) { b.y = b.r; b.vy *= -1; }
 
-          // Micro-brick hit
           for (let brk of swarm.bricks) {
             if (!brk.alive) continue;
             const bx = SWARM_PAD + brk.c * (SWARM_BW + SWARM_PAD);
@@ -753,7 +758,6 @@
               score++;
               sndHit(450 + Math.min(300, brk.hp * 8));
 
-              // TNT Cluster Explosion
               if (brk.isTNT && brk.hp <= 0) {
                 sndBomb();
                 spawnSparks(bx + SWARM_BW / 2, by + SWARM_BH / 2, '#ff5500', 30);
@@ -774,7 +778,6 @@
             }
           }
 
-          // Pickups (+1)
           for (let p of swarm.pickups) {
             if (p.collected) continue;
             const px = SWARM_PAD + p.c * (SWARM_BW + SWARM_PAD) + SWARM_BW / 2;
@@ -787,7 +790,6 @@
             }
           }
 
-          // Return to Bottom Floor
           if (b.y + b.r >= H - 15) {
             if (swarm.newShooterX === null) swarm.newShooterX = b.x;
             swarm.balls.splice(i, 1);
@@ -796,7 +798,6 @@
         }
       }
 
-      // Turn Complete
       if (swarm.launching && swarm.ballsReturned >= swarm.ballCount) {
         swarm.launching = false;
         swarm.shooter.x = Math.max(25, Math.min(W - 25, swarm.newShooterX || W / 2));
@@ -804,7 +805,6 @@
         addSwarmWave();
         hudCenter.innerHTML = `BALLS: <span class="hud-accent">${swarm.ballCount}</span>`;
 
-        // Check loss (blocks hit bottom)
         for (let b of swarm.bricks) {
           if (b.alive && b.row >= 26) {
             showGameOver('MODERN SWARM');
@@ -866,7 +866,6 @@
         updateRetroEngine();
 
       } else if (gameState === 'PLAYING_SWARM') {
-        // Draw 16 Columns of Micro-Rectangular Bricks
         for (let b of swarm.bricks) {
           if (!b.alive) continue;
           const bx = SWARM_PAD + b.c * (SWARM_BW + SWARM_PAD);
@@ -882,7 +881,6 @@
           ctx.strokeRect(bx, by, SWARM_BW, SWARM_BH);
           ctx.shadowBlur = 0;
 
-          // Centered Text / Icon inside Micro-brick
           ctx.fillStyle = cStyle.text;
           if (b.isTNT) {
             ctx.font = 'bold 10px sans-serif';
@@ -897,7 +895,6 @@
           }
         }
 
-        // Draw Pickups (+1)
         for (let p of swarm.pickups) {
           if (p.collected) continue;
           const px = SWARM_PAD + p.c * (SWARM_BW + SWARM_PAD) + SWARM_BW / 2;
@@ -916,7 +913,6 @@
           ctx.fillText('+', px, py);
         }
 
-        // Aiming Trajectory Laser Line
         if (swarm.aiming && !swarm.launching) {
           ctx.strokeStyle = '#00f0ff';
           ctx.shadowBlur = 12;
@@ -934,7 +930,6 @@
           ctx.shadowBlur = 0;
         }
 
-        // Shooter
         ctx.fillStyle = '#00f0ff';
         ctx.shadowBlur = 12;
         ctx.shadowColor = '#00f0ff';
@@ -943,7 +938,6 @@
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Swarm Balls (7px diameter, 3.5px radius)
         ctx.fillStyle = '#00f0ff';
         ctx.shadowBlur = 6;
         ctx.shadowColor = '#00f0ff';
@@ -957,7 +951,6 @@
         updateSwarmEngine();
       }
 
-      // Draw Particles
       for (let i = particles.length - 1; i >= 0; i--) {
         const pt = particles[i];
         pt.x += pt.vx;
