@@ -9,204 +9,238 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
     }
-    body {
-      background-color: #060810;
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: #05070f;
       color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
       overflow: hidden;
     }
-    #game-container {
+    #cabinet {
       position: relative;
       width: 100%;
-      max-width: 460px;
-      height: 700px;
-      background: radial-gradient(circle at center, #11152a 0%, #060810 100%);
+      max-width: 480px;
+      height: 100%;
+      max-height: 780px;
+      background: #080b16;
       border: 2px solid #00f0ff44;
-      box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+      box-shadow: 0 0 35px rgba(0, 240, 255, 0.25);
       display: flex;
       flex-direction: column;
     }
-    #ui-bar {
-      height: 48px;
+    #top-hud {
+      height: 50px;
       width: 100%;
       padding: 0 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(6, 8, 16, 0.95);
-      border-bottom: 1px solid rgba(0, 240, 255, 0.25);
+      background: #0b0f1e;
+      border-bottom: 2px solid #00f0ff33;
       font-size: 13px;
-      font-weight: bold;
+      font-weight: 800;
       letter-spacing: 1px;
       z-index: 10;
     }
-    .hud-val {
+    .hud-accent {
       color: #00f0ff;
       font-family: monospace;
-      font-size: 15px;
+      font-size: 16px;
     }
-    .hud-btn {
-      background: #1a233a;
-      border: 1px solid #00f0ff55;
+    .hud-ctrl-btn {
+      background: #141b30;
+      border: 1px solid #00f0ff66;
       color: #00f0ff;
       padding: 6px 12px;
       border-radius: 6px;
       font-size: 11px;
+      font-weight: 800;
       cursor: pointer;
-      font-weight: bold;
+    }
+    .hud-ctrl-btn:active {
+      background: #00f0ff;
+      color: #080b16;
+    }
+    #canvas-wrap {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
     }
     canvas {
       width: 100%;
-      height: 652px;
-      display: block;
-      cursor: crosshair;
-    }
-    #overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
       height: 100%;
+      display: block;
+    }
+    /* Menu & Overlay Screens */
+    #menu-screen, #gameover-screen {
+      position: absolute;
+      inset: 0;
       background: rgba(6, 8, 16, 0.95);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      text-align: center;
       padding: 24px;
       z-index: 100;
+      text-align: center;
     }
-    h1 {
-      font-size: 26px;
+    .brand-eyebrow {
+      font-size: 11px;
+      font-weight: 800;
+      color: #ff007f;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .main-title {
+      font-size: 30px;
       font-weight: 900;
       color: #00f0ff;
-      text-shadow: 0 0 16px #00f0ff;
-      margin-bottom: 4px;
-      text-transform: uppercase;
+      text-shadow: 0 0 18px #00f0ff;
       letter-spacing: 2px;
+      margin-bottom: 6px;
     }
-    .brand-sub {
-      font-size: 10px;
-      color: #ff007f;
-      text-transform: uppercase;
-      letter-spacing: 3px;
+    .menu-sub {
+      font-size: 12px;
+      color: #94a3b8;
       margin-bottom: 24px;
-      font-weight: bold;
     }
-    .mode-select-box {
+    .menu-button-stack {
+      width: 100%;
+      max-width: 320px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      width: 100%;
-      max-width: 300px;
-      margin-bottom: 15px;
+      gap: 16px;
     }
-    .btn-action {
-      background: linear-gradient(135deg, #161e36, #0e1324);
-      border: 2px solid #00f0ff88;
-      color: #fff;
-      padding: 16px 18px;
-      border-radius: 10px;
-      cursor: pointer;
+    .menu-card-btn {
+      background: #0e1424;
+      border: 2px solid;
+      border-radius: 12px;
+      padding: 16px;
       text-align: left;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-      transition: transform 0.1s, border-color 0.2s, background 0.2s;
+      cursor: pointer;
+      display: block;
       width: 100%;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      transition: transform 0.1s, box-shadow 0.2s;
     }
-    .btn-action:hover {
-      border-color: #00f0ff;
-      background: linear-gradient(135deg, #1e294b, #121930);
-    }
-    .btn-action:active {
+    .menu-card-btn:active {
       transform: scale(0.97);
     }
-    .btn-retro {
-      border-color: #ff007f88;
-    }
-    .btn-retro:hover {
+    .card-retro {
       border-color: #ff007f;
+    }
+    .card-retro:hover {
       box-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
     }
-    .btn-swarm {
-      border-color: #00f0ff88;
-    }
-    .btn-swarm:hover {
+    .card-swarm {
       border-color: #00f0ff;
+    }
+    .card-swarm:hover {
       box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
     }
-    .mode-title {
-      font-size: 15px;
-      font-weight: bold;
+    .btn-header {
+      font-size: 16px;
+      font-weight: 800;
       letter-spacing: 1px;
+      margin-bottom: 4px;
     }
-    .mode-desc {
+    .btn-body {
       font-size: 11px;
       color: #94a3b8;
-      margin-top: 4px;
       line-height: 1.4;
     }
-    .gameover-score {
-      font-size: 34px;
-      font-weight: bold;
+    .gameover-val {
+      font-size: 40px;
+      font-weight: 900;
       color: #ffe600;
       font-family: monospace;
       margin-bottom: 20px;
+    }
+    .action-btn {
+      background: #00f0ff;
+      color: #060810;
+      border: none;
+      padding: 14px 28px;
+      font-size: 15px;
+      font-weight: 800;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 240px;
+      margin-bottom: 12px;
+    }
+    .sub-action-btn {
+      background: transparent;
+      border: 1px solid #64748b;
+      color: #94a3b8;
+      padding: 10px 20px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 240px;
     }
   </style>
 </head>
 <body>
 
-  <div id="game-container">
-    <div id="ui-bar">
-      <div>SCORE: <span id="score-display" class="hud-val">0</span></div>
-      <div id="mid-stat">MODE: <span id="mode-display" class="hud-val">ARCADE</span></div>
-      <div style="display:flex; gap:6px; align-items:center;">
-        <button id="speed-btn" class="hud-btn" style="display:none;" onclick="toggleSpeed()">1X</button>
-        <button class="hud-btn" onclick="openMenu()">MENU</button>
+  <div id="cabinet">
+    <!-- Top HUD -->
+    <div id="top-hud">
+      <div>SCORE: <span id="hud-score" class="hud-accent">0</span></div>
+      <div id="hud-center">MODE: <span id="hud-mode" class="hud-accent">ARCADE</span></div>
+      <div style="display:flex; gap:8px;">
+        <button id="hud-speed-btn" class="hud-ctrl-btn" style="display:none;">1X</button>
+        <button id="hud-menu-btn" class="hud-ctrl-btn">MENU</button>
       </div>
     </div>
 
-    <canvas id="gameCanvas" width="460" height="652"></canvas>
+    <!-- Playfield Canvas Area -->
+    <div id="canvas-wrap">
+      <canvas id="gameCanvas" width="460" height="700"></canvas>
 
-    <!-- Overlay Menu -->
-    <div id="overlay">
-      <div class="brand-sub">StoneBuilt Entertainment Presents</div>
-      <h1 id="overlay-title">Neon Breaker</h1>
-      <p id="overlay-msg" style="color: #94a3b8; margin-bottom: 20px; font-size: 13px;">Choose Your Arcade Experience</p>
+      <!-- Main Menu Screen -->
+      <div id="menu-screen">
+        <div class="brand-eyebrow">StoneBuilt Entertainment</div>
+        <div class="main-title">Neon Breaker</div>
+        <div class="menu-sub">Choose Your Arcade Engine</div>
 
-      <!-- Main Menu Buttons -->
-      <div id="menu-view" class="mode-select-box">
-        <button class="btn-action btn-retro" onclick="handleStartRetro()">
-          <div class="mode-title" style="color: #ff007f;">🕹️ CLASSIC RETRO</div>
-          <div class="mode-desc">Paddle controls, falling lasers & multiball power-ups, 80s arcade physics.</div>
-        </button>
+        <div class="menu-button-stack">
+          <button id="start-retro-btn" class="menu-card-btn card-retro">
+            <div class="btn-header" style="color:#ff007f;">🕹️ CLASSIC RETRO</div>
+            <div class="btn-body">Authentic 80s Breakout. Paddle bounce angles, laser weapons, multiball drops, and armored bricks.</div>
+          </button>
 
-        <button class="btn-action btn-swarm" onclick="handleStartSwarm()">
-          <div class="mode-title" style="color: #00f0ff;">⚡ MODERN SWARM</div>
-          <div class="mode-desc">Drag to aim, launch streams of 30+ balls, blast high-HP bricks & TNT blocks.</div>
-        </button>
+          <button id="start-swarm-btn" class="menu-card-btn card-swarm">
+            <div class="btn-header" style="color:#00f0ff;">⚡ MODERN SWARM</div>
+            <div class="btn-body">Aim trajectory, launch a stream of 30+ balls, shred numbered HP blocks, and detonate TNT bombs.</div>
+          </button>
+        </div>
       </div>
 
-      <!-- Game Over View -->
-      <div id="gameover-view" style="display:none; width: 100%; max-width: 300px;">
-        <div class="gameover-score" id="final-score-display">0</div>
-        <button class="btn-action btn-swarm" style="text-align:center; font-weight:bold; margin-bottom:10px;" onclick="handlePlayAgain()">
-          PLAY AGAIN
-        </button>
-        <button class="btn-action" style="text-align:center;" onclick="handleBackToMenu()">
-          BACK TO MENU
-        </button>
+      <!-- Game Over Screen -->
+      <div id="gameover-screen" style="display:none;">
+        <div class="brand-eyebrow" style="color:#ff007f;">GAME OVER</div>
+        <div id="gameover-mode-label" class="main-title" style="font-size:22px; color:#fff;">FINAL SCORE</div>
+        <div id="gameover-score-val" class="gameover-val">0</div>
+        <button id="restart-game-btn" class="action-btn">PLAY AGAIN</button>
+        <button id="return-menu-btn" class="sub-action-btn">RETURN TO MENU</button>
       </div>
     </div>
   </div>
 
   <script>
-    // --- SYNTHESIZED AUDIO (Web Audio API) ---
+    // --- SYNTHESIZED 8-BIT AUDIO (Zero External Files) ---
     let audioCtx = null;
     function playBeep(freq, type = 'sine', duration = 0.08, vol = 0.1) {
       try {
@@ -226,74 +260,77 @@
       } catch (e) {}
     }
 
-    const sndHit = (f = 450) => playBeep(f, 'triangle', 0.06, 0.12);
+    const sndHit = (f = 460) => playBeep(f, 'triangle', 0.06, 0.12);
     const sndPaddle = () => playBeep(380, 'sine', 0.08, 0.15);
-    const sndLaser = () => playBeep(880, 'sawtooth', 0.09, 0.08);
-    const sndPower = () => playTone(740, 'square', 0.16, 0.1);
-    const sndBomb = () => playTone(110, 'sawtooth', 0.35, 0.22);
-    const sndDie = () => playTone(140, 'sawtooth', 0.4, 0.15);
+    const sndLaser = () => playBeep(920, 'sawtooth', 0.09, 0.08);
+    const sndPower = () => playBeep(780, 'square', 0.16, 0.1);
+    const sndBomb = () => playBeep(110, 'sawtooth', 0.35, 0.25);
+    const sndDie = () => playBeep(140, 'sawtooth', 0.4, 0.15);
 
     // --- DOM REFERENCES ---
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    const overlay = document.getElementById('overlay');
-    const overlayTitle = document.getElementById('overlay-title');
-    const overlayMsg = document.getElementById('overlay-msg');
-    const menuView = document.getElementById('menu-view');
-    const gameoverView = document.getElementById('gameover-view');
-    const finalScoreDisplay = document.getElementById('final-score-display');
-    const scoreDisplay = document.getElementById('score-display');
-    const modeDisplay = document.getElementById('mode-display');
-    const midStat = document.getElementById('mid-stat');
-    const speedBtn = document.getElementById('speed-btn');
+    const menuScreen = document.getElementById('menu-screen');
+    const gameoverScreen = document.getElementById('gameover-screen');
+    const hudScore = document.getElementById('hud-score');
+    const hudMode = document.getElementById('hud-mode');
+    const hudCenter = document.getElementById('hud-center');
+    const hudSpeedBtn = document.getElementById('hud-speed-btn');
+    const hudMenuBtn = document.getElementById('hud-menu-btn');
+    const gameoverScoreVal = document.getElementById('gameover-score-val');
+    const gameoverModeLabel = document.getElementById('gameover-mode-label');
 
     const W = 460;
-    const H = 652;
+    const H = 700;
 
-    // --- MASTER ENGINE STATE ---
-    let gameState = 'MENU'; // 'MENU', 'PLAYING_RETRO', 'PLAYING_SWARM'
+    // --- GAME ENGINE STATE ---
+    let currentMode = null; // 'RETRO' or 'SWARM'
+    let isRunning = false;
     let score = 0;
     let particles = [];
 
     // =====================================
-    // 1. CLASSIC RETRO ENGINE
+    // 1. CLASSIC RETRO STATE & LOGIC
     // =====================================
     const retro = {
       lives: 3,
       level: 1,
-      paddle: { w: 85, h: 12, x: 187, y: 620, hasLasers: false },
+      paddle: { w: 85, h: 12, x: 187, y: 655, hasLasers: false },
       balls: [],
       bricks: [],
       powerUps: [],
       lasers: []
     };
 
-    function startRetroGame() {
-      gameState = 'PLAYING_RETRO';
-      modeDisplay.textContent = 'RETRO';
-      speedBtn.style.display = 'none';
+    function startRetro() {
+      currentMode = 'RETRO';
+      hudMode.textContent = 'RETRO';
+      hudSpeedBtn.style.display = 'none';
       score = 0;
       retro.lives = 3;
       retro.level = 1;
-      scoreDisplay.textContent = score;
-      midStat.innerHTML = `LIVES: <span style="color:#ff007f;">❤️❤️❤️</span>`;
+      hudScore.textContent = score;
+      hudCenter.innerHTML = `LIVES: <span style="color:#ff007f;">❤️❤️❤️</span>`;
       initRetroBricks();
       resetRetroBall();
+      menuScreen.style.display = 'none';
+      gameoverScreen.style.display = 'none';
+      isRunning = true;
     }
 
     function initRetroBricks() {
       retro.bricks = [];
       const cols = 7, rows = 6;
-      const padding = 6;
-      const bW = (W - (padding * (cols + 1))) / cols;
+      const pad = 6;
+      const bW = (W - (pad * (cols + 1))) / cols;
       const bH = 16;
       const colors = ['#ff007f', '#ff5500', '#ffe600', '#39ff14', '#00f0ff', '#b026ff'];
 
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           retro.bricks.push({
-            x: padding + c * (bW + padding),
-            y: 40 + r * (bH + padding),
+            x: pad + c * (bW + pad),
+            y: 40 + r * (bH + pad),
             w: bW,
             h: bH,
             color: colors[r % colors.length],
@@ -310,7 +347,7 @@
       retro.paddle.x = (W - 85) / 2;
       retro.balls = [{
         x: W / 2,
-        y: H - 45,
+        y: H - 55,
         vx: 3.5 * (Math.random() > 0.5 ? 1 : -1),
         vy: -5,
         r: 6,
@@ -319,7 +356,7 @@
     }
 
     // =====================================
-    // 2. MODERN SWARM ENGINE
+    // 2. MODERN SWARM STATE & LOGIC
     // =====================================
     const swarm = {
       level: 1,
@@ -327,7 +364,7 @@
       balls: [],
       bricks: [],
       pickups: [],
-      shooter: { x: W / 2, y: H - 25 },
+      shooter: { x: W / 2, y: H - 30 },
       aiming: false,
       aimAngle: -Math.PI / 2,
       launching: false,
@@ -335,34 +372,37 @@
       launchedCount: 0,
       ballsReturned: 0,
       newShooterX: null,
-      speedMultiplier: 1
+      speed: 1
     };
 
-    function startSwarmGame() {
-      gameState = 'PLAYING_SWARM';
-      modeDisplay.textContent = 'SWARM';
-      speedBtn.style.display = 'block';
-      speedBtn.textContent = '1X';
-      swarm.speedMultiplier = 1;
+    function startSwarm() {
+      currentMode = 'SWARM';
+      hudMode.textContent = 'SWARM';
+      hudSpeedBtn.style.display = 'block';
+      hudSpeedBtn.textContent = '1X';
+      swarm.speed = 1;
       score = 0;
       swarm.level = 1;
       swarm.ballCount = 15;
       swarm.balls = [];
       swarm.shooter.x = W / 2;
-      swarm.shooter.y = H - 25;
-      scoreDisplay.textContent = score;
-      midStat.innerHTML = `BALLS: <span class="hud-val">${swarm.ballCount}</span>`;
+      swarm.shooter.y = H - 30;
+      hudScore.textContent = score;
+      hudCenter.innerHTML = `BALLS: <span class="hud-accent">${swarm.ballCount}</span>`;
       swarm.bricks = [];
       swarm.pickups = [];
       addSwarmWave();
       addSwarmWave();
       addSwarmWave();
+      menuScreen.style.display = 'none';
+      gameoverScreen.style.display = 'none';
+      isRunning = true;
     }
 
     function addSwarmWave() {
       const cols = 7;
-      const padding = 6;
-      const bW = (W - (padding * (cols + 1))) / cols;
+      const pad = 6;
+      const bW = (W - (pad * (cols + 1))) / cols;
       const bH = 26;
 
       for (let b of swarm.bricks) b.row++;
@@ -371,7 +411,7 @@
       for (let c = 0; c < cols; c++) {
         const rand = Math.random();
         if (rand < 0.45) {
-          const hp = Math.max(1, Math.round(swarm.level * (1 + Math.random() * 1.4)));
+          const hp = Math.max(1, Math.round(swarm.level * (1 + Math.random() * 1.5)));
           const isTNT = Math.random() < 0.12;
           swarm.bricks.push({
             c: c,
@@ -395,15 +435,15 @@
     }
 
     // =====================================
-    // PARTICLES
+    // PARTICLES (Explosions)
     // =====================================
-    function spawnSparks(x, y, color, count = 10) {
+    function createSparks(x, y, color, count = 10) {
       for (let i = 0; i < count; i++) {
         particles.push({
           x: x,
           y: y,
-          vx: (Math.random() - 0.5) * 7,
-          vy: (Math.random() - 0.5) * 7,
+          vx: (Math.random() - 0.5) * 8,
+          vy: (Math.random() - 0.5) * 8,
           r: Math.random() * 2.5 + 1,
           color: color,
           life: 1
@@ -412,39 +452,45 @@
     }
 
     // =====================================
-    // TOUCH & POINTER INPUTS
+    // POINTER & TOUCH HANDLING
     // =====================================
-    function getCanvasPos(clientX, clientY) {
+    function getPointerPos(e) {
       const rect = canvas.getBoundingClientRect();
       const scaleX = W / rect.width;
       const scaleY = H / rect.height;
+      let clientX = e.clientX;
+      let clientY = e.clientY;
+      if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      }
       return {
         x: (clientX - rect.left) * scaleX,
         y: (clientY - rect.top) * scaleY
       };
     }
 
-    function onPointerMove(clientX, clientY) {
-      if (gameState === 'MENU') return;
-      const pt = getCanvasPos(clientX, clientY);
+    function handlePointerMove(e) {
+      if (!isRunning) return;
+      const pos = getPointerPos(e);
 
-      if (gameState === 'PLAYING_RETRO') {
-        retro.paddle.x = Math.max(0, Math.min(W - retro.paddle.w, pt.x - retro.paddle.w / 2));
+      if (currentMode === 'RETRO') {
+        retro.paddle.x = Math.max(0, Math.min(W - retro.paddle.w, pos.x - retro.paddle.w / 2));
         if (retro.balls[0] && retro.balls[0].stuck) {
           retro.balls[0].x = retro.paddle.x + retro.paddle.w / 2;
         }
-      } else if (gameState === 'PLAYING_SWARM' && !swarm.launching) {
-        if (pt.y < swarm.shooter.y - 15) {
+      } else if (currentMode === 'SWARM' && !swarm.launching) {
+        if (pos.y < swarm.shooter.y - 15) {
           swarm.aiming = true;
-          swarm.aimAngle = Math.atan2(pt.y - swarm.shooter.y, pt.x - swarm.shooter.x);
+          swarm.aimAngle = Math.atan2(pos.y - swarm.shooter.y, pos.x - swarm.shooter.x);
         }
       }
     }
 
-    function onPointerUp() {
-      if (gameState === 'MENU') return;
+    function handlePointerAction() {
+      if (!isRunning) return;
 
-      if (gameState === 'PLAYING_RETRO') {
+      if (currentMode === 'RETRO') {
         if (retro.balls[0] && retro.balls[0].stuck) {
           retro.balls[0].stuck = false;
           sndPaddle();
@@ -454,7 +500,7 @@
           retro.lasers.push({ x: retro.paddle.x + 8, y: retro.paddle.y - 4, vy: -9 });
           retro.lasers.push({ x: retro.paddle.x + retro.paddle.w - 8, y: retro.paddle.y - 4, vy: -9 });
         }
-      } else if (gameState === 'PLAYING_SWARM') {
+      } else if (currentMode === 'SWARM') {
         if (swarm.aiming && !swarm.launching) {
           swarm.aiming = false;
           swarm.launching = true;
@@ -467,52 +513,39 @@
       }
     }
 
-    canvas.addEventListener('mousemove', (e) => onPointerMove(e.clientX, e.clientY));
-    canvas.addEventListener('touchmove', (e) => {
-      if (e.touches.length > 0) onPointerMove(e.touches[0].clientX, e.touches[0].clientY);
-    });
-
-    canvas.addEventListener('mouseup', onPointerUp);
-    canvas.addEventListener('touchend', onPointerUp);
+    canvas.addEventListener('mousemove', handlePointerMove);
+    canvas.addEventListener('touchmove', handlePointerMove, { passive: false });
+    canvas.addEventListener('mousedown', handlePointerAction);
+    canvas.addEventListener('touchstart', (e) => {
+      handlePointerMove(e);
+      handlePointerAction();
+    }, { passive: false });
 
     window.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') onPointerUp();
-      if (gameState === 'PLAYING_RETRO') {
-        if (e.code === 'ArrowLeft') retro.paddle.x = Math.max(0, retro.paddle.x - 30);
-        if (e.code === 'ArrowRight') retro.paddle.x = Math.min(W - retro.paddle.w, retro.paddle.x + 30);
+      if (e.code === 'Space') handlePointerAction();
+      if (currentMode === 'RETRO') {
+        if (e.code === 'ArrowLeft') retro.paddle.x = Math.max(0, retro.paddle.x - 32);
+        if (e.code === 'ArrowRight') retro.paddle.x = Math.min(W - retro.paddle.w, retro.paddle.x + 32);
       }
     });
 
-    function toggleSpeed() {
-      if (swarm.speedMultiplier === 1) {
-        swarm.speedMultiplier = 2;
-        speedBtn.textContent = '2X';
-      } else if (swarm.speedMultiplier === 2) {
-        swarm.speedMultiplier = 3;
-        speedBtn.textContent = '3X';
-      } else {
-        swarm.speedMultiplier = 1;
-        speedBtn.textContent = '1X';
-      }
-    }
+    // Speed up button for Swarm
+    hudSpeedBtn.addEventListener('click', () => {
+      swarm.speed = swarm.speed === 1 ? 2 : (swarm.speed === 2 ? 3 : 1);
+      hudSpeedBtn.textContent = swarm.speed + 'X';
+    });
 
-    function triggerGameOver(modeName) {
-      gameState = 'MENU';
-      overlay.style.display = 'flex';
-      overlayTitle.textContent = 'GAME OVER';
-      overlayTitle.style.color = '#ff007f';
-      overlayMsg.textContent = `${modeName} FINAL SCORE`;
-      menuView.style.display = 'none';
-      gameoverView.style.display = 'block';
-      finalScoreDisplay.textContent = score;
+    function showGameOver(modeTitle) {
+      isRunning = false;
+      gameoverModeLabel.textContent = `${modeTitle} GAME OVER`;
+      gameoverScoreVal.textContent = score;
+      gameoverScreen.style.display = 'flex';
     }
 
     // =====================================
-    // UPDATE ENGINES
+    // RETRO ENGINE UPDATE
     // =====================================
-    function updateRetro() {
-      retro.paddle.y = H - 28;
-
+    function updateRetroEngine() {
       // Lasers
       for (let i = retro.lasers.length - 1; i >= 0; i--) {
         const l = retro.lasers[i];
@@ -524,7 +557,7 @@
             if (b.hp <= 0) {
               b.alive = false;
               score += 20;
-              spawnSparks(b.x + b.w / 2, b.y + b.h / 2, b.color);
+              createSparks(b.x + b.w / 2, b.y + b.h / 2, b.color);
             }
             sndHit(750);
             retro.lasers.splice(i, 1);
@@ -543,7 +576,7 @@
         if (b.x - b.r < 0 || b.x + b.r > W) { b.vx *= -1; sndHit(300); }
         if (b.y - b.r < 0) { b.vy *= -1; sndHit(300); }
 
-        // Paddle
+        // Paddle Collision
         if (b.y + b.r >= retro.paddle.y && b.y - b.r <= retro.paddle.y + retro.paddle.h && b.x >= retro.paddle.x && b.x <= retro.paddle.x + retro.paddle.w && b.vy > 0) {
           sndPaddle();
           const hit = (b.x - (retro.paddle.x + retro.paddle.w / 2)) / (retro.paddle.w / 2);
@@ -553,7 +586,7 @@
           b.y = retro.paddle.y - b.r;
         }
 
-        // Bricks
+        // Brick Collision
         for (let brk of retro.bricks) {
           if (!brk.alive) continue;
           if (b.x + b.r > brk.x && b.x - b.r < brk.x + brk.w && b.y + b.r > brk.y && b.y - b.r < brk.y + brk.h) {
@@ -561,7 +594,7 @@
             if (brk.hp <= 0) {
               brk.alive = false;
               score += 15;
-              spawnSparks(brk.x + brk.w / 2, brk.y + brk.h / 2, brk.color);
+              createSparks(brk.x + brk.w / 2, brk.y + brk.h / 2, brk.color);
               if (Math.random() < 0.22) {
                 const types = ['MULTI', 'LASER', 'WIDE'];
                 retro.powerUps.push({
@@ -586,17 +619,17 @@
         retro.lives--;
         sndDie();
         if (retro.lives <= 0) {
-          triggerGameOver('CLASSIC RETRO');
+          showGameOver('CLASSIC RETRO');
           return;
         } else {
           let str = '';
           for (let l = 0; l < retro.lives; l++) str += '❤️';
-          midStat.innerHTML = `LIVES: <span style="color:#ff007f;">${str}</span>`;
+          hudCenter.innerHTML = `LIVES: <span style="color:#ff007f;">${str}</span>`;
           resetRetroBall();
         }
       }
 
-      // Power-ups
+      // Power-up Collection
       for (let i = retro.powerUps.length - 1; i >= 0; i--) {
         const p = retro.powerUps[i];
         p.y += p.vy;
@@ -615,23 +648,26 @@
         } else if (p.y > H) retro.powerUps.splice(i, 1);
       }
 
-      // Next level
+      // Level Cleared
       if (retro.bricks.length > 0 && retro.bricks.every(b => !b.alive)) {
         retro.level++;
         initRetroBricks();
         resetRetroBall();
       }
 
-      scoreDisplay.textContent = score;
+      hudScore.textContent = score;
     }
 
-    function updateSwarm() {
-      const padding = 6;
+    // =====================================
+    // SWARM ENGINE UPDATE
+    // =====================================
+    function updateSwarmEngine() {
+      const pad = 6;
       const cols = 7;
-      const bW = (W - (padding * (cols + 1))) / cols;
+      const bW = (W - (pad * (cols + 1))) / cols;
       const bH = 26;
 
-      // Launch stream
+      // Launch Stream
       if (swarm.launching && swarm.launchedCount < swarm.ballCount) {
         swarm.launchTimer++;
         if (swarm.launchTimer % 4 === 0) {
@@ -647,7 +683,8 @@
         }
       }
 
-      for (let step = 0; step < swarm.speedMultiplier; step++) {
+      // Physics loop with Speed Multiplier
+      for (let s = 0; s < swarm.speed; s++) {
         for (let i = swarm.balls.length - 1; i >= 0; i--) {
           const b = swarm.balls[i];
           b.x += b.vx;
@@ -657,21 +694,21 @@
           if (b.x + b.r > W) { b.x = W - b.r; b.vx *= -1; }
           if (b.y - b.r < 0) { b.y = b.r; b.vy *= -1; }
 
-          // Brick hit
+          // Brick collision
           for (let brk of swarm.bricks) {
             if (!brk.alive) continue;
-            const bx = padding + brk.c * (bW + padding);
-            const by = 40 + brk.row * (bH + padding);
+            const bx = pad + brk.c * (bW + pad);
+            const by = 40 + brk.row * (bH + pad);
 
             if (b.x + b.r > bx && b.x - b.r < bx + bW && b.y + b.r > by && b.y - b.r < by + bH) {
               brk.hp--;
               score++;
-              sndHit(400 + Math.min(400, brk.hp * 10));
+              sndHit(420 + Math.min(350, brk.hp * 10));
 
-              // TNT explosion
+              // TNT Detonation
               if (brk.isTNT && brk.hp <= 0) {
                 sndBomb();
-                spawnSparks(bx + bW / 2, by + bH / 2, '#ff5500', 25);
+                createSparks(bx + bW / 2, by + bH / 2, '#ff5500', 25);
                 for (let other of swarm.bricks) {
                   if (other.alive && Math.abs(other.c - brk.c) <= 1 && Math.abs(other.row - brk.row) <= 1) {
                     other.hp -= 25;
@@ -682,27 +719,27 @@
 
               if (brk.hp <= 0) {
                 brk.alive = false;
-                spawnSparks(bx + bW / 2, by + bH / 2, '#00f0ff', 12);
+                createSparks(bx + bW / 2, by + bH / 2, '#00f0ff', 12);
               }
               b.vy *= -1;
               break;
             }
           }
 
-          // Pickups
+          // Pickups (+1)
           for (let p of swarm.pickups) {
             if (p.collected) continue;
-            const px = padding + p.c * (bW + padding) + bW / 2;
-            const py = 40 + p.row * (bH + padding) + bH / 2;
+            const px = pad + p.c * (bW + pad) + bW / 2;
+            const py = 40 + p.row * (bH + pad) + bH / 2;
             if (Math.hypot(b.x - px, b.y - py) < 14) {
               p.collected = true;
               swarm.ballCount++;
               sndPower();
-              spawnSparks(px, py, '#39ff14', 10);
+              createSparks(px, py, '#39ff14', 10);
             }
           }
 
-          // Return to floor
+          // Return to Bottom Floor
           if (b.y + b.r >= H - 15) {
             if (swarm.newShooterX === null) swarm.newShooterX = b.x;
             swarm.balls.splice(i, 1);
@@ -711,33 +748,34 @@
         }
       }
 
-      // Turn finish
+      // Finish Wave & Advance
       if (swarm.launching && swarm.ballsReturned >= swarm.ballCount) {
         swarm.launching = false;
         swarm.shooter.x = Math.max(25, Math.min(W - 25, swarm.newShooterX || W / 2));
         swarm.level++;
         addSwarmWave();
-        midStat.innerHTML = `BALLS: <span class="hud-val">${swarm.ballCount}</span>`;
+        hudCenter.innerHTML = `BALLS: <span class="hud-accent">${swarm.ballCount}</span>`;
 
-        // Check if bricks reached bottom
+        // Check if wall reached bottom
         for (let b of swarm.bricks) {
           if (b.alive && b.row >= 18) {
-            triggerGameOver('MODERN SWARM');
+            showGameOver('MODERN SWARM');
             return;
           }
         }
       }
 
-      scoreDisplay.textContent = score;
+      hudScore.textContent = score;
     }
 
     // =====================================
-    // DRAW LOOP
+    // MAIN DRAW LOOP
     // =====================================
     function draw() {
       ctx.clearRect(0, 0, W, H);
 
-      if (gameState === 'PLAYING_RETRO') {
+      if (isRunning && currentMode === 'RETRO') {
+        // Draw Retro Bricks
         for (let b of retro.bricks) {
           if (!b.alive) continue;
           ctx.fillStyle = b.color;
@@ -747,15 +785,18 @@
         }
         ctx.shadowBlur = 0;
 
+        // Draw Retro Paddle
         ctx.fillStyle = retro.paddle.hasLasers ? '#ff007f' : '#00f0ff';
         ctx.shadowBlur = 14;
         ctx.shadowColor = ctx.fillStyle;
         ctx.fillRect(retro.paddle.x, retro.paddle.y, retro.paddle.w, retro.paddle.h);
         ctx.shadowBlur = 0;
 
+        // Draw Lasers
         ctx.fillStyle = '#ff007f';
         for (let l of retro.lasers) ctx.fillRect(l.x, l.y, 4, 10);
 
+        // Draw Power-ups
         for (let p of retro.powerUps) {
           ctx.fillStyle = p.type === 'LASER' ? '#ff007f' : (p.type === 'MULTI' ? '#39ff14' : '#ffe600');
           ctx.beginPath();
@@ -768,6 +809,7 @@
           ctx.fillText(p.type[0], p.x, p.y);
         }
 
+        // Draw Retro Balls
         ctx.fillStyle = '#ffe600';
         ctx.shadowBlur = 12;
         ctx.shadowColor = '#ffe600';
@@ -778,20 +820,21 @@
         }
         ctx.shadowBlur = 0;
 
-        updateRetro();
+        updateRetroEngine();
 
-      } else if (gameState === 'PLAYING_SWARM') {
-        const padding = 6;
+      } else if (isRunning && currentMode === 'SWARM') {
+        const pad = 6;
         const cols = 7;
-        const bW = (W - (padding * (cols + 1))) / cols;
+        const bW = (W - (pad * (cols + 1))) / cols;
         const bH = 26;
 
+        // Draw Swarm Bricks
         for (let b of swarm.bricks) {
           if (!b.alive) continue;
-          const bx = padding + b.c * (bW + padding);
-          const by = 40 + b.row * (bH + padding);
+          const bx = pad + b.c * (bW + pad);
+          const by = 40 + b.row * (bH + pad);
 
-          ctx.fillStyle = b.isTNT ? '#ff5500' : '#16223e';
+          ctx.fillStyle = b.isTNT ? '#ff5500' : '#141c33';
           ctx.strokeStyle = b.isTNT ? '#ffaa00' : '#00f0ff';
           ctx.lineWidth = 1.5;
           ctx.fillRect(bx, by, bW, bH);
@@ -801,4 +844,115 @@
           ctx.font = 'bold 11px monospace';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText(b.isTNT
+          ctx.fillText(b.isTNT ? '💣 ' + b.hp : b.hp, bx + bW / 2, by + bH / 2);
+        }
+
+        // Draw Pickups (+1)
+        for (let p of swarm.pickups) {
+          if (p.collected) continue;
+          const px = pad + p.c * (bW + pad) + bW / 2;
+          const py = 40 + p.row * (bH + pad) + bH / 2;
+          ctx.fillStyle = '#39ff14';
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = '#39ff14';
+          ctx.beginPath();
+          ctx.arc(px, py, 7, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = '#060810';
+          ctx.font = 'bold 8px monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('+', px, py);
+        }
+
+        // Aim Line
+        if (swarm.aiming && !swarm.launching) {
+          ctx.strokeStyle = 'rgba(0, 240, 255, 0.5)';
+          ctx.setLineDash([4, 6]);
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(swarm.shooter.x, swarm.shooter.y);
+          ctx.lineTo(
+            swarm.shooter.x + Math.cos(swarm.aimAngle) * 350,
+            swarm.shooter.y + Math.sin(swarm.aimAngle) * 350
+          );
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Shooter
+        ctx.fillStyle = '#00f0ff';
+        ctx.beginPath();
+        ctx.arc(swarm.shooter.x, swarm.shooter.y, 7, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Swarm Balls
+        ctx.fillStyle = '#00f0ff';
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#00f0ff';
+        for (let b of swarm.balls) {
+          ctx.beginPath();
+          ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+
+        updateSwarmEngine();
+      }
+
+      // Draw Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const pt = particles[i];
+        pt.x += pt.vx;
+        pt.y += pt.vy;
+        pt.life -= 0.035;
+        if (pt.life <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+        ctx.fillStyle = pt.color;
+        ctx.globalAlpha = Math.max(0, pt.life);
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      requestAnimationFrame(draw);
+    }
+
+    // =====================================
+    // CLEAN MENU EVENT HOOKS
+    // =====================================
+    document.getElementById('start-retro-btn').onclick = function() {
+      startRetro();
+    };
+
+    document.getElementById('start-swarm-btn').onclick = function() {
+      startSwarm();
+    };
+
+    document.getElementById('restart-game-btn').onclick = function() {
+      if (currentMode === 'RETRO') startRetro();
+      else startSwarm();
+    };
+
+    document.getElementById('return-menu-btn').onclick = function() {
+      gameoverScreen.style.display = 'none';
+      menuScreen.style.display = 'flex';
+      currentMode = null;
+    };
+
+    hudMenuBtn.onclick = function() {
+      isRunning = false;
+      gameoverScreen.style.display = 'none';
+      menuScreen.style.display = 'flex';
+      currentMode = null;
+    };
+
+    // Start render loop
+    draw();
+  </script>
+</body>
+</html>
