@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>StoneBuilt Arcade - Neon Breaker Suite</title>
+  
+  <!-- CrazyGames SDK v3 Universal -->
+  <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -262,6 +266,50 @@
   </div>
 
   <script>
+    /* ==============================================================
+       1. CRAZYGAMES SDK v3 INTEGRATION
+       ============================================================== */
+    let crazyGamesReady = false;
+
+    async function initCrazyGames() {
+      if (window.CrazyGames && window.CrazyGames.SDK) {
+        try {
+          await window.CrazyGames.SDK.init();
+          crazyGamesReady = true;
+          console.log("CrazyGames SDK v3 initialized successfully!");
+        } catch (e) {
+          console.log("CrazyGames test/standalone mode:", e);
+        }
+      }
+    }
+    initCrazyGames();
+
+    function triggerCrazyGamesStart() {
+      if (crazyGamesReady && window.CrazyGames?.SDK?.game) {
+        try { window.CrazyGames.SDK.game.gameplayStart(); } catch (e) {}
+      }
+    }
+
+    function triggerCrazyGamesStop() {
+      if (crazyGamesReady && window.CrazyGames?.SDK?.game) {
+        try { window.CrazyGames.SDK.game.gameplayStop(); } catch (e) {}
+      }
+    }
+
+    function triggerCrazyGamesAd() {
+      if (crazyGamesReady && window.CrazyGames?.SDK?.ad) {
+        try {
+          window.CrazyGames.SDK.ad.requestAd("midroll", {
+            adStarted: () => console.log("CrazyGames Ad started"),
+            adFinished: () => console.log("CrazyGames Ad finished"),
+            adError: (err) => console.log("CrazyGames Ad skipped/test:", err)
+          });
+        } catch (e) {
+          console.log("CrazyGames Ad skipped in test mode:", e);
+        }
+      }
+    }
+
     // --- SYNTHESIZED 8-BIT AUDIO ---
     let audioCtx = null;
     let isMuted = false;
@@ -328,7 +376,6 @@
       score += points;
       hudScore.textContent = score;
 
-      // Update High Score LIVE on every hit!
       if (score > hiScore) {
         hiScore = score;
         hudBest.textContent = hiScore;
@@ -388,6 +435,8 @@
       resetRetroBall();
       overlay.style.display = 'none';
       gameoverScreen.style.display = 'none';
+
+      triggerCrazyGamesStart();
     }
 
     function initRetroBricks() {
@@ -479,6 +528,8 @@
 
       overlay.style.display = 'none';
       gameoverScreen.style.display = 'none';
+
+      triggerCrazyGamesStart();
     }
 
     function addSwarmWave() {
@@ -682,10 +733,14 @@
       gameoverScoreVal.textContent = score;
       gameoverBestTag.textContent = `ALL-TIME BEST: ${hiScore}`;
       gameoverScreen.style.display = 'flex';
+
+      // CrazyGames Ad Call & Gameplay Stop
+      triggerCrazyGamesStop();
+      triggerCrazyGamesAd();
     }
 
     // =====================================
-    // RETRO GAMEPLAY UPDATE
+    // RETRO GAMEPLAY UPDATE (WITH FIXED WALL PHYSICS!)
     // =====================================
     function updateRetroEngine() {
       retro.paddle.y = H - 28;
@@ -721,9 +776,30 @@
         b.x += b.vx;
         b.y += b.vy;
 
-        if (b.x - b.r < 0 || b.x + b.r > W) { b.vx *= -1; sndHit(300); }
-        if (b.y - b.r < 0) { b.vy *= -1; sndHit(300); }
+        /* --- BULLETPROOF WALL BOUNCE PHYSICS (NO MORE STICKING!) --- */
+        // Left Wall
+        if (b.x - b.r <= 0) {
+          b.x = b.r + 1; // Snap out of wall boundary
+          b.vx = Math.abs(b.vx); // Force rightward
+          if (Math.abs(b.vx) < 1.5) b.vx = 2.4; // Anti-jitter kick
+          sndHit(300);
+        }
+        // Right Wall
+        else if (b.x + b.r >= W) {
+          b.x = W - b.r - 1; // Snap out of wall boundary
+          b.vx = -Math.abs(b.vx); // Force leftward
+          if (Math.abs(b.vx) < 1.5) b.vx = -2.4; // Anti-jitter kick
+          sndHit(300);
+        }
 
+        // Top Wall
+        if (b.y - b.r <= 0) {
+          b.y = b.r + 1; // Snap down
+          b.vy = Math.abs(b.vy); // Force downward
+          sndHit(300);
+        }
+
+        // Paddle Collision
         if (b.y + b.r >= retro.paddle.y && b.y - b.r <= retro.paddle.y + retro.paddle.h && b.x >= retro.paddle.x && b.x <= retro.paddle.x + retro.paddle.w && b.vy > 0) {
           sndPaddle();
           const hit = (b.x - (retro.paddle.x + retro.paddle.w / 2)) / (retro.paddle.w / 2);
@@ -733,6 +809,7 @@
           b.y = retro.paddle.y - b.r;
         }
 
+        // Brick Collision
         for (let brk of retro.bricks) {
           if (!brk.alive) continue;
           if (b.x + b.r > brk.x && b.x - b.r < brk.x + brk.w && b.y + b.r > brk.y && b.y - b.r < brk.y + brk.h) {
@@ -807,7 +884,7 @@
     }
 
     // =====================================
-    // SWARM GAMEPLAY UPDATE
+    // SWARM GAMEPLAY UPDATE (WITH FIXED WALL PHYSICS!)
     // =====================================
     function updateSwarmEngine() {
       if (swarm.launching && swarm.launchedCount < swarm.ballCount) {
@@ -837,9 +914,10 @@
           b.x += b.vx;
           b.y += b.vy;
 
-          if (b.x - b.r < 0) { b.x = b.r; b.vx *= -1; }
-          if (b.x + b.r > W) { b.x = W - b.r; b.vx *= -1; }
-          if (b.y - b.r < 0) { b.y = b.r; b.vy *= -1; }
+          /* --- SAFE WALL SNAPPING IN SWARM MODE --- */
+          if (b.x - b.r <= 0) { b.x = b.r + 1; b.vx = Math.abs(b.vx); }
+          else if (b.x + b.r >= W) { b.x = W - b.r - 1; b.vx = -Math.abs(b.vx); }
+          if (b.y - b.r <= 0) { b.y = b.r + 1; b.vy = Math.abs(b.vy); }
 
           for (let brk of swarm.bricks) {
             if (!brk.alive) continue;
@@ -1173,12 +1251,14 @@
       gameoverScreen.style.display = 'none';
       overlay.style.display = 'flex';
       gameState = 'MENU';
+      triggerCrazyGamesStop();
     });
 
     hudMenuBtn.addEventListener('click', () => {
       gameState = 'MENU';
       gameoverScreen.style.display = 'none';
       overlay.style.display = 'flex';
+      triggerCrazyGamesStop();
     });
 
     draw();
