@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>StoneBuilt Arcade - Neon Breaker Suite</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>StoneBuilt Arcade - Neon Breakout</title>
+  
+  <!-- CrazyGames SDK v3 Universal -->
+  <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -12,1176 +16,861 @@
       user-select: none;
       -webkit-user-select: none;
     }
-    html, body {
-      width: 100%;
-      height: 100%;
-      background-color: #05070f;
+
+    body {
+      background-color: #05050d;
       color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
+      min-height: 100vh;
       overflow: hidden;
-      touch-action: none;
     }
-    #cabinet {
+
+    #arcade-container {
       position: relative;
-      width: 100%;
+      width: 100vw;
       max-width: 480px;
-      height: 100%;
-      max-height: 780px;
-      background: #080b16;
-      border: 2px solid #00f0ff44;
-      box-shadow: 0 0 35px rgba(0, 240, 255, 0.25);
+      height: 100vh;
+      max-height: 820px;
+      background: radial-gradient(circle at 50% 30%, #0d1226 0%, #04060e 100%);
+      border: 2px solid #00f0ff33;
+      box-shadow: 0 0 30px #00f0ff22, inset 0 0 40px #ff007f11;
       display: flex;
       flex-direction: column;
     }
+
+    /* Top HUD Bar */
     #top-hud {
-      height: 50px;
-      width: 100%;
-      padding: 0 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #0b0f1e;
-      border-bottom: 2px solid #00f0ff33;
-      font-size: 12px;
-      font-weight: 800;
+      padding: 10px 14px;
+      background: rgba(5, 7, 18, 0.85);
+      border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+      font-family: "Courier New", Courier, monospace;
+      font-size: 13px;
+      font-weight: bold;
       letter-spacing: 1px;
       z-index: 10;
     }
-    .hud-accent {
+
+    .hud-val {
       color: #00f0ff;
-      font-family: monospace;
-      font-size: 15px;
     }
-    .hud-gold {
-      color: #ffe600;
-      font-family: monospace;
-      font-size: 14px;
-      font-weight: 900;
-      text-shadow: 0 0 8px rgba(255, 230, 0, 0.4);
+    .hud-val-gold {
+      color: #ffd700;
     }
-    .hud-btn-group {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-    .hud-ctrl-btn {
-      background: #141b30;
-      border: 1px solid #00f0ff66;
-      color: #00f0ff;
-      padding: 6px 10px;
-      border-radius: 6px;
+
+    .hud-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      color: #fff;
+      padding: 4px 9px;
+      border-radius: 4px;
       font-size: 11px;
-      font-weight: 800;
       cursor: pointer;
+      font-weight: bold;
+      transition: all 0.15s;
     }
-    .hud-ctrl-btn:active {
-      background: #00f0ff;
-      color: #080b16;
+    .hud-btn:hover {
+      background: rgba(0, 240, 255, 0.25);
     }
-    #canvas-wrap {
-      position: relative;
-      flex: 1;
-      width: 100%;
-      overflow: hidden;
-    }
+
     canvas {
+      flex: 1;
       width: 100%;
       height: 100%;
       display: block;
       touch-action: none;
+      cursor: none;
     }
-    #overlay, #gameover-screen {
+
+    /* UI Modals / Overlays */
+    .overlay {
       position: absolute;
       inset: 0;
-      background: rgba(6, 8, 16, 0.95);
+      background: rgba(3, 5, 14, 0.90);
+      backdrop-filter: blur(6px);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      z-index: 20;
       padding: 24px;
-      z-index: 100;
       text-align: center;
     }
-    .brand-eyebrow {
-      font-size: 11px;
-      font-weight: 800;
+
+    .overlay.hidden {
+      display: none;
+    }
+
+    .game-title {
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #00f0ff;
+      text-shadow: 0 0 15px #00f0ff, 0 0 30px #ff007f;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .game-subtitle {
+      font-size: 12px;
       color: #ff007f;
       letter-spacing: 3px;
+      margin-bottom: 24px;
       text-transform: uppercase;
-      margin-bottom: 6px;
+      font-weight: bold;
     }
-    .main-title {
-      font-size: 30px;
+
+    .score-banner {
+      font-size: 44px;
       font-weight: 900;
-      color: #00f0ff;
-      text-shadow: 0 0 18px #00f0ff;
-      letter-spacing: 2px;
-      margin-bottom: 6px;
-    }
-    .menu-sub {
-      font-size: 12px;
-      color: #94a3b8;
-      margin-bottom: 22px;
-    }
-    .menu-button-stack {
-      width: 100%;
-      max-width: 320px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .menu-card-btn {
-      background: #0e1424;
-      border: 2px solid;
-      border-radius: 12px;
-      padding: 16px;
-      text-align: left;
-      cursor: pointer;
-      display: block;
-      width: 100%;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-      transition: transform 0.1s, box-shadow 0.2s;
-    }
-    .menu-card-btn:active {
-      transform: scale(0.97);
-    }
-    .card-retro {
-      border-color: #ff007f;
-    }
-    .card-retro:hover {
-      box-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
-    }
-    .card-swarm {
-      border-color: #00f0ff;
-    }
-    .card-swarm:hover {
-      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
-    }
-    .btn-header {
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: 1px;
+      color: #ffd700;
+      font-family: "Courier New", Courier, monospace;
+      text-shadow: 0 0 20px #ffd70088;
       margin-bottom: 4px;
     }
-    .btn-body {
-      font-size: 11px;
-      color: #94a3b8;
-      line-height: 1.4;
-    }
-    .gameover-val {
-      font-size: 40px;
-      font-weight: 900;
-      color: #ffe600;
-      font-family: monospace;
-      margin-bottom: 8px;
-    }
-    .hi-score-tag {
-      font-size: 13px;
-      color: #00f0ff;
-      font-family: monospace;
-      margin-bottom: 20px;
-    }
-    .action-btn {
-      background: #00f0ff;
-      color: #060810;
-      border: none;
-      padding: 14px 28px;
-      font-size: 15px;
-      font-weight: 800;
-      border-radius: 8px;
-      cursor: pointer;
-      width: 100%;
-      max-width: 240px;
-      margin-bottom: 12px;
-    }
-    .sub-action-btn {
-      background: transparent;
-      border: 1px solid #64748b;
-      color: #94a3b8;
-      padding: 10px 20px;
+
+    .best-banner {
       font-size: 12px;
-      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+    }
+
+    .btn-main {
+      width: 240px;
+      padding: 14px 20px;
+      margin: 8px 0;
+      border: 1px solid #00f0ff;
+      background: linear-gradient(135deg, #00f0ff22, #ff007f33);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 2px;
       border-radius: 6px;
       cursor: pointer;
-      width: 100%;
-      max-width: 240px;
+      text-transform: uppercase;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+      transition: all 0.15s ease;
+    }
+    .btn-main:hover {
+      background: linear-gradient(135deg, #00f0ff55, #ff007f66);
+      transform: scale(1.02);
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.6);
+    }
+
+    .btn-secondary {
+      width: 240px;
+      padding: 11px 16px;
+      margin: 6px 0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
     }
   </style>
 </head>
 <body>
 
-  <div id="cabinet">
+  <div id="arcade-container">
     <!-- Top HUD -->
     <div id="top-hud">
-      <div>SCORE: <span id="hud-score" class="hud-accent">0</span></div>
-      <div>BEST: <span id="hud-best" class="hud-gold">0</span></div>
-      <div id="hud-center">MODE: <span id="hud-mode" class="hud-accent">ARCADE</span></div>
-      <div class="hud-btn-group">
-        <button id="hud-mute-btn" class="hud-ctrl-btn" title="Toggle Sound">🔊</button>
-        <button id="hud-speed-btn" class="hud-ctrl-btn" style="display:none;">1X</button>
-        <button id="hud-menu-btn" class="hud-ctrl-btn">MENU</button>
+      <div>SCORE: <span id="hud-score" class="hud-val">0</span></div>
+      <div>BEST: <span id="hud-best" class="hud-val-gold">0</span></div>
+      <div>BALLS: <span id="hud-balls" class="hud-val">1</span></div>
+      <div style="display: flex; gap: 6px;">
+        <button id="btn-sound" class="hud-btn">🔊</button>
+        <button id="btn-speed" class="hud-btn">1X</button>
+        <button id="btn-menu" class="hud-btn">MENU</button>
       </div>
     </div>
 
-    <!-- Playfield Canvas Area -->
-    <div id="canvas-wrap">
-      <canvas id="gameCanvas" width="460" height="700"></canvas>
+    <!-- Canvas Game Board -->
+    <canvas id="gameCanvas"></canvas>
 
-      <!-- Main Menu Screen -->
-      <div id="overlay">
-        <div class="brand-eyebrow">StoneBuilt Entertainment</div>
-        <div class="main-title">Neon Breaker</div>
-        <div class="menu-sub">Choose Your Arcade Engine</div>
-
-        <div class="menu-button-stack">
-          <button id="btn-retro" class="menu-card-btn card-retro">
-            <div class="btn-header" style="color:#ff007f;">🕹️ CLASSIC RETRO</div>
-            <div class="btn-body">Paddle controls, falling lasers/multiball, and authentic 80s brick physics.</div>
-          </button>
-
-          <button id="btn-swarm" class="menu-card-btn card-swarm">
-            <div class="btn-header" style="color:#00f0ff;">⚡ MODERN SWARM</div>
-            <div class="btn-body">Bank-shot aiming laser, dense micro-bricks, and explosive TNT chain reactions.</div>
-          </button>
-        </div>
+    <!-- Main Menu: Select Classic or Modern Swarm -->
+    <div id="menu-overlay" class="overlay">
+      <div class="game-title">StoneBuilt Arcade</div>
+      <div class="game-subtitle">Neon Breakout</div>
+      
+      <!-- The Two Game Mode Buttons -->
+      <button id="btn-mode-classic" class="btn-main" style="border-color: #ffd700; box-shadow: 0 0 15px #ffd70044;">Classic Mode</button>
+      <button id="btn-mode-swarm" class="btn-main">Modern Swarm Mode</button>
+      
+      <div style="margin-top: 15px; font-size: 11px; color: #64748b; letter-spacing: 1px;">
+        CONTROLS: TOUCH DRAG OR MOUSE
       </div>
+    </div>
 
-      <!-- Game Over Screen -->
-      <div id="gameover-screen" style="display:none;">
-        <div class="brand-eyebrow" style="color:#ff007f;">GAME OVER</div>
-        <div id="gameover-mode-label" class="main-title" style="font-size:22px; color:#fff;">FINAL SCORE</div>
-        <div id="gameover-score-val" class="gameover-val">0</div>
-        <div id="gameover-best-tag" class="hi-score-tag">ALL-TIME BEST: 0</div>
-        <button id="btn-restart" class="action-btn">PLAY AGAIN</button>
-        <button id="btn-to-menu" class="sub-action-btn">RETURN TO MENU</button>
-      </div>
+    <!-- Game Over Overlay -->
+    <div id="gameover-overlay" class="overlay hidden">
+      <div style="font-size: 12px; color: #ff007f; letter-spacing: 2px; font-weight: bold; margin-bottom: 4px;">GAME OVER</div>
+      <div id="gameover-title" class="game-title" style="font-size: 20px;">Game Over</div>
+      <div id="final-score" class="score-banner">0</div>
+      <div id="final-best" class="best-banner">ALL-TIME BEST: 0</div>
+      <button id="btn-play-again" class="btn-main">Play Again</button>
+      <button id="btn-return-menu" class="btn-secondary">Return to Menu</button>
     </div>
   </div>
 
   <script>
-    // --- SYNTHESIZED 8-BIT AUDIO ---
-    let audioCtx = null;
-    let isMuted = false;
+    /* ==============================================================
+       1. CRAZYGAMES SDK v3 INTEGRATION (UNIVERSAL & TEST-READY)
+       ============================================================== */
+    let crazyGamesReady = false;
 
-    function playTone(freq, type = 'sine', duration = 0.08, vol = 0.1) {
-      if (isMuted) return;
-      try {
-        const AudioClass = window.AudioContext || window.webkitAudioContext;
-        if (!audioCtx) audioCtx = new AudioClass();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-      } catch (e) {}
-    }
-
-    const sndHit = (f = 460) => playTone(f, 'triangle', 0.05, 0.12);
-    const sndPaddle = () => playTone(380, 'sine', 0.08, 0.15);
-    const sndLaser = () => playTone(920, 'sawtooth', 0.09, 0.08);
-    const sndPower = () => playTone(780, 'square', 0.16, 0.1);
-    const sndBomb = () => playTone(110, 'sawtooth', 0.35, 0.22);
-    const sndDie = () => playTone(140, 'sawtooth', 0.4, 0.15);
-
-    // --- DOM REFERENCES ---
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const overlay = document.getElementById('overlay');
-    const gameoverScreen = document.getElementById('gameover-screen');
-    const hudScore = document.getElementById('hud-score');
-    const hudBest = document.getElementById('hud-best');
-    const hudMode = document.getElementById('hud-mode');
-    const hudCenter = document.getElementById('hud-center');
-    const hudMuteBtn = document.getElementById('hud-mute-btn');
-    const hudSpeedBtn = document.getElementById('hud-speed-btn');
-    const hudMenuBtn = document.getElementById('hud-menu-btn');
-    const gameoverScoreVal = document.getElementById('gameover-score-val');
-    const gameoverModeLabel = document.getElementById('gameover-mode-label');
-    const gameoverBestTag = document.getElementById('gameover-best-tag');
-
-    const W = 460;
-    const H = 700;
-
-    let gameState = 'MENU';
-    let score = 0;
-
-    // --- PERSISTENT HIGH SCORE ENGINE ---
-    let hiScore = 0;
-    try {
-      hiScore = parseInt(localStorage.getItem('sbc_neon_hiscore') || '0', 10);
-      if (isNaN(hiScore)) hiScore = 0;
-    } catch (e) {
-      hiScore = 0;
-    }
-    hudBest.textContent = hiScore;
-
-    function addScore(points) {
-      score += points;
-      hudScore.textContent = score;
-
-      // Update High Score LIVE on every hit!
-      if (score > hiScore) {
-        hiScore = score;
-        hudBest.textContent = hiScore;
+    async function initCrazyGames() {
+      if (window.CrazyGames && window.CrazyGames.SDK) {
         try {
-          localStorage.setItem('sbc_neon_hiscore', hiScore.toString());
+          await window.CrazyGames.SDK.init();
+          crazyGamesReady = true;
+          console.log("CrazyGames SDK v3 initialized successfully!");
+        } catch (e) {
+          console.log("CrazyGames test/standalone mode:", e);
+        }
+      }
+    }
+    initCrazyGames();
+
+    function triggerCrazyGamesGameplayStart() {
+      if (crazyGamesReady && window.CrazyGames?.SDK?.game) {
+        try {
+          window.CrazyGames.SDK.game.gameplayStart();
         } catch (e) {}
       }
     }
 
-    let particles = [];
-    let popups = [];
-
-    // Screen Shake
-    let shakeTimer = 0;
-    let shakeMag = 0;
-
-    function triggerShake(magnitude = 6, duration = 12) {
-      shakeMag = magnitude;
-      shakeTimer = duration;
+    function triggerCrazyGamesGameplayStop() {
+      if (crazyGamesReady && window.CrazyGames?.SDK?.game) {
+        try {
+          window.CrazyGames.SDK.game.gameplayStop();
+        } catch (e) {}
+      }
     }
 
-    function addPopup(x, y, text, color = '#00f0ff') {
-      popups.push({
+    function triggerCrazyGamesAd() {
+      if (crazyGamesReady && window.CrazyGames?.SDK?.ad) {
+        try {
+          window.CrazyGames.SDK.ad.requestAd("midroll", {
+            adStarted: () => console.log("CrazyGames Ad started"),
+            adFinished: () => console.log("CrazyGames Ad finished"),
+            adError: (err) => console.log("CrazyGames Ad error/skipped:", err)
+          });
+        } catch (e) {
+          console.log("Ad request skipped in test mode:", e);
+        }
+      }
+    }
+
+    /* ==============================================================
+       2. RETRO SYNTH AUDIO (ZERO EXTERNAL DOWNLOADS)
+       ============================================================== */
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.08, vol = 0.15) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(vol, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    const soundHitPaddle = () => playTone(340, 'triangle', 0.08, 0.2);
+    const soundHitBrick = (pitchMult = 1) => playTone(480 * pitchMult, 'square', 0.06, 0.12);
+    const soundPowerup = () => playTone(880, 'sine', 0.25, 0.25);
+    const soundGameOver = () => {
+      playTone(280, 'sawtooth', 0.2, 0.25);
+      setTimeout(() => playTone(180, 'sawtooth', 0.4, 0.25), 180);
+    };
+
+    /* ==============================================================
+       3. CORE ENGINE & MODES (CLASSIC + MODERN SWARM)
+       ============================================================== */
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // UI elements
+    const hudScore = document.getElementById("hud-score");
+    const hudBest = document.getElementById("hud-best");
+    const hudBalls = document.getElementById("hud-balls");
+    const menuOverlay = document.getElementById("menu-overlay");
+    const gameOverOverlay = document.getElementById("gameover-overlay");
+    const gameoverTitle = document.getElementById("gameover-title");
+    const finalScore = document.getElementById("final-score");
+    const finalBest = document.getElementById("final-best");
+    const btnSound = document.getElementById("btn-sound");
+    const btnSpeed = document.getElementById("btn-speed");
+    const btnMenu = document.getElementById("btn-menu");
+    const btnModeClassic = document.getElementById("btn-mode-classic");
+    const btnModeSwarm = document.getElementById("btn-mode-swarm");
+    const btnPlayAgain = document.getElementById("btn-play-again");
+    const btnReturnMenu = document.getElementById("btn-return-menu");
+
+    let width = 0;
+    let height = 0;
+    let score = 0;
+    let activeMode = "SWARM"; // "CLASSIC" or "SWARM"
+    let bestScore = parseInt(localStorage.getItem("stonebuilt_breakout_best") || "0", 10);
+    hudBest.textContent = bestScore;
+
+    let gameState = "MENU"; // MENU, PLAYING, GAMEOVER
+    let gameSpeedMultiplier = 1.0;
+
+    // Screen Shake & Particles
+    let shakeDuration = 0;
+    let shakeIntensity = 0;
+    let particles = [];
+
+    // Paddle
+    const paddle = {
+      x: 0,
+      y: 0,
+      w: 90,
+      h: 12,
+      targetX: 0
+    };
+
+    // Balls array
+    let balls = [];
+    const BALL_RADIUS = 5;
+
+    // Power-ups
+    let powerUps = [];
+
+    // Bricks Grid
+    const brickConfig = {
+      rows: 6,
+      cols: 7,
+      padding: 6,
+      offsetTop: 60,
+      h: 18,
+      w: 0
+    };
+    let bricks = [];
+
+    const NEON_COLORS = [
+      { border: "#ff007f", fill: "#ff007f33", glow: "#ff007f", pts: 50 },
+      { border: "#00f0ff", fill: "#00f0ff33", glow: "#00f0ff", pts: 40 },
+      { border: "#ffd700", fill: "#ffd70033", glow: "#ffd700", pts: 30 },
+      { border: "#39ff14", fill: "#39ff1433", glow: "#39ff14", pts: 20 },
+      { border: "#bf00ff", fill: "#bf00ff33", glow: "#bf00ff", pts: 10 }
+    ];
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width;
+      canvas.height = height;
+
+      paddle.y = height - 34;
+      if (paddle.x === 0) paddle.x = (width - paddle.w) / 2;
+      paddle.targetX = paddle.x;
+
+      brickConfig.w = (width - (brickConfig.padding * (brickConfig.cols + 1))) / brickConfig.cols;
+    }
+    window.addEventListener("resize", resize);
+    window.addEventListener("load", resize);
+
+    function initBricks() {
+      bricks = [];
+      for (let r = 0; r < brickConfig.rows; r++) {
+        const color = NEON_COLORS[r % NEON_COLORS.length];
+        for (let c = 0; c < brickConfig.cols; c++) {
+          const bx = brickConfig.padding + c * (brickConfig.w + brickConfig.padding);
+          const by = brickConfig.offsetTop + r * (brickConfig.h + brickConfig.padding);
+          bricks.push({
+            x: bx,
+            y: by,
+            w: brickConfig.w,
+            h: brickConfig.h,
+            alive: true,
+            color: color
+          });
+        }
+      }
+    }
+
+    function createBall(x, y, vx, vy) {
+      return {
         x: x,
         y: y,
-        text: text,
-        color: color,
-        life: 1.0,
-        vy: -1.6
-      });
-    }
-
-    // =====================================
-    // 1. CLASSIC RETRO ENGINE
-    // =====================================
-    const retro = {
-      lives: 3,
-      level: 1,
-      paddle: { w: 85, h: 12, x: 187, y: 655, hasLasers: false },
-      balls: [],
-      bricks: [],
-      powerUps: [],
-      lasers: []
-    };
-
-    function startRetro() {
-      gameState = 'PLAYING_RETRO';
-      hudMode.textContent = 'RETRO';
-      hudSpeedBtn.style.display = 'none';
-      score = 0;
-      hudScore.textContent = score;
-      hudBest.textContent = hiScore;
-      retro.lives = 3;
-      retro.level = 1;
-      hudCenter.innerHTML = `LIVES: <span style="color:#ff007f;">❤️❤️❤️</span>`;
-      initRetroBricks();
-      resetRetroBall();
-      overlay.style.display = 'none';
-      gameoverScreen.style.display = 'none';
-    }
-
-    function initRetroBricks() {
-      retro.bricks = [];
-      const cols = 7, rows = 6;
-      const pad = 6;
-      const bW = (W - (pad * (cols + 1))) / cols;
-      const bH = 16;
-      const colors = ['#ff007f', '#ff5500', '#ffe600', '#39ff14', '#00f0ff', '#b026ff'];
-
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          retro.bricks.push({
-            x: pad + c * (bW + pad),
-            y: 40 + r * (bH + pad),
-            w: bW,
-            h: bH,
-            color: colors[r % colors.length],
-            hp: (retro.level >= 2 && r === 0) ? 2 : 1,
-            alive: true
-          });
-        }
-      }
-    }
-
-    function resetRetroBall() {
-      retro.paddle.w = 85;
-      retro.paddle.hasLasers = false;
-      retro.paddle.x = (W - 85) / 2;
-      retro.balls = [{
-        x: W / 2,
-        y: H - 55,
-        vx: 3.5 * (Math.random() > 0.5 ? 1 : -1),
-        vy: -5,
-        r: 6,
-        stuck: true,
+        vx: vx,
+        vy: vy,
+        r: BALL_RADIUS,
         trail: []
-      }];
+      };
     }
 
-    // =====================================
-    // 2. MODERN SWARM ENGINE
-    // =====================================
-    const SWARM_COLS = 16; 
-    const SWARM_PAD = 3;
-    const SWARM_BW = (W - (SWARM_PAD * (SWARM_COLS + 1))) / SWARM_COLS;
-    const SWARM_BH = 17;
-
-    const swarm = {
-      level: 1,
-      ballCount: 5,
-      balls: [],
-      bricks: [],
-      pickups: [],
-      shooter: { x: W / 2, y: H - 30 },
-      aiming: false,
-      aimAngle: -Math.PI / 2,
-      launching: false,
-      launchTimer: 0,
-      launchedCount: 0,
-      ballsReturned: 0,
-      newShooterX: null,
-      speed: 1
-    };
-
-    function startSwarm() {
-      gameState = 'PLAYING_SWARM';
-      hudMode.textContent = 'SWARM';
-      hudSpeedBtn.style.display = 'block';
-      hudSpeedBtn.textContent = '1X';
-      swarm.speed = 1;
-      score = 0;
-      hudScore.textContent = score;
-      hudBest.textContent = hiScore;
-      swarm.level = 1;
-      swarm.ballCount = 5;
-      swarm.balls = [];
-      swarm.shooter.x = W / 2;
-      swarm.shooter.y = H - 30;
-      swarm.aiming = false;
-      swarm.launching = false;
-      hudCenter.innerHTML = `BALLS: <span class="hud-accent">${swarm.ballCount}</span>`;
-      swarm.bricks = [];
-      swarm.pickups = [];
-
-      for (let i = 0; i < 5; i++) {
-        addSwarmWave();
-      }
-
-      overlay.style.display = 'none';
-      gameoverScreen.style.display = 'none';
+    function triggerScreenShake(duration = 10, intensity = 6) {
+      shakeDuration = duration;
+      shakeIntensity = intensity;
     }
 
-    function addSwarmWave() {
-      for (let b of swarm.bricks) b.row++;
-      for (let p of swarm.pickups) p.row++;
-
-      let spawnedPickup = false;
-
-      for (let c = 0; c < SWARM_COLS; c++) {
-        const rand = Math.random();
-        if (rand < 0.46) {
-          let hp = 1;
-          if (swarm.level === 1) {
-            hp = Math.random() < 0.35 ? 2 : 1;
-          } else {
-            hp = Math.max(1, Math.round(swarm.level * (0.8 + Math.random() * 1.2)));
-          }
-
-          const isTNT = Math.random() < 0.08;
-          swarm.bricks.push({
-            c: c,
-            row: 1,
-            w: SWARM_BW,
-            h: SWARM_BH,
-            hp: hp,
-            maxHp: hp,
-            isTNT: isTNT,
-            alive: true
-          });
-        } else if (!spawnedPickup && rand < 0.52) {
-          spawnedPickup = true;
-          swarm.pickups.push({
-            c: c,
-            row: 1,
-            w: SWARM_BW,
-            h: SWARM_BH,
-            collected: false
-          });
-        }
-      }
-    }
-
-    function getBrickColors(hp, isTNT) {
-      if (isTNT) return { fill: '#ff4400', border: '#ffaa00', text: '#fff' };
-      if (hp <= 2) return { fill: '#0a1d37', border: '#00f0ff', text: '#00f0ff' };
-      if (hp <= 6) return { fill: '#0b2b26', border: '#39ff14', text: '#39ff14' };
-      if (hp <= 14) return { fill: '#332a05', border: '#ffe600', text: '#ffe600' };
-      if (hp <= 28) return { fill: '#331122', border: '#ff007f', text: '#ff007f' };
-      return { fill: '#280d38', border: '#b026ff', text: '#b026ff' };
-    }
-
-    function spawnSparks(x, y, color, count = 8) {
-      for (let i = 0; i < count; i++) {
+    function createExplosion(x, y, color) {
+      for (let i = 0; i < 14; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const spd = (Math.random() * 4 + 1.5) * gameSpeedMultiplier;
         particles.push({
           x: x,
           y: y,
-          vx: (Math.random() - 0.5) * 8,
-          vy: (Math.random() - 0.5) * 8,
-          r: Math.random() * 2 + 1,
+          vx: Math.cos(angle) * spd,
+          vy: Math.sin(angle) * spd,
+          life: 25 + Math.random() * 15,
+          maxLife: 40,
           color: color,
-          life: 1
+          size: Math.random() * 2.5 + 1.5
         });
       }
     }
 
-    // =====================================
-    // TOUCH & POINTER INPUTS
-    // =====================================
-    function getCanvasCoords(e) {
+    function spawnPowerUp(x, y) {
+      // In Classic Mode, NO swarm power-ups (pure 1-ball classic!). Only expand paddle.
+      if (activeMode === "CLASSIC") {
+        if (Math.random() < 0.15) {
+          powerUps.push({ x: x, y: y, vy: 2.2 * gameSpeedMultiplier, type: "EXPAND", r: 9 });
+        }
+        return;
+      }
+
+      // In Modern Swarm Mode: Multi-ball swarms and paddle expand!
+      if (Math.random() < 0.28) {
+        const types = ["SWARM", "EXPAND", "SWARM"];
+        const chosen = types[Math.floor(Math.random() * types.length)];
+        powerUps.push({
+          x: x,
+          y: y,
+          vy: 2.2 * gameSpeedMultiplier,
+          type: chosen,
+          r: 9
+        });
+      }
+    }
+
+    function startNewGame(mode = "SWARM") {
+      activeMode = mode;
+      resize();
+      score = 0;
+      hudScore.textContent = score;
+      gameSpeedMultiplier = 1.0;
+      btnSpeed.textContent = "1X";
+      powerUps = [];
+      particles = [];
+
+      paddle.w = activeMode === "CLASSIC" ? 85 : 90;
+      paddle.x = (width - paddle.w) / 2;
+      paddle.targetX = paddle.x;
+
+      initBricks();
+
+      // Launch initial ball
+      balls = [
+        createBall(
+          width / 2,
+          paddle.y - 12,
+          (Math.random() > 0.5 ? 3.2 : -3.2),
+          -4.5
+        )
+      ];
+
+      hudBalls.textContent = balls.length;
+      gameState = "PLAYING";
+
+      menuOverlay.classList.add("hidden");
+      gameOverOverlay.classList.add("hidden");
+
+      // Notify CrazyGames gameplay started (works for both modes!)
+      triggerCrazyGamesGameplayStart();
+    }
+
+    function triggerGameOver() {
+      gameState = "GAMEOVER";
+      soundGameOver();
+      triggerScreenShake(20, 10);
+
+      // Stop CrazyGames gameplay & trigger ad (works for both modes!)
+      triggerCrazyGamesGameplayStop();
+      triggerCrazyGamesAd();
+
+      // Save Best Score
+      if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem("stonebuilt_breakout_best", bestScore);
+        hudBest.textContent = bestScore;
+      }
+
+      // Set Title based on which mode you were playing
+      if (activeMode === "CLASSIC") {
+        gameoverTitle.textContent = "Classic Game Over";
+      } else {
+        gameoverTitle.textContent = "Modern Swarm Game Over";
+      }
+
+      finalScore.textContent = score;
+      finalBest.textContent = `ALL-TIME BEST: ${bestScore}`;
+      gameOverOverlay.classList.remove("hidden");
+    }
+
+    /* ==============================================================
+       4. CONTROLS: MOUSE, TOUCH, KEYBOARD
+       ============================================================== */
+    function setPaddlePosition(clientX) {
       const rect = canvas.getBoundingClientRect();
-      const scaleX = W / rect.width;
-      const scaleY = H / rect.height;
-      let cx = e.clientX;
-      let cy = e.clientY;
-      if (e.touches && e.touches.length > 0) {
-        cx = e.touches[0].clientX;
-        cy = e.touches[0].clientY;
-      }
-      return {
-        x: (cx - rect.left) * scaleX,
-        y: (cy - rect.top) * scaleY
-      };
+      const relativeX = clientX - rect.left;
+      paddle.targetX = Math.max(0, Math.min(width - paddle.w, relativeX - paddle.w / 2));
     }
 
-    function updateAimAngle(pt) {
-      const dx = pt.x - swarm.shooter.x;
-      const dy = pt.y - swarm.shooter.y;
-      if (dy < -12) {
-        let angle = Math.atan2(dy, dx);
-        angle = Math.max(-Math.PI * 0.96, Math.min(-Math.PI * 0.04, angle));
-        swarm.aimAngle = angle;
-        swarm.aiming = true;
-      }
-    }
-
-    function onPointerDown(e) {
-      if (gameState === 'MENU') return;
-      const pt = getCanvasCoords(e);
-
-      if (gameState === 'PLAYING_RETRO') {
-        retro.paddle.x = Math.max(0, Math.min(W - retro.paddle.w, pt.x - retro.paddle.w / 2));
-        if (retro.balls[0] && retro.balls[0].stuck) {
-          retro.balls[0].stuck = false;
-          sndPaddle();
-        }
-        if (retro.paddle.hasLasers) {
-          sndLaser();
-          retro.lasers.push({ x: retro.paddle.x + 8, y: retro.paddle.y - 4, vy: -9 });
-          retro.lasers.push({ x: retro.paddle.x + retro.paddle.w - 8, y: retro.paddle.y - 4, vy: -9 });
-        }
-      } else if (gameState === 'PLAYING_SWARM') {
-        if (!swarm.launching) {
-          updateAimAngle(pt);
-        }
-      }
-    }
-
-    function onPointerMove(e) {
-      if (gameState === 'MENU') return;
-      const pt = getCanvasCoords(e);
-
-      if (gameState === 'PLAYING_RETRO') {
-        retro.paddle.x = Math.max(0, Math.min(W - retro.paddle.w, pt.x - retro.paddle.w / 2));
-        if (retro.balls[0] && retro.balls[0].stuck) {
-          retro.balls[0].x = retro.paddle.x + retro.paddle.w / 2;
-        }
-      } else if (gameState === 'PLAYING_SWARM') {
-        if (!swarm.launching && swarm.aiming) {
-          updateAimAngle(pt);
-        }
-      }
-    }
-
-    function onPointerUp() {
-      if (gameState === 'PLAYING_SWARM') {
-        if (swarm.aiming && !swarm.launching) {
-          swarm.aiming = false;
-          swarm.launching = true;
-          swarm.launchedCount = 0;
-          swarm.ballsReturned = 0;
-          swarm.launchTimer = 0;
-          swarm.balls = [];
-          swarm.newShooterX = null;
-        }
-      }
-    }
-
-    canvas.addEventListener('mousedown', onPointerDown);
-    window.addEventListener('mousemove', onPointerMove);
-    window.addEventListener('mouseup', onPointerUp);
-
-    canvas.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      onPointerDown(e);
-    }, { passive: false });
-
-    canvas.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      onPointerMove(e);
-    }, { passive: false });
-
-    window.addEventListener('touchend', () => {
-      onPointerUp();
+    canvas.addEventListener("mousemove", (e) => {
+      if (gameState === "PLAYING") setPaddlePosition(e.clientX);
     });
 
-    window.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
-        if (gameState === 'PLAYING_RETRO') {
-          if (retro.balls[0] && retro.balls[0].stuck) {
-            retro.balls[0].stuck = false;
-            sndPaddle();
+    canvas.addEventListener("touchmove", (e) => {
+      if (gameState === "PLAYING" && e.touches.length > 0) {
+        setPaddlePosition(e.touches[0].clientX);
+      }
+    }, { passive: true });
+
+    window.addEventListener("keydown", (e) => {
+      if (gameState === "PLAYING") {
+        if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
+          paddle.targetX = Math.max(0, paddle.targetX - 25);
+        } else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
+          paddle.targetX = Math.min(width - paddle.w, paddle.targetX + 25);
+        }
+      }
+    });
+
+    // Menu Buttons: Classic vs Modern Swarm
+    btnModeClassic.addEventListener("click", () => {
+      getAudioContext();
+      startNewGame("CLASSIC");
+    });
+
+    btnModeSwarm.addEventListener("click", () => {
+      getAudioContext();
+      startNewGame("SWARM");
+    });
+
+    btnPlayAgain.addEventListener("click", () => {
+      startNewGame(activeMode);
+    });
+
+    btnReturnMenu.addEventListener("click", () => {
+      gameState = "MENU";
+      gameOverOverlay.classList.add("hidden");
+      menuOverlay.classList.remove("hidden");
+      triggerCrazyGamesGameplayStop();
+    });
+
+    btnMenu.addEventListener("click", () => {
+      if (gameState === "PLAYING") {
+        triggerGameOver();
+      }
+    });
+
+    btnSound.addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+      btnSound.textContent = soundEnabled ? "🔊" : "🔇";
+    });
+
+    btnSpeed.addEventListener("click", () => {
+      if (gameSpeedMultiplier === 1.0) {
+        gameSpeedMultiplier = 1.5;
+        btnSpeed.textContent = "1.5X";
+      } else if (gameSpeedMultiplier === 1.5) {
+        gameSpeedMultiplier = 2.0;
+        btnSpeed.textContent = "2X";
+      } else {
+        gameSpeedMultiplier = 1.0;
+        btnSpeed.textContent = "1X";
+      }
+    });
+
+    /* ==============================================================
+       5. MAIN PHYSICS & ANIMATION LOOP
+       ============================================================== */
+    function update() {
+      if (gameState !== "PLAYING") return;
+
+      // Smooth paddle lerp
+      paddle.x += (paddle.targetX - paddle.x) * 0.35;
+
+      // Handle screen shake decay
+      if (shakeDuration > 0) shakeDuration--;
+
+      // Update particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life--;
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+
+      // Update power-ups
+      for (let i = powerUps.length - 1; i >= 0; i--) {
+        const pu = powerUps[i];
+        pu.y += pu.vy;
+
+        // Catch with paddle
+        if (
+          pu.y + pu.r >= paddle.y &&
+          pu.y - pu.r <= paddle.y + paddle.h &&
+          pu.x >= paddle.x &&
+          pu.x <= paddle.x + paddle.w
+        ) {
+          soundPowerup();
+
+          if (pu.type === "SWARM" && activeMode === "SWARM") {
+            // Multiply balls for swarm mode!
+            const newBalls = [];
+            balls.forEach(b => {
+              newBalls.push(createBall(b.x, b.y, b.vx + 1.8, b.vy - 0.5));
+              newBalls.push(createBall(b.x, b.y, b.vx - 1.8, b.vy - 0.5));
+            });
+            balls = balls.concat(newBalls);
+            if (balls.length > 35) balls = balls.slice(0, 35);
+          } else if (pu.type === "EXPAND") {
+            paddle.w = Math.min(140, paddle.w + 30);
           }
-          if (retro.paddle.hasLasers) {
-            sndLaser();
-            retro.lasers.push({ x: retro.paddle.x + 8, y: retro.paddle.y - 4, vy: -9 });
-            retro.lasers.push({ x: retro.paddle.x + retro.paddle.w - 8, y: retro.paddle.y - 4, vy: -9 });
-          }
+
+          powerUps.splice(i, 1);
+          continue;
         }
-      }
-      if (gameState === 'PLAYING_RETRO') {
-        if (e.code === 'ArrowLeft') retro.paddle.x = Math.max(0, retro.paddle.x - 32);
-        if (e.code === 'ArrowRight') retro.paddle.x = Math.min(W - retro.paddle.w, retro.paddle.x + 32);
-      }
-    });
 
-    hudMuteBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      isMuted = !isMuted;
-      hudMuteBtn.textContent = isMuted ? '🔇' : '🔊';
-    });
-
-    hudSpeedBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      swarm.speed = swarm.speed === 1 ? 2 : (swarm.speed === 2 ? 3 : 1);
-      hudSpeedBtn.textContent = swarm.speed + 'X';
-    });
-
-    function showGameOver(modeTitle) {
-      gameState = 'MENU';
-      gameoverModeLabel.textContent = `${modeTitle} GAME OVER`;
-      gameoverScoreVal.textContent = score;
-      gameoverBestTag.textContent = `ALL-TIME BEST: ${hiScore}`;
-      gameoverScreen.style.display = 'flex';
-    }
-
-    // =====================================
-    // RETRO GAMEPLAY UPDATE
-    // =====================================
-    function updateRetroEngine() {
-      retro.paddle.y = H - 28;
-
-      for (let i = retro.lasers.length - 1; i >= 0; i--) {
-        const l = retro.lasers[i];
-        l.y += l.vy;
-        if (l.y < 0) { retro.lasers.splice(i, 1); continue; }
-        for (let b of retro.bricks) {
-          if (b.alive && l.x > b.x && l.x < b.x + b.w && l.y > b.y && l.y < b.y + b.h) {
-            b.hp--;
-            if (b.hp <= 0) {
-              b.alive = false;
-              addScore(20);
-              spawnSparks(b.x + b.w / 2, b.y + b.h / 2, b.color);
-              addPopup(b.x + b.w / 2, b.y, '+20', '#ff007f');
-            }
-            sndHit(750);
-            retro.lasers.splice(i, 1);
-            break;
-          }
-        }
+        if (pu.y > height + 20) powerUps.splice(i, 1);
       }
 
-      for (let i = retro.balls.length - 1; i >= 0; i--) {
-        const b = retro.balls[i];
-        if (b.stuck) continue;
+      // Update balls
+      for (let i = balls.length - 1; i >= 0; i--) {
+        const b = balls[i];
 
-        if (!b.trail) b.trail = [];
+        // Store trail
         b.trail.push({ x: b.x, y: b.y });
         if (b.trail.length > 5) b.trail.shift();
 
-        b.x += b.vx;
-        b.y += b.vy;
+        // Move
+        b.x += b.vx * gameSpeedMultiplier;
+        b.y += b.vy * gameSpeedMultiplier;
 
-        if (b.x - b.r < 0 || b.x + b.r > W) { b.vx *= -1; sndHit(300); }
-        if (b.y - b.r < 0) { b.vy *= -1; sndHit(300); }
-
-        if (b.y + b.r >= retro.paddle.y && b.y - b.r <= retro.paddle.y + retro.paddle.h && b.x >= retro.paddle.x && b.x <= retro.paddle.x + retro.paddle.w && b.vy > 0) {
-          sndPaddle();
-          const hit = (b.x - (retro.paddle.x + retro.paddle.w / 2)) / (retro.paddle.w / 2);
-          const spd = Math.hypot(b.vx, b.vy);
-          b.vx = hit * 6;
-          b.vy = -Math.abs(Math.sqrt(Math.max(16, spd * spd - b.vx * b.vx)));
-          b.y = retro.paddle.y - b.r;
+        // Wall collisions
+        if (b.x - b.r <= 0) {
+          b.x = b.r;
+          b.vx = Math.abs(b.vx);
+          soundHitPaddle();
+        } else if (b.x + b.r >= width) {
+          b.x = width - b.r;
+          b.vx = -Math.abs(b.vx);
+          soundHitPaddle();
         }
 
-        for (let brk of retro.bricks) {
-          if (!brk.alive) continue;
-          if (b.x + b.r > brk.x && b.x - b.r < brk.x + brk.w && b.y + b.r > brk.y && b.y - b.r < brk.y + brk.h) {
-            brk.hp--;
-            if (brk.hp <= 0) {
-              brk.alive = false;
-              addScore(15);
-              spawnSparks(brk.x + brk.w / 2, brk.y + brk.h / 2, brk.color);
-              addPopup(brk.x + brk.w / 2, brk.y, '+15', '#00f0ff');
-              if (Math.random() < 0.22) {
-                const types = ['MULTI', 'LASER', 'WIDE'];
-                retro.powerUps.push({
-                  x: brk.x + brk.w / 2,
-                  y: brk.y + brk.h / 2,
-                  type: types[Math.floor(Math.random() * types.length)],
-                  vy: 2.2
-                });
-              }
-            }
-            sndHit(520);
-            b.vy *= -1;
+        // Top wall
+        if (b.y - b.r <= 0) {
+          b.y = b.r;
+          b.vy = Math.abs(b.vy);
+          soundHitPaddle();
+        }
+
+        // Paddle collision
+        if (
+          b.y + b.r >= paddle.y &&
+          b.y - b.r <= paddle.y + paddle.h &&
+          b.x >= paddle.x &&
+          b.x <= paddle.x + paddle.w
+        ) {
+          b.y = paddle.y - b.r;
+          const hitOffset = (b.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2);
+          const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+          b.vx = hitOffset * (speed * 0.95);
+          b.vy = -Math.sqrt(Math.max(1, speed * speed - b.vx * b.vx));
+
+          soundHitPaddle();
+        }
+
+        // Brick collision
+        for (let j = 0; j < bricks.length; j++) {
+          const br = bricks[j];
+          if (!br.alive) continue;
+
+          if (
+            b.x + b.r >= br.x &&
+            b.x - b.r <= br.x + br.w &&
+            b.y + b.r >= br.y &&
+            b.y - b.r <= br.y + br.h
+          ) {
+            br.alive = false;
+            b.vy = -b.vy;
+
+            score += br.color.pts;
+            hudScore.textContent = score;
+
+            soundHitBrick(1 + (score % 500) / 1000);
+            triggerScreenShake(7, 4);
+            createExplosion(br.x + br.w / 2, br.y + br.h / 2, br.color.border);
+            spawnPowerUp(br.x + br.w / 2, br.y + br.h / 2);
+
             break;
           }
         }
 
-        if (b.y - b.r > H) retro.balls.splice(i, 1);
-      }
-
-      if (retro.balls.length === 0) {
-        retro.lives--;
-        sndDie();
-        triggerShake(8, 14);
-        if (retro.lives <= 0) {
-          showGameOver('CLASSIC RETRO');
-          return;
-        } else {
-          let str = '';
-          for (let l = 0; l < retro.lives; l++) str += '❤️';
-          hudCenter.innerHTML = `LIVES: <span style="color:#ff007f;">${str}</span>`;
-          resetRetroBall();
+        // Bottom death
+        if (b.y - b.r > height) {
+          balls.splice(i, 1);
         }
       }
 
-      for (let i = retro.powerUps.length - 1; i >= 0; i--) {
-        const p = retro.powerUps[i];
-        p.y += p.vy;
-        if (p.y >= retro.paddle.y && p.y <= retro.paddle.y + retro.paddle.h && p.x >= retro.paddle.x && p.x <= retro.paddle.x + retro.paddle.w) {
-          sndPower();
-          if (p.type === 'WIDE') {
-            retro.paddle.w = 125;
-            setTimeout(() => { retro.paddle.w = 85; }, 9000);
-            addPopup(p.x, p.y - 10, 'WIDE PADDLE', '#ffe600');
-          } else if (p.type === 'LASER') {
-            retro.paddle.hasLasers = true;
-            addPopup(p.x, p.y - 10, 'LASERS ACTIVE', '#ff007f');
-          } else if (p.type === 'MULTI' && retro.balls[0]) {
-            retro.balls.push({ x: retro.balls[0].x, y: retro.balls[0].y, vx: -3, vy: -4, r: 6, stuck: false, trail: [] });
-            retro.balls.push({ x: retro.balls[0].x, y: retro.balls[0].y, vx: 3, vy: -4, r: 6, stuck: false, trail: [] });
-            addPopup(p.x, p.y - 10, 'MULTIBALL', '#39ff14');
-          }
-          retro.powerUps.splice(i, 1);
-        } else if (p.y > H) retro.powerUps.splice(i, 1);
+      hudBalls.textContent = balls.length;
+
+      // Check game over
+      if (balls.length === 0) {
+        triggerGameOver();
+        return;
       }
 
-      if (retro.bricks.length > 0 && retro.bricks.every(b => !b.alive)) {
-        retro.level++;
-        triggerShake(5, 10);
-        addPopup(W / 2, H / 2, 'LEVEL CLEAR!', '#39ff14');
-        initRetroBricks();
-        resetRetroBall();
+      // Check wave clear (Respawn bricks)
+      const remainingBricks = bricks.filter(b => b.alive).length;
+      if (remainingBricks === 0) {
+        initBricks();
+        triggerScreenShake(15, 7);
       }
     }
 
-    // =====================================
-    // SWARM GAMEPLAY UPDATE
-    // =====================================
-    function updateSwarmEngine() {
-      if (swarm.launching && swarm.launchedCount < swarm.ballCount) {
-        swarm.launchTimer++;
-        if (swarm.launchTimer % 3 === 0) {
-          const spd = 8.5;
-          swarm.balls.push({
-            x: swarm.shooter.x,
-            y: swarm.shooter.y,
-            vx: Math.cos(swarm.aimAngle) * spd,
-            vy: Math.sin(swarm.aimAngle) * spd,
-            r: 3.5,
-            trail: []
-          });
-          swarm.launchedCount++;
-        }
-      }
-
-      for (let s = 0; s < swarm.speed; s++) {
-        for (let i = swarm.balls.length - 1; i >= 0; i--) {
-          const b = swarm.balls[i];
-
-          if (!b.trail) b.trail = [];
-          b.trail.push({ x: b.x, y: b.y });
-          if (b.trail.length > 4) b.trail.shift();
-
-          b.x += b.vx;
-          b.y += b.vy;
-
-          if (b.x - b.r < 0) { b.x = b.r; b.vx *= -1; }
-          if (b.x + b.r > W) { b.x = W - b.r; b.vx *= -1; }
-          if (b.y - b.r < 0) { b.y = b.r; b.vy *= -1; }
-
-          for (let brk of swarm.bricks) {
-            if (!brk.alive) continue;
-            const bx = SWARM_PAD + brk.c * (SWARM_BW + SWARM_PAD);
-            const by = 40 + brk.row * (SWARM_BH + SWARM_PAD);
-
-            if (b.x + b.r > bx && b.x - b.r < bx + SWARM_BW && b.y + b.r > by && b.y - b.r < by + SWARM_BH) {
-              brk.hp--;
-              addScore(1);
-              sndHit(450 + Math.min(300, brk.hp * 8));
-
-              if (brk.isTNT && brk.hp <= 0) {
-                sndBomb();
-                triggerShake(10, 16);
-                spawnSparks(bx + SWARM_BW / 2, by + SWARM_BH / 2, '#ff5500', 35);
-                addPopup(bx + SWARM_BW / 2, by, 'BOOM!', '#ffaa00');
-
-                for (let other of swarm.bricks) {
-                  if (other.alive && Math.abs(other.c - brk.c) <= 1 && Math.abs(other.row - brk.row) <= 1) {
-                    other.hp -= 20;
-                    addScore(5);
-                    if (other.hp <= 0) other.alive = false;
-                  }
-                }
-              }
-
-              if (brk.hp <= 0) {
-                brk.alive = false;
-                spawnSparks(bx + SWARM_BW / 2, by + SWARM_BH / 2, '#00f0ff', 8);
-              }
-              b.vy *= -1;
-              break;
-            }
-          }
-
-          for (let p of swarm.pickups) {
-            if (p.collected) continue;
-            const px = SWARM_PAD + p.c * (SWARM_BW + SWARM_PAD) + SWARM_BW / 2;
-            const py = 40 + p.row * (SWARM_BH + SWARM_PAD) + SWARM_BH / 2;
-            if (Math.hypot(b.x - px, b.y - py) < 12) {
-              p.collected = true;
-              swarm.ballCount++;
-              sndPower();
-              spawnSparks(px, py, '#39ff14', 8);
-              addPopup(px, py - 6, '+1 BALL', '#39ff14');
-            }
-          }
-
-          if (b.y + b.r >= H - 15) {
-            if (swarm.newShooterX === null) swarm.newShooterX = b.x;
-            swarm.balls.splice(i, 1);
-            swarm.ballsReturned++;
-          }
-        }
-      }
-
-      if (swarm.launching && swarm.ballsReturned >= swarm.ballCount) {
-        swarm.launching = false;
-        swarm.shooter.x = Math.max(25, Math.min(W - 25, swarm.newShooterX || W / 2));
-        swarm.level++;
-        addSwarmWave();
-        hudCenter.innerHTML = `BALLS: <span class="hud-accent">${swarm.ballCount}</span>`;
-
-        for (let b of swarm.bricks) {
-          if (b.alive && b.row >= 26) {
-            triggerShake(12, 20);
-            showGameOver('MODERN SWARM');
-            return;
-          }
-        }
-      }
-    }
-
-    // =====================================
-    // DRAW LOOP
-    // =====================================
-    function draw() {
+    /* ==============================================================
+       6. RENDER LOOP (RETRO SYNTHWAVE)
+       ============================================================== */
+    function render() {
       ctx.save();
 
-      if (shakeTimer > 0) {
-        const sx = (Math.random() - 0.5) * shakeMag;
-        const sy = (Math.random() - 0.5) * shakeMag;
-        ctx.translate(sx, sy);
-        shakeTimer--;
+      if (shakeDuration > 0) {
+        const ox = (Math.random() - 0.5) * shakeIntensity;
+        const oy = (Math.random() - 0.5) * shakeIntensity;
+        ctx.translate(ox, oy);
       }
 
-      ctx.clearRect(0, 0, W, H);
+      ctx.clearRect(0, 0, width, height);
 
-      if (gameState === 'PLAYING_RETRO') {
-        for (let b of retro.bricks) {
-          if (!b.alive) continue;
-          ctx.fillStyle = b.color;
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = b.color;
-          ctx.fillRect(b.x, b.y, b.w, b.h);
-        }
-        ctx.shadowBlur = 0;
+      // Faint grid
+      ctx.strokeStyle = "rgba(0, 240, 255, 0.04)";
+      ctx.lineWidth = 1;
+      for (let x = 0; x < width; x += 30) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
 
-        ctx.fillStyle = retro.paddle.hasLasers ? '#ff007f' : '#00f0ff';
+      // Bricks
+      for (let i = 0; i < bricks.length; i++) {
+        const br = bricks[i];
+        if (!br.alive) continue;
+
+        ctx.shadowColor = br.color.glow;
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = br.color.fill;
+        ctx.strokeStyle = br.color.border;
+        ctx.lineWidth = 1.5;
+
+        ctx.fillRect(br.x, br.y, br.w, br.h);
+        ctx.strokeRect(br.x, br.y, br.w, br.h);
+      }
+
+      // Power-ups
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = "#ffd700";
+      powerUps.forEach(pu => {
+        ctx.fillStyle = pu.type === "SWARM" ? "#00f0ff" : "#ffd700";
+        ctx.beginPath();
+        ctx.arc(pu.x, pu.y, pu.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#05050d";
+        ctx.font = "9px bold sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(pu.type[0], pu.x, pu.y + 3);
+      });
+
+      // Particles
+      ctx.shadowBlur = 6;
+      particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color;
+        ctx.globalAlpha = p.life / p.maxLife;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1.0;
+
+      // Balls
+      balls.forEach(b => {
+        b.trail.forEach((t, idx) => {
+          ctx.beginPath();
+          ctx.arc(t.x, t.y, b.r * (idx / b.trail.length), 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 215, 0, ${idx * 0.12})`;
+          ctx.fill();
+        });
+
+        ctx.shadowColor = "#ffd700";
         ctx.shadowBlur = 14;
-        ctx.shadowColor = ctx.fillStyle;
-        ctx.fillRect(retro.paddle.x, retro.paddle.y, retro.paddle.w, retro.paddle.h);
-        ctx.shadowBlur = 0;
-
-        ctx.fillStyle = '#ff007f';
-        for (let l of retro.lasers) ctx.fillRect(l.x, l.y, 4, 10);
-
-        for (let p of retro.powerUps) {
-          ctx.fillStyle = p.type === 'LASER' ? '#ff007f' : (p.type === 'MULTI' ? '#39ff14' : '#ffe600');
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = '#060810';
-          ctx.font = 'bold 9px monospace';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(p.type[0], p.x, p.y);
-        }
-
-        for (let b of retro.balls) {
-          if (b.trail) {
-            for (let t = 0; t < b.trail.length; t++) {
-              const alpha = (t + 1) / b.trail.length * 0.45;
-              ctx.fillStyle = `rgba(255, 230, 0, ${alpha})`;
-              ctx.beginPath();
-              ctx.arc(b.trail[t].x, b.trail[t].y, b.r * 0.7, 0, Math.PI * 2);
-              ctx.fill();
-            }
-          }
-          ctx.fillStyle = '#ffe600';
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = '#ffe600';
-          ctx.beginPath();
-          ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.shadowBlur = 0;
-        }
-
-        updateRetroEngine();
-
-      } else if (gameState === 'PLAYING_SWARM') {
-        for (let b of swarm.bricks) {
-          if (!b.alive) continue;
-          const bx = SWARM_PAD + b.c * (SWARM_BW + SWARM_PAD);
-          const by = 40 + b.row * (SWARM_BH + SWARM_PAD);
-          const cStyle = getBrickColors(b.hp, b.isTNT);
-
-          ctx.fillStyle = cStyle.fill;
-          ctx.strokeStyle = cStyle.border;
-          ctx.lineWidth = 1.4;
-          ctx.shadowBlur = 6;
-          ctx.shadowColor = cStyle.border;
-          ctx.fillRect(bx, by, SWARM_BW, SWARM_BH);
-          ctx.strokeRect(bx, by, SWARM_BW, SWARM_BH);
-          ctx.shadowBlur = 0;
-
-          ctx.fillStyle = cStyle.text;
-          if (b.isTNT) {
-            ctx.font = 'bold 10px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('💣', bx + SWARM_BW / 2, by + SWARM_BH / 2);
-          } else {
-            ctx.font = 'bold 8.5px monospace';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(b.hp, bx + SWARM_BW / 2, by + SWARM_BH / 2);
-          }
-        }
-
-        for (let p of swarm.pickups) {
-          if (p.collected) continue;
-          const px = SWARM_PAD + p.c * (SWARM_BW + SWARM_PAD) + SWARM_BW / 2;
-          const py = 40 + p.row * (SWARM_BH + SWARM_PAD) + SWARM_BH / 2;
-          ctx.fillStyle = '#39ff14';
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = '#39ff14';
-          ctx.beginPath();
-          ctx.arc(px, py, 6, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.shadowBlur = 0;
-          ctx.fillStyle = '#060810';
-          ctx.font = 'bold 8px monospace';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('+', px, py);
-        }
-
-        if (swarm.aiming && !swarm.launching) {
-          let curX = swarm.shooter.x;
-          let curY = swarm.shooter.y;
-          let dirX = Math.cos(swarm.aimAngle);
-          let dirY = Math.sin(swarm.aimAngle);
-          const ballR = 3.5;
-          let totalDist = 520;
-
-          ctx.strokeStyle = '#00f0ff';
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = '#00f0ff';
-          ctx.setLineDash([5, 5]);
-          ctx.lineWidth = 2.2;
-          ctx.beginPath();
-          ctx.moveTo(curX, curY);
-
-          for (let bounce = 0; bounce < 2; bounce++) {
-            let hitT = totalDist;
-            let hitWall = 'NONE';
-
-            if (dirX < 0) {
-              const t = (ballR - curX) / dirX;
-              if (t > 0 && t < hitT) { hitT = t; hitWall = 'X'; }
-            } else if (dirX > 0) {
-              const t = (W - ballR - curX) / dirX;
-              if (t > 0 && t < hitT) { hitT = t; hitWall = 'X'; }
-            }
-
-            if (dirY < 0) {
-              const t = (ballR - curY) / dirY;
-              if (t > 0 && t < hitT) { hitT = t; hitWall = 'Y'; }
-            }
-
-            const nextX = curX + dirX * hitT;
-            const nextY = curY + dirY * hitT;
-            ctx.lineTo(nextX, nextY);
-
-            if (hitWall === 'X') {
-              curX = nextX;
-              curY = nextY;
-              dirX = -dirX;
-              totalDist -= hitT;
-            } else {
-              ctx.stroke();
-              ctx.beginPath();
-              ctx.arc(nextX, nextY, 4, 0, Math.PI * 2);
-              ctx.fillStyle = '#00f0ff';
-              ctx.fill();
-              break;
-            }
-          }
-
-          ctx.stroke();
-          ctx.setLineDash([]);
-          ctx.shadowBlur = 0;
-        }
-
-        ctx.fillStyle = '#00f0ff';
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = '#00f0ff';
+        ctx.fillStyle = "#fff7cc";
         ctx.beginPath();
-        ctx.arc(swarm.shooter.x, swarm.shooter.y, 6.5, 0, Math.PI * 2);
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 0;
+      });
 
-        for (let b of swarm.balls) {
-          if (b.trail) {
-            for (let t = 0; t < b.trail.length; t++) {
-              const alpha = (t + 1) / b.trail.length * 0.4;
-              ctx.fillStyle = `rgba(0, 240, 255, ${alpha})`;
-              ctx.beginPath();
-              ctx.arc(b.trail[t].x, b.trail[t].y, b.r * 0.65, 0, Math.PI * 2);
-              ctx.fill();
-            }
-          }
-          ctx.fillStyle = '#00f0ff';
-          ctx.shadowBlur = 6;
-          ctx.shadowColor = '#00f0ff';
-          ctx.beginPath();
-          ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.shadowBlur = 0;
-        }
+      // Paddle
+      ctx.shadowColor = "#00f0ff";
+      ctx.shadowBlur = 16;
+      ctx.fillStyle = "#00f0ff";
+      ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
 
-        updateSwarmEngine();
-      }
-
-      for (let i = popups.length - 1; i >= 0; i--) {
-        const pop = popups[i];
-        pop.y += pop.vy;
-        pop.life -= 0.025;
-        if (pop.life <= 0) {
-          popups.splice(i, 1);
-          continue;
-        }
-        ctx.fillStyle = pop.color;
-        ctx.globalAlpha = Math.max(0, pop.life);
-        ctx.font = 'bold 12px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(pop.text, pop.x, pop.y);
-      }
-      ctx.globalAlpha = 1;
-
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const pt = particles[i];
-        pt.x += pt.vx;
-        pt.y += pt.vy;
-        pt.life -= 0.04;
-        if (pt.life <= 0) {
-          particles.splice(i, 1);
-          continue;
-        }
-        ctx.fillStyle = pt.color;
-        ctx.globalAlpha = Math.max(0, pt.life);
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(paddle.x + 4, paddle.y + 3, paddle.w - 8, 3);
 
       ctx.restore();
 
-      requestAnimationFrame(draw);
+      requestAnimationFrame(() => {
+        update();
+        render();
+      });
     }
 
-    // =====================================
-    // BUTTON HOOKS
-    // =====================================
-    document.getElementById('btn-retro').addEventListener('click', () => {
-      startRetro();
-    });
-
-    document.getElementById('btn-swarm').addEventListener('click', () => {
-      startSwarm();
-    });
-
-    document.getElementById('btn-restart').addEventListener('click', () => {
-      if (hudMode.textContent === 'RETRO') startRetro();
-      else startSwarm();
-    });
-
-    document.getElementById('btn-to-menu').addEventListener('click', () => {
-      gameoverScreen.style.display = 'none';
-      overlay.style.display = 'flex';
-      gameState = 'MENU';
-    });
-
-    hudMenuBtn.addEventListener('click', () => {
-      gameState = 'MENU';
-      gameoverScreen.style.display = 'none';
-      overlay.style.display = 'flex';
-    });
-
-    draw();
+    requestAnimationFrame(render);
   </script>
 </body>
 </html>
