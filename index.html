@@ -224,7 +224,7 @@
 
           <button id="btn-swarm" class="menu-card-btn card-swarm">
             <div class="btn-header" style="color:#00f0ff;">⚡ MODERN SWARM</div>
-            <div class="btn-body">Dense square brick grid! Aim trajectory, launch 30+ balls, blast high-HP blocks and TNT.</div>
+            <div class="btn-body">16-column dense micro-brick matrix! Aim trajectory, launch 20+ balls, blast high-HP blocks and TNT.</div>
           </button>
         </div>
       </div>
@@ -354,16 +354,17 @@
     }
 
     // =====================================
-    // 2. MODERN SWARM ENGINE (DENSE SQUARE BRICKS)
+    // 2. MODERN SWARM ENGINE (MICRO-RECTANGULAR BRICKS)
     // =====================================
-    const SWARM_COLS = 10; // 10 columns across = compact square bricks!
-    const SWARM_PAD = 4;
-    const SWARM_BW = (W - (SWARM_PAD * (SWARM_COLS + 1))) / SWARM_COLS; // ~41.6px
-    const SWARM_BH = 36; // 36px height = nearly perfect square!
+    // 16 columns across! Each brick is ~25.5px wide x 17px tall (~3x by 2x ball width)
+    const SWARM_COLS = 16; 
+    const SWARM_PAD = 3;
+    const SWARM_BW = (W - (SWARM_PAD * (SWARM_COLS + 1))) / SWARM_COLS; // ~25.5px
+    const SWARM_BH = 17; // 17px tall (3:2 rectangular proportion)
 
     const swarm = {
       level: 1,
-      ballCount: 15,
+      ballCount: 20, // Start with 20 balls for an awesome stream!
       balls: [],
       bricks: [],
       pickups: [],
@@ -386,7 +387,7 @@
       swarm.speed = 1;
       score = 0;
       swarm.level = 1;
-      swarm.ballCount = 15;
+      swarm.ballCount = 20;
       swarm.balls = [];
       swarm.shooter.x = W / 2;
       swarm.shooter.y = H - 30;
@@ -397,12 +398,10 @@
       swarm.bricks = [];
       swarm.pickups = [];
 
-      // Start with 5 dense rows packed with bricks and pickups!
-      addSwarmWave();
-      addSwarmWave();
-      addSwarmWave();
-      addSwarmWave();
-      addSwarmWave();
+      // Spawn 6 packed rows of micro-bricks right from the start!
+      for (let i = 0; i < 6; i++) {
+        addSwarmWave();
+      }
 
       overlay.style.display = 'none';
       gameoverScreen.style.display = 'none';
@@ -413,13 +412,13 @@
       for (let b of swarm.bricks) b.row++;
       for (let p of swarm.pickups) p.row++;
 
-      // Spawn new wave at row 1
+      // Spawn new wave across 16 columns
       for (let c = 0; c < SWARM_COLS; c++) {
         const rand = Math.random();
-        if (rand < 0.55) {
-          // Brick
+        if (rand < 0.52) {
+          // Brick (scaled HP)
           const hp = Math.max(1, Math.round(swarm.level * (1 + Math.random() * 1.5)));
-          const isTNT = Math.random() < 0.1;
+          const isTNT = Math.random() < 0.08;
           swarm.bricks.push({
             c: c,
             row: 1,
@@ -430,7 +429,7 @@
             isTNT: isTNT,
             alive: true
           });
-        } else if (rand < 0.7) {
+        } else if (rand < 0.64) {
           // +1 Ball Pickup
           swarm.pickups.push({
             c: c,
@@ -455,14 +454,14 @@
     // =====================================
     // PARTICLES (Explosions)
     // =====================================
-    function spawnSparks(x, y, color, count = 10) {
+    function spawnSparks(x, y, color, count = 8) {
       for (let i = 0; i < count; i++) {
         particles.push({
           x: x,
           y: y,
-          vx: (Math.random() - 0.5) * 8,
-          vy: (Math.random() - 0.5) * 8,
-          r: Math.random() * 2.5 + 1,
+          vx: (Math.random() - 0.5) * 7,
+          vy: (Math.random() - 0.5) * 7,
+          r: Math.random() * 2 + 1,
           color: color,
           life: 1
         });
@@ -470,7 +469,7 @@
     }
 
     // =====================================
-    // INPUTS (Mouse & Touch)
+    // INPUTS (Touch & Mouse)
     // =====================================
     function getCanvasCoords(e) {
       const rect = canvas.getBoundingClientRect();
@@ -565,8 +564,8 @@
       onPointerMove(e);
     }, { passive: false });
 
-    window.addEventListener('touchend', (e) => {
-      onPointerUp(e);
+    window.addEventListener('touchend', () => {
+      onPointerUp();
     });
 
     window.addEventListener('keydown', (e) => {
@@ -603,12 +602,11 @@
     }
 
     // =====================================
-    // RETRO GAMEPLAY UPDATE
+    // RETRO UPDATE
     // =====================================
     function updateRetroEngine() {
       retro.paddle.y = H - 28;
 
-      // Lasers
       for (let i = retro.lasers.length - 1; i >= 0; i--) {
         const l = retro.lasers[i];
         l.y += l.vy;
@@ -628,7 +626,6 @@
         }
       }
 
-      // Balls
       for (let i = retro.balls.length - 1; i >= 0; i--) {
         const b = retro.balls[i];
         if (b.stuck) continue;
@@ -638,7 +635,6 @@
         if (b.x - b.r < 0 || b.x + b.r > W) { b.vx *= -1; sndHit(300); }
         if (b.y - b.r < 0) { b.vy *= -1; sndHit(300); }
 
-        // Paddle
         if (b.y + b.r >= retro.paddle.y && b.y - b.r <= retro.paddle.y + retro.paddle.h && b.x >= retro.paddle.x && b.x <= retro.paddle.x + retro.paddle.w && b.vy > 0) {
           sndPaddle();
           const hit = (b.x - (retro.paddle.x + retro.paddle.w / 2)) / (retro.paddle.w / 2);
@@ -648,7 +644,6 @@
           b.y = retro.paddle.y - b.r;
         }
 
-        // Bricks
         for (let brk of retro.bricks) {
           if (!brk.alive) continue;
           if (b.x + b.r > brk.x && b.x - b.r < brk.x + brk.w && b.y + b.r > brk.y && b.y - b.r < brk.y + brk.h) {
@@ -676,7 +671,6 @@
         if (b.y - b.r > H) retro.balls.splice(i, 1);
       }
 
-      // Ball Loss
       if (retro.balls.length === 0) {
         retro.lives--;
         sndDie();
@@ -691,7 +685,6 @@
         }
       }
 
-      // Power-ups
       for (let i = retro.powerUps.length - 1; i >= 0; i--) {
         const p = retro.powerUps[i];
         p.y += p.vy;
@@ -710,7 +703,6 @@
         } else if (p.y > H) retro.powerUps.splice(i, 1);
       }
 
-      // Next level
       if (retro.bricks.length > 0 && retro.bricks.every(b => !b.alive)) {
         retro.level++;
         initRetroBricks();
@@ -721,20 +713,20 @@
     }
 
     // =====================================
-    // SWARM GAMEPLAY UPDATE (DENSE PHYSICS)
+    // SWARM UPDATE (MICRO-BRICKS PHYSICS)
     // =====================================
     function updateSwarmEngine() {
-      // Launch stream
+      // Launch stream of 20+ balls
       if (swarm.launching && swarm.launchedCount < swarm.ballCount) {
         swarm.launchTimer++;
-        if (swarm.launchTimer % 4 === 0) {
+        if (swarm.launchTimer % 3 === 0) {
           const spd = 8.5;
           swarm.balls.push({
             x: swarm.shooter.x,
             y: swarm.shooter.y,
             vx: Math.cos(swarm.aimAngle) * spd,
             vy: Math.sin(swarm.aimAngle) * spd,
-            r: 4.2
+            r: 3.5 // 7px diameter ball!
           });
           swarm.launchedCount++;
         }
@@ -750,7 +742,7 @@
           if (b.x + b.r > W) { b.x = W - b.r; b.vx *= -1; }
           if (b.y - b.r < 0) { b.y = b.r; b.vy *= -1; }
 
-          // Brick hit
+          // Micro-brick hit
           for (let brk of swarm.bricks) {
             if (!brk.alive) continue;
             const bx = SWARM_PAD + brk.c * (SWARM_BW + SWARM_PAD);
@@ -759,15 +751,15 @@
             if (b.x + b.r > bx && b.x - b.r < bx + SWARM_BW && b.y + b.r > by && b.y - b.r < by + SWARM_BH) {
               brk.hp--;
               score++;
-              sndHit(430 + Math.min(350, brk.hp * 10));
+              sndHit(450 + Math.min(300, brk.hp * 8));
 
-              // TNT Detonation
+              // TNT Cluster Explosion
               if (brk.isTNT && brk.hp <= 0) {
                 sndBomb();
                 spawnSparks(bx + SWARM_BW / 2, by + SWARM_BH / 2, '#ff5500', 30);
                 for (let other of swarm.bricks) {
                   if (other.alive && Math.abs(other.c - brk.c) <= 1 && Math.abs(other.row - brk.row) <= 1) {
-                    other.hp -= 25;
+                    other.hp -= 20;
                     if (other.hp <= 0) other.alive = false;
                   }
                 }
@@ -775,23 +767,23 @@
 
               if (brk.hp <= 0) {
                 brk.alive = false;
-                spawnSparks(bx + SWARM_BW / 2, by + SWARM_BH / 2, '#00f0ff', 12);
+                spawnSparks(bx + SWARM_BW / 2, by + SWARM_BH / 2, '#00f0ff', 8);
               }
               b.vy *= -1;
               break;
             }
           }
 
-          // Pickups
+          // Pickups (+1)
           for (let p of swarm.pickups) {
             if (p.collected) continue;
             const px = SWARM_PAD + p.c * (SWARM_BW + SWARM_PAD) + SWARM_BW / 2;
             const py = 40 + p.row * (SWARM_BH + SWARM_PAD) + SWARM_BH / 2;
-            if (Math.hypot(b.x - px, b.y - py) < 14) {
+            if (Math.hypot(b.x - px, b.y - py) < 12) {
               p.collected = true;
               swarm.ballCount++;
               sndPower();
-              spawnSparks(px, py, '#39ff14', 10);
+              spawnSparks(px, py, '#39ff14', 8);
             }
           }
 
@@ -814,7 +806,7 @@
 
         // Check loss (blocks hit bottom)
         for (let b of swarm.bricks) {
-          if (b.alive && b.row >= 16) {
+          if (b.alive && b.row >= 26) {
             showGameOver('MODERN SWARM');
             return;
           }
@@ -874,7 +866,7 @@
         updateRetroEngine();
 
       } else if (gameState === 'PLAYING_SWARM') {
-        // Draw Dense Square Bricks
+        // Draw 16 Columns of Micro-Rectangular Bricks
         for (let b of swarm.bricks) {
           if (!b.alive) continue;
           const bx = SWARM_PAD + b.c * (SWARM_BW + SWARM_PAD);
@@ -883,19 +875,26 @@
 
           ctx.fillStyle = cStyle.fill;
           ctx.strokeStyle = cStyle.border;
-          ctx.lineWidth = 1.8;
-          ctx.shadowBlur = 8;
+          ctx.lineWidth = 1.4;
+          ctx.shadowBlur = 6;
           ctx.shadowColor = cStyle.border;
           ctx.fillRect(bx, by, SWARM_BW, SWARM_BH);
           ctx.strokeRect(bx, by, SWARM_BW, SWARM_BH);
           ctx.shadowBlur = 0;
 
-          // Text HP number
+          // Centered Text / Icon inside Micro-brick
           ctx.fillStyle = cStyle.text;
-          ctx.font = 'bold 11px monospace';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(b.isTNT ? '💣' : b.hp, bx + SWARM_BW / 2, by + SWARM_BH / 2);
+          if (b.isTNT) {
+            ctx.font = 'bold 10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('💣', bx + SWARM_BW / 2, by + SWARM_BH / 2);
+          } else {
+            ctx.font = 'bold 8.5px monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(b.hp, bx + SWARM_BW / 2, by + SWARM_BH / 2);
+          }
         }
 
         // Draw Pickups (+1)
@@ -904,14 +903,14 @@
           const px = SWARM_PAD + p.c * (SWARM_BW + SWARM_PAD) + SWARM_BW / 2;
           const py = 40 + p.row * (SWARM_BH + SWARM_PAD) + SWARM_BH / 2;
           ctx.fillStyle = '#39ff14';
-          ctx.shadowBlur = 12;
+          ctx.shadowBlur = 10;
           ctx.shadowColor = '#39ff14';
           ctx.beginPath();
-          ctx.arc(px, py, 7, 0, Math.PI * 2);
+          ctx.arc(px, py, 6, 0, Math.PI * 2);
           ctx.fill();
           ctx.shadowBlur = 0;
           ctx.fillStyle = '#060810';
-          ctx.font = 'bold 9px monospace';
+          ctx.font = 'bold 8px monospace';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText('+', px, py);
@@ -922,13 +921,13 @@
           ctx.strokeStyle = '#00f0ff';
           ctx.shadowBlur = 12;
           ctx.shadowColor = '#00f0ff';
-          ctx.setLineDash([6, 6]);
-          ctx.lineWidth = 2.5;
+          ctx.setLineDash([5, 5]);
+          ctx.lineWidth = 2.2;
           ctx.beginPath();
           ctx.moveTo(swarm.shooter.x, swarm.shooter.y);
           ctx.lineTo(
-            swarm.shooter.x + Math.cos(swarm.aimAngle) * 480,
-            swarm.shooter.y + Math.sin(swarm.aimAngle) * 480
+            swarm.shooter.x + Math.cos(swarm.aimAngle) * 500,
+            swarm.shooter.y + Math.sin(swarm.aimAngle) * 500
           );
           ctx.stroke();
           ctx.setLineDash([]);
@@ -940,13 +939,13 @@
         ctx.shadowBlur = 12;
         ctx.shadowColor = '#00f0ff';
         ctx.beginPath();
-        ctx.arc(swarm.shooter.x, swarm.shooter.y, 7, 0, Math.PI * 2);
+        ctx.arc(swarm.shooter.x, swarm.shooter.y, 6.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Swarm Balls
+        // Swarm Balls (7px diameter, 3.5px radius)
         ctx.fillStyle = '#00f0ff';
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = 6;
         ctx.shadowColor = '#00f0ff';
         for (let b of swarm.balls) {
           ctx.beginPath();
@@ -963,7 +962,7 @@
         const pt = particles[i];
         pt.x += pt.vx;
         pt.y += pt.vy;
-        pt.life -= 0.035;
+        pt.life -= 0.04;
         if (pt.life <= 0) {
           particles.splice(i, 1);
           continue;
@@ -980,7 +979,7 @@
     }
 
     // =====================================
-    // CLEAN BUTTON HOOKS
+    // BUTTON HOOKS
     // =====================================
     document.getElementById('btn-retro').addEventListener('click', () => {
       startRetro();
