@@ -224,7 +224,7 @@
 
           <button id="btn-swarm" class="menu-card-btn card-swarm">
             <div class="btn-header" style="color:#00f0ff;">⚡ MODERN SWARM</div>
-            <div class="btn-body">Start with 5 balls! Drag to aim, hunt rare +1 pickups, blast micro-bricks & TNT.</div>
+            <div class="btn-body">Bank shots off the wall! Aim bouncing lasers, launch streams of balls, blast TNT blocks.</div>
           </button>
         </div>
       </div>
@@ -354,16 +354,16 @@
     }
 
     // =====================================
-    // 2. MODERN SWARM ENGINE (TUNED: 5 BALLS START & RARE PICKUPS)
+    // 2. MODERN SWARM ENGINE (WITH BOUNCING AIM LINE)
     // =====================================
     const SWARM_COLS = 16; 
     const SWARM_PAD = 3;
     const SWARM_BW = (W - (SWARM_PAD * (SWARM_COLS + 1))) / SWARM_COLS; // ~25.5px
-    const SWARM_BH = 17; // 17px tall
+    const SWARM_BH = 17;
 
     const swarm = {
       level: 1,
-      ballCount: 5, // Starts at 5 balls as requested!
+      ballCount: 5, // Starts at 5 balls
       balls: [],
       bricks: [],
       pickups: [],
@@ -386,7 +386,7 @@
       swarm.speed = 1;
       score = 0;
       swarm.level = 1;
-      swarm.ballCount = 5; // Start with 5 balls
+      swarm.ballCount = 5;
       swarm.balls = [];
       swarm.shooter.x = W / 2;
       swarm.shooter.y = H - 30;
@@ -397,7 +397,6 @@
       swarm.bricks = [];
       swarm.pickups = [];
 
-      // Spawn initial balanced waves
       for (let i = 0; i < 5; i++) {
         addSwarmWave();
       }
@@ -410,13 +409,11 @@
       for (let b of swarm.bricks) b.row++;
       for (let p of swarm.pickups) p.row++;
 
-      // Controlled spawning: at most 1 extra ball pickup per wave!
       let spawnedPickupThisWave = false;
 
       for (let c = 0; c < SWARM_COLS; c++) {
         const rand = Math.random();
         if (rand < 0.46) {
-          // Balanced HP scaling starting for 5 balls
           let hp = 1;
           if (swarm.level === 1) {
             hp = Math.random() < 0.4 ? 2 : 1;
@@ -436,7 +433,6 @@
             alive: true
           });
         } else if (!spawnedPickupThisWave && rand < 0.52) {
-          // Extra balls are now rare and coveted! (Max 1 per wave)
           spawnedPickupThisWave = true;
           swarm.pickups.push({
             c: c,
@@ -459,7 +455,7 @@
     }
 
     // =====================================
-    // PARTICLES (Explosions)
+    // PARTICLES
     // =====================================
     function spawnSparks(x, y, color, count = 8) {
       for (let i = 0; i < count; i++) {
@@ -534,7 +530,7 @@
       if (gameState === 'PLAYING_RETRO') {
         retro.paddle.x = Math.max(0, Math.min(W - retro.paddle.w, pt.x - retro.paddle.w / 2));
         if (retro.balls[0] && retro.balls[0].stuck) {
-          retro.balls[0].x = retro.paddle.x + retro.paddle.w / 2;
+          retro.balls[0].stuck = false;
         }
       } else if (gameState === 'PLAYING_SWARM') {
         if (!swarm.launching && swarm.aiming) {
@@ -609,7 +605,7 @@
     }
 
     // =====================================
-    // RETRO UPDATE
+    // RETRO GAMEPLAY UPDATE
     // =====================================
     function updateRetroEngine() {
       retro.paddle.y = H - 28;
@@ -720,7 +716,7 @@
     }
 
     // =====================================
-    // SWARM UPDATE (TUNED 5-BALL START & RARE PICKUPS)
+    // SWARM GAMEPLAY UPDATE
     // =====================================
     function updateSwarmEngine() {
       if (swarm.launching && swarm.launchedCount < swarm.ballCount) {
@@ -817,7 +813,7 @@
     }
 
     // =====================================
-    // DRAW RENDER LOOP
+    // DRAW RENDER LOOP (WITH BOUNCING AIM LINE)
     // =====================================
     function draw() {
       ctx.clearRect(0, 0, W, H);
@@ -913,23 +909,69 @@
           ctx.fillText('+', px, py);
         }
 
+        // --- MULTI-SEGMENT RICOCHET AIMING LINE ---
         if (swarm.aiming && !swarm.launching) {
+          let curX = swarm.shooter.x;
+          let curY = swarm.shooter.y;
+          let dirX = Math.cos(swarm.aimAngle);
+          let dirY = Math.sin(swarm.aimAngle);
+          const ballR = 3.5;
+          let totalDist = 520;
+
           ctx.strokeStyle = '#00f0ff';
           ctx.shadowBlur = 12;
           ctx.shadowColor = '#00f0ff';
           ctx.setLineDash([5, 5]);
           ctx.lineWidth = 2.2;
           ctx.beginPath();
-          ctx.moveTo(swarm.shooter.x, swarm.shooter.y);
-          ctx.lineTo(
-            swarm.shooter.x + Math.cos(swarm.aimAngle) * 500,
-            swarm.shooter.y + Math.sin(swarm.aimAngle) * 500
-          );
+          ctx.moveTo(curX, curY);
+
+          // Trace up to 2 wall reflections
+          for (let bounce = 0; bounce < 2; bounce++) {
+            let hitT = totalDist;
+            let hitWall = 'NONE';
+
+            // Check Left / Right Walls
+            if (dirX < 0) {
+              const t = (ballR - curX) / dirX;
+              if (t > 0 && t < hitT) { hitT = t; hitWall = 'X'; }
+            } else if (dirX > 0) {
+              const t = (W - ballR - curX) / dirX;
+              if (t > 0 && t < hitT) { hitT = t; hitWall = 'X'; }
+            }
+
+            // Check Top Wall
+            if (dirY < 0) {
+              const t = (ballR - curY) / dirY;
+              if (t > 0 && t < hitT) { hitT = t; hitWall = 'Y'; }
+            }
+
+            const nextX = curX + dirX * hitT;
+            const nextY = curY + dirY * hitT;
+            ctx.lineTo(nextX, nextY);
+
+            if (hitWall === 'X') {
+              curX = nextX;
+              curY = nextY;
+              dirX = -dirX; // Bank off the side wall!
+              totalDist -= hitT;
+            } else {
+              // End point indicator dot
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(nextX, nextY, 4, 0, Math.PI * 2);
+              ctx.fillStyle = '#00f0ff';
+              ctx.fill();
+              break;
+            }
+          }
+
           ctx.stroke();
           ctx.setLineDash([]);
           ctx.shadowBlur = 0;
         }
 
+        // Shooter
         ctx.fillStyle = '#00f0ff';
         ctx.shadowBlur = 12;
         ctx.shadowColor = '#00f0ff';
@@ -938,6 +980,7 @@
         ctx.fill();
         ctx.shadowBlur = 0;
 
+        // Swarm Balls
         ctx.fillStyle = '#00f0ff';
         ctx.shadowBlur = 6;
         ctx.shadowColor = '#00f0ff';
