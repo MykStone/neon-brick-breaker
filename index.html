@@ -22,6 +22,7 @@
       justify-content: center;
       align-items: center;
       overflow: hidden;
+      touch-action: none;
     }
     #cabinet {
       position: relative;
@@ -78,9 +79,9 @@
       width: 100%;
       height: 100%;
       display: block;
+      touch-action: none;
     }
-    /* Menu & Overlay Screens */
-    #menu-screen, #gameover-screen {
+    #overlay, #gameover-screen {
       position: absolute;
       inset: 0;
       background: rgba(6, 8, 16, 0.95);
@@ -210,20 +211,20 @@
       <canvas id="gameCanvas" width="460" height="700"></canvas>
 
       <!-- Main Menu Screen -->
-      <div id="menu-screen">
+      <div id="overlay">
         <div class="brand-eyebrow">StoneBuilt Entertainment</div>
         <div class="main-title">Neon Breaker</div>
         <div class="menu-sub">Choose Your Arcade Engine</div>
 
         <div class="menu-button-stack">
-          <button id="start-retro-btn" class="menu-card-btn card-retro">
+          <button id="btn-retro" class="menu-card-btn card-retro">
             <div class="btn-header" style="color:#ff007f;">🕹️ CLASSIC RETRO</div>
-            <div class="btn-body">Authentic 80s Breakout. Paddle bounce angles, laser weapons, multiball drops, and armored bricks.</div>
+            <div class="btn-body">Paddle controls, falling laser/multiball power-ups, and 80s arcade physics.</div>
           </button>
 
-          <button id="start-swarm-btn" class="menu-card-btn card-swarm">
+          <button id="btn-swarm" class="menu-card-btn card-swarm">
             <div class="btn-header" style="color:#00f0ff;">⚡ MODERN SWARM</div>
-            <div class="btn-body">Aim trajectory, launch a stream of 30+ balls, shred numbered HP blocks, and detonate TNT bombs.</div>
+            <div class="btn-body">Hold & drag to aim, release to fire 30+ balls. Blast numbered HP blocks and TNT!</div>
           </button>
         </div>
       </div>
@@ -233,14 +234,14 @@
         <div class="brand-eyebrow" style="color:#ff007f;">GAME OVER</div>
         <div id="gameover-mode-label" class="main-title" style="font-size:22px; color:#fff;">FINAL SCORE</div>
         <div id="gameover-score-val" class="gameover-val">0</div>
-        <button id="restart-game-btn" class="action-btn">PLAY AGAIN</button>
-        <button id="return-menu-btn" class="sub-action-btn">RETURN TO MENU</button>
+        <button id="btn-restart" class="action-btn">PLAY AGAIN</button>
+        <button id="btn-to-menu" class="sub-action-btn">RETURN TO MENU</button>
       </div>
     </div>
   </div>
 
   <script>
-    // --- SYNTHESIZED 8-BIT AUDIO (Zero External Files) ---
+    // --- SYNTHESIZED 8-BIT AUDIO ---
     let audioCtx = null;
     function playBeep(freq, type = 'sine', duration = 0.08, vol = 0.1) {
       try {
@@ -270,7 +271,7 @@
     // --- DOM REFERENCES ---
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    const menuScreen = document.getElementById('menu-screen');
+    const overlay = document.getElementById('overlay');
     const gameoverScreen = document.getElementById('gameover-screen');
     const hudScore = document.getElementById('hud-score');
     const hudMode = document.getElementById('hud-mode');
@@ -283,14 +284,12 @@
     const W = 460;
     const H = 700;
 
-    // --- GAME ENGINE STATE ---
-    let currentMode = null; // 'RETRO' or 'SWARM'
-    let isRunning = false;
+    let gameState = 'MENU'; // 'MENU', 'PLAYING_RETRO', 'PLAYING_SWARM'
     let score = 0;
     let particles = [];
 
     // =====================================
-    // 1. CLASSIC RETRO STATE & LOGIC
+    // 1. CLASSIC RETRO ENGINE
     // =====================================
     const retro = {
       lives: 3,
@@ -303,7 +302,7 @@
     };
 
     function startRetro() {
-      currentMode = 'RETRO';
+      gameState = 'PLAYING_RETRO';
       hudMode.textContent = 'RETRO';
       hudSpeedBtn.style.display = 'none';
       score = 0;
@@ -313,9 +312,8 @@
       hudCenter.innerHTML = `LIVES: <span style="color:#ff007f;">❤️❤️❤️</span>`;
       initRetroBricks();
       resetRetroBall();
-      menuScreen.style.display = 'none';
+      overlay.style.display = 'none';
       gameoverScreen.style.display = 'none';
-      isRunning = true;
     }
 
     function initRetroBricks() {
@@ -356,7 +354,7 @@
     }
 
     // =====================================
-    // 2. MODERN SWARM STATE & LOGIC
+    // 2. MODERN SWARM ENGINE
     // =====================================
     const swarm = {
       level: 1,
@@ -376,7 +374,7 @@
     };
 
     function startSwarm() {
-      currentMode = 'SWARM';
+      gameState = 'PLAYING_SWARM';
       hudMode.textContent = 'SWARM';
       hudSpeedBtn.style.display = 'block';
       hudSpeedBtn.textContent = '1X';
@@ -387,6 +385,8 @@
       swarm.balls = [];
       swarm.shooter.x = W / 2;
       swarm.shooter.y = H - 30;
+      swarm.aiming = false;
+      swarm.launching = false;
       hudScore.textContent = score;
       hudCenter.innerHTML = `BALLS: <span class="hud-accent">${swarm.ballCount}</span>`;
       swarm.bricks = [];
@@ -394,9 +394,8 @@
       addSwarmWave();
       addSwarmWave();
       addSwarmWave();
-      menuScreen.style.display = 'none';
+      overlay.style.display = 'none';
       gameoverScreen.style.display = 'none';
-      isRunning = true;
     }
 
     function addSwarmWave() {
@@ -434,10 +433,7 @@
       }
     }
 
-    // =====================================
-    // PARTICLES (Explosions)
-    // =====================================
-    function createSparks(x, y, color, count = 10) {
+    function spawnSparks(x, y, color, count = 10) {
       for (let i = 0; i < count; i++) {
         particles.push({
           x: x,
@@ -452,45 +448,43 @@
     }
 
     // =====================================
-    // POINTER & TOUCH HANDLING
+    // ACCURATE TOUCH & MOUSE CONTROLS
     // =====================================
-    function getPointerPos(e) {
+    function getCanvasCoords(e) {
       const rect = canvas.getBoundingClientRect();
       const scaleX = W / rect.width;
       const scaleY = H / rect.height;
-      let clientX = e.clientX;
-      let clientY = e.clientY;
+      let cx = e.clientX;
+      let cy = e.clientY;
       if (e.touches && e.touches.length > 0) {
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
+        cx = e.touches[0].clientX;
+        cy = e.touches[0].clientY;
       }
       return {
-        x: (clientX - rect.left) * scaleX,
-        y: (clientY - rect.top) * scaleY
+        x: (cx - rect.left) * scaleX,
+        y: (cy - rect.top) * scaleY
       };
     }
 
-    function handlePointerMove(e) {
-      if (!isRunning) return;
-      const pos = getPointerPos(e);
-
-      if (currentMode === 'RETRO') {
-        retro.paddle.x = Math.max(0, Math.min(W - retro.paddle.w, pos.x - retro.paddle.w / 2));
-        if (retro.balls[0] && retro.balls[0].stuck) {
-          retro.balls[0].x = retro.paddle.x + retro.paddle.w / 2;
-        }
-      } else if (currentMode === 'SWARM' && !swarm.launching) {
-        if (pos.y < swarm.shooter.y - 15) {
-          swarm.aiming = true;
-          swarm.aimAngle = Math.atan2(pos.y - swarm.shooter.y, pos.x - swarm.shooter.x);
-        }
+    function updateAimAngle(pt) {
+      const dx = pt.x - swarm.shooter.x;
+      const dy = pt.y - swarm.shooter.y;
+      if (dy < -15) { // Only aim upward
+        let angle = Math.atan2(dy, dx);
+        // Clamp angle so it doesn't fire straight into the floor
+        angle = Math.max(-Math.PI * 0.95, Math.min(-Math.PI * 0.05, angle));
+        swarm.aimAngle = angle;
+        swarm.aiming = true;
       }
     }
 
-    function handlePointerAction() {
-      if (!isRunning) return;
+    // Pointer Down (Touch / Mouse Press)
+    function onPointerDown(e) {
+      if (gameState === 'MENU') return;
+      const pt = getCanvasCoords(e);
 
-      if (currentMode === 'RETRO') {
+      if (gameState === 'PLAYING_RETRO') {
+        retro.paddle.x = Math.max(0, Math.min(W - retro.paddle.w, pt.x - retro.paddle.w / 2));
         if (retro.balls[0] && retro.balls[0].stuck) {
           retro.balls[0].stuck = false;
           sndPaddle();
@@ -500,7 +494,33 @@
           retro.lasers.push({ x: retro.paddle.x + 8, y: retro.paddle.y - 4, vy: -9 });
           retro.lasers.push({ x: retro.paddle.x + retro.paddle.w - 8, y: retro.paddle.y - 4, vy: -9 });
         }
-      } else if (currentMode === 'SWARM') {
+      } else if (gameState === 'PLAYING_SWARM') {
+        if (!swarm.launching) {
+          updateAimAngle(pt);
+        }
+      }
+    }
+
+    // Pointer Move (Dragging to Aim or Move Paddle)
+    function onPointerMove(e) {
+      if (gameState === 'MENU') return;
+      const pt = getCanvasCoords(e);
+
+      if (gameState === 'PLAYING_RETRO') {
+        retro.paddle.x = Math.max(0, Math.min(W - retro.paddle.w, pt.x - retro.paddle.w / 2));
+        if (retro.balls[0] && retro.balls[0].stuck) {
+          retro.balls[0].x = retro.paddle.x + retro.paddle.w / 2;
+        }
+      } else if (gameState === 'PLAYING_SWARM') {
+        if (!swarm.launching && swarm.aiming) {
+          updateAimAngle(pt);
+        }
+      }
+    }
+
+    // Pointer Up (Releasing to Fire!)
+    function onPointerUp(e) {
+      if (gameState === 'PLAYING_SWARM') {
         if (swarm.aiming && !swarm.launching) {
           swarm.aiming = false;
           swarm.launching = true;
@@ -513,37 +533,60 @@
       }
     }
 
-    canvas.addEventListener('mousemove', handlePointerMove);
-    canvas.addEventListener('touchmove', handlePointerMove, { passive: false });
-    canvas.addEventListener('mousedown', handlePointerAction);
+    // Attach Event Listeners cleanly
+    canvas.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+
     canvas.addEventListener('touchstart', (e) => {
-      handlePointerMove(e);
-      handlePointerAction();
+      e.preventDefault();
+      onPointerDown(e);
     }, { passive: false });
 
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      onPointerMove(e);
+    }, { passive: false });
+
+    window.addEventListener('touchend', (e) => {
+      onPointerUp(e);
+    });
+
     window.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') handlePointerAction();
-      if (currentMode === 'RETRO') {
+      if (e.code === 'Space') {
+        if (gameState === 'PLAYING_RETRO') {
+          if (retro.balls[0] && retro.balls[0].stuck) {
+            retro.balls[0].stuck = false;
+            sndPaddle();
+          }
+          if (retro.paddle.hasLasers) {
+            sndLaser();
+            retro.lasers.push({ x: retro.paddle.x + 8, y: retro.paddle.y - 4, vy: -9 });
+            retro.lasers.push({ x: retro.paddle.x + retro.paddle.w - 8, y: retro.paddle.y - 4, vy: -9 });
+          }
+        }
+      }
+      if (gameState === 'PLAYING_RETRO') {
         if (e.code === 'ArrowLeft') retro.paddle.x = Math.max(0, retro.paddle.x - 32);
         if (e.code === 'ArrowRight') retro.paddle.x = Math.min(W - retro.paddle.w, retro.paddle.x + 32);
       }
     });
 
-    // Speed up button for Swarm
-    hudSpeedBtn.addEventListener('click', () => {
+    hudSpeedBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
       swarm.speed = swarm.speed === 1 ? 2 : (swarm.speed === 2 ? 3 : 1);
       hudSpeedBtn.textContent = swarm.speed + 'X';
     });
 
     function showGameOver(modeTitle) {
-      isRunning = false;
+      gameState = 'MENU';
       gameoverModeLabel.textContent = `${modeTitle} GAME OVER`;
       gameoverScoreVal.textContent = score;
       gameoverScreen.style.display = 'flex';
     }
 
     // =====================================
-    // RETRO ENGINE UPDATE
+    // RETRO GAMEPLAY UPDATE
     // =====================================
     function updateRetroEngine() {
       // Lasers
@@ -557,7 +600,7 @@
             if (b.hp <= 0) {
               b.alive = false;
               score += 20;
-              createSparks(b.x + b.w / 2, b.y + b.h / 2, b.color);
+              spawnSparks(b.x + b.w / 2, b.y + b.h / 2, b.color);
             }
             sndHit(750);
             retro.lasers.splice(i, 1);
@@ -594,7 +637,7 @@
             if (brk.hp <= 0) {
               brk.alive = false;
               score += 15;
-              createSparks(brk.x + brk.w / 2, brk.y + brk.h / 2, brk.color);
+              spawnSparks(brk.x + brk.w / 2, brk.y + brk.h / 2, brk.color);
               if (Math.random() < 0.22) {
                 const types = ['MULTI', 'LASER', 'WIDE'];
                 retro.powerUps.push({
@@ -629,7 +672,7 @@
         }
       }
 
-      // Power-up Collection
+      // Power-ups
       for (let i = retro.powerUps.length - 1; i >= 0; i--) {
         const p = retro.powerUps[i];
         p.y += p.vy;
@@ -648,7 +691,7 @@
         } else if (p.y > H) retro.powerUps.splice(i, 1);
       }
 
-      // Level Cleared
+      // Next level
       if (retro.bricks.length > 0 && retro.bricks.every(b => !b.alive)) {
         retro.level++;
         initRetroBricks();
@@ -659,7 +702,7 @@
     }
 
     // =====================================
-    // SWARM ENGINE UPDATE
+    // SWARM GAMEPLAY UPDATE
     // =====================================
     function updateSwarmEngine() {
       const pad = 6;
@@ -683,7 +726,6 @@
         }
       }
 
-      // Physics loop with Speed Multiplier
       for (let s = 0; s < swarm.speed; s++) {
         for (let i = swarm.balls.length - 1; i >= 0; i--) {
           const b = swarm.balls[i];
@@ -694,7 +736,7 @@
           if (b.x + b.r > W) { b.x = W - b.r; b.vx *= -1; }
           if (b.y - b.r < 0) { b.y = b.r; b.vy *= -1; }
 
-          // Brick collision
+          // Brick hit
           for (let brk of swarm.bricks) {
             if (!brk.alive) continue;
             const bx = pad + brk.c * (bW + pad);
@@ -708,7 +750,7 @@
               // TNT Detonation
               if (brk.isTNT && brk.hp <= 0) {
                 sndBomb();
-                createSparks(bx + bW / 2, by + bH / 2, '#ff5500', 25);
+                spawnSparks(bx + bW / 2, by + bH / 2, '#ff5500', 25);
                 for (let other of swarm.bricks) {
                   if (other.alive && Math.abs(other.c - brk.c) <= 1 && Math.abs(other.row - brk.row) <= 1) {
                     other.hp -= 25;
@@ -719,14 +761,14 @@
 
               if (brk.hp <= 0) {
                 brk.alive = false;
-                createSparks(bx + bW / 2, by + bH / 2, '#00f0ff', 12);
+                spawnSparks(bx + bW / 2, by + bH / 2, '#00f0ff', 12);
               }
               b.vy *= -1;
               break;
             }
           }
 
-          // Pickups (+1)
+          // Pickups
           for (let p of swarm.pickups) {
             if (p.collected) continue;
             const px = pad + p.c * (bW + pad) + bW / 2;
@@ -735,7 +777,7 @@
               p.collected = true;
               swarm.ballCount++;
               sndPower();
-              createSparks(px, py, '#39ff14', 10);
+              spawnSparks(px, py, '#39ff14', 10);
             }
           }
 
@@ -748,7 +790,7 @@
         }
       }
 
-      // Finish Wave & Advance
+      // Turn Complete
       if (swarm.launching && swarm.ballsReturned >= swarm.ballCount) {
         swarm.launching = false;
         swarm.shooter.x = Math.max(25, Math.min(W - 25, swarm.newShooterX || W / 2));
@@ -756,7 +798,7 @@
         addSwarmWave();
         hudCenter.innerHTML = `BALLS: <span class="hud-accent">${swarm.ballCount}</span>`;
 
-        // Check if wall reached bottom
+        // Check loss
         for (let b of swarm.bricks) {
           if (b.alive && b.row >= 18) {
             showGameOver('MODERN SWARM');
@@ -769,13 +811,12 @@
     }
 
     // =====================================
-    // MAIN DRAW LOOP
+    // DRAW RENDER LOOP
     // =====================================
     function draw() {
       ctx.clearRect(0, 0, W, H);
 
-      if (isRunning && currentMode === 'RETRO') {
-        // Draw Retro Bricks
+      if (gameState === 'PLAYING_RETRO') {
         for (let b of retro.bricks) {
           if (!b.alive) continue;
           ctx.fillStyle = b.color;
@@ -785,18 +826,15 @@
         }
         ctx.shadowBlur = 0;
 
-        // Draw Retro Paddle
         ctx.fillStyle = retro.paddle.hasLasers ? '#ff007f' : '#00f0ff';
         ctx.shadowBlur = 14;
         ctx.shadowColor = ctx.fillStyle;
         ctx.fillRect(retro.paddle.x, retro.paddle.y, retro.paddle.w, retro.paddle.h);
         ctx.shadowBlur = 0;
 
-        // Draw Lasers
         ctx.fillStyle = '#ff007f';
         for (let l of retro.lasers) ctx.fillRect(l.x, l.y, 4, 10);
 
-        // Draw Power-ups
         for (let p of retro.powerUps) {
           ctx.fillStyle = p.type === 'LASER' ? '#ff007f' : (p.type === 'MULTI' ? '#39ff14' : '#ffe600');
           ctx.beginPath();
@@ -809,7 +847,6 @@
           ctx.fillText(p.type[0], p.x, p.y);
         }
 
-        // Draw Retro Balls
         ctx.fillStyle = '#ffe600';
         ctx.shadowBlur = 12;
         ctx.shadowColor = '#ffe600';
@@ -822,13 +859,12 @@
 
         updateRetroEngine();
 
-      } else if (isRunning && currentMode === 'SWARM') {
+      } else if (gameState === 'PLAYING_SWARM') {
         const pad = 6;
         const cols = 7;
         const bW = (W - (pad * (cols + 1))) / cols;
         const bH = 26;
 
-        // Draw Swarm Bricks
         for (let b of swarm.bricks) {
           if (!b.alive) continue;
           const bx = pad + b.c * (bW + pad);
@@ -847,7 +883,6 @@
           ctx.fillText(b.isTNT ? '💣 ' + b.hp : b.hp, bx + bW / 2, by + bH / 2);
         }
 
-        // Draw Pickups (+1)
         for (let p of swarm.pickups) {
           if (p.collected) continue;
           const px = pad + p.c * (bW + pad) + bW / 2;
@@ -866,26 +901,32 @@
           ctx.fillText('+', px, py);
         }
 
-        // Aim Line
+        // Aiming Trajectory Laser Line (Only while holding finger down!)
         if (swarm.aiming && !swarm.launching) {
-          ctx.strokeStyle = 'rgba(0, 240, 255, 0.5)';
-          ctx.setLineDash([4, 6]);
-          ctx.lineWidth = 2;
+          ctx.strokeStyle = '#00f0ff';
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = '#00f0ff';
+          ctx.setLineDash([6, 6]);
+          ctx.lineWidth = 2.5;
           ctx.beginPath();
           ctx.moveTo(swarm.shooter.x, swarm.shooter.y);
           ctx.lineTo(
-            swarm.shooter.x + Math.cos(swarm.aimAngle) * 350,
-            swarm.shooter.y + Math.sin(swarm.aimAngle) * 350
+            swarm.shooter.x + Math.cos(swarm.aimAngle) * 450,
+            swarm.shooter.y + Math.sin(swarm.aimAngle) * 450
           );
           ctx.stroke();
           ctx.setLineDash([]);
+          ctx.shadowBlur = 0;
         }
 
-        // Shooter
+        // Shooter origin
         ctx.fillStyle = '#00f0ff';
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = '#00f0ff';
         ctx.beginPath();
         ctx.arc(swarm.shooter.x, swarm.shooter.y, 7, 0, Math.PI * 2);
         ctx.fill();
+        ctx.shadowBlur = 0;
 
         // Swarm Balls
         ctx.fillStyle = '#00f0ff';
@@ -923,35 +964,33 @@
     }
 
     // =====================================
-    // CLEAN MENU EVENT HOOKS
+    // CLEAN MENU BUTTON HOOKS
     // =====================================
-    document.getElementById('start-retro-btn').onclick = function() {
+    document.getElementById('btn-retro').addEventListener('click', () => {
       startRetro();
-    };
+    });
 
-    document.getElementById('start-swarm-btn').onclick = function() {
+    document.getElementById('btn-swarm').addEventListener('click', () => {
       startSwarm();
-    };
+    });
 
-    document.getElementById('restart-game-btn').onclick = function() {
-      if (currentMode === 'RETRO') startRetro();
+    document.getElementById('btn-restart').addEventListener('click', () => {
+      if (hudMode.textContent === 'RETRO') startRetro();
       else startSwarm();
-    };
+    });
 
-    document.getElementById('return-menu-btn').onclick = function() {
+    document.getElementById('btn-to-menu').addEventListener('click', () => {
       gameoverScreen.style.display = 'none';
-      menuScreen.style.display = 'flex';
-      currentMode = null;
-    };
+      overlay.style.display = 'flex';
+      gameState = 'MENU';
+    });
 
-    hudMenuBtn.onclick = function() {
-      isRunning = false;
+    hudMenuBtn.addEventListener('click', () => {
+      gameState = 'MENU';
       gameoverScreen.style.display = 'none';
-      menuScreen.style.display = 'flex';
-      currentMode = null;
-    };
+      overlay.style.display = 'flex';
+    });
 
-    // Start render loop
     draw();
   </script>
 </body>
