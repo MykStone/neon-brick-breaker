@@ -186,7 +186,7 @@
       font-size: 13px;
       color: #00f0ff;
       font-family: monospace;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
     .action-btn {
       background: #00f0ff;
@@ -198,8 +198,30 @@
       border-radius: 8px;
       cursor: pointer;
       width: 100%;
-      max-width: 240px;
-      margin-bottom: 12px;
+      max-width: 250px;
+      margin-bottom: 10px;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    }
+    .action-btn:active {
+      transform: scale(0.97);
+    }
+    .revive-btn {
+      background: #ff007f;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      font-size: 13px;
+      font-weight: 800;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 250px;
+      margin-bottom: 10px;
+      box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+      display: none;
+    }
+    .revive-btn:active {
+      transform: scale(0.97);
     }
     .sub-action-btn {
       background: transparent;
@@ -211,7 +233,7 @@
       border-radius: 6px;
       cursor: pointer;
       width: 100%;
-      max-width: 240px;
+      max-width: 250px;
     }
   </style>
 </head>
@@ -259,6 +281,9 @@
         <div id="gameover-mode-label" class="main-title" style="font-size:22px; color:#fff;">FINAL SCORE</div>
         <div id="gameover-score-val" class="gameover-val">0</div>
         <div id="gameover-best-tag" class="hi-score-tag">ALL-TIME BEST: 0</div>
+        
+        <!-- Rewarded Ad Revive Option -->
+        <button id="btn-revive" class="revive-btn">⚡ REVIVE RUN (WATCH AD)</button>
         <button id="btn-restart" class="action-btn">PLAY AGAIN</button>
         <button id="btn-to-menu" class="sub-action-btn">RETURN TO MENU</button>
       </div>
@@ -267,67 +292,188 @@
 
   <script>
     /* ==============================================================
-       1. CRAZYGAMES SDK v3 INTEGRATION
+       1. CRAZYGAMES SDK v3 ENGINE & AUDIO-PAUSE LOCK
        ============================================================== */
     let crazyGamesReady = false;
+    let isAdPlaying = false;
+    let portalMuted = false;
+    let userMuted = false;
+
+    // Master Web Audio Context & Gain Node
+    let audioCtx = null;
+    let masterGainNode = null;
+
+    function initAudioEngine() {
+      if (!audioCtx) {
+        try {
+          const AudioClass = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AudioClass();
+          masterGainNode = audioCtx.createGain();
+          masterGainNode.connect(audioCtx.destination);
+          enforceAudioPolicy();
+        } catch (e) {
+          console.warn("[StoneBuilt] Web Audio not available:", e);
+        }
+      }
+    }
+
+    function enforceAudioPolicy() {
+      const shouldMute = isAdPlaying || portalMuted || userMuted;
+      if (masterGainNode && audioCtx) {
+        const now = audioCtx.currentTime;
+        masterGainNode.gain.setValueAtTime(masterGainNode.gain.value, now);
+        masterGainNode.gain.linearRampToValueAtTime(shouldMute ? 0 : 1, now + 0.05);
+
+        if (shouldMute && audioCtx.state === 'running') {
+          audioCtx.suspend().catch(() => {});
+        } else if (!shouldMute && audioCtx.state === 'suspended') {
+          audioCtx.resume().catch(() => {});
+        }
+      }
+      
+      const muteBtn = document.getElementById('hud-mute-btn');
+      if (muteBtn) {
+        muteBtn.textContent = (userMuted || portalMuted) ? '🔇' : '🔊';
+      }
+    }
 
     async function initCrazyGames() {
       if (window.CrazyGames && window.CrazyGames.SDK) {
         try {
           await window.CrazyGames.SDK.init();
           crazyGamesReady = true;
-          console.log("CrazyGames SDK v3 initialized successfully!");
+          console.log("[StoneBuilt] CrazyGames SDK v3 Initialized successfully!");
+
+          // Check portal master mute setting
+          if (window.CrazyGames.SDK.game?.settings) {
+            portalMuted = !!window.CrazyGames.SDK.game.settings.muteAudio;
+            enforceAudioPolicy();
+          }
+
+          // Listen for portal mute changes
+          if (window.CrazyGames.SDK.game?.addSettingsChangeListener) {
+            window.CrazyGames.SDK.game.addSettingsChangeListener((settings) => {
+              portalMuted = !!settings.muteAudio;
+              enforceAudioPolicy();
+            });
+          }
         } catch (e) {
-          console.log("CrazyGames test/standalone mode:", e);
+          console.log("[StoneBuilt] Running in standalone/local mode:", e);
         }
       }
     }
     initCrazyGames();
 
     function triggerCrazyGamesStart() {
-      if (crazyGamesReady && window.CrazyGames?.SDK?.game) {
+      if (crazyGamesReady && window.CrazyGames?.SDK?.game?.gameplayStart) {
         try { window.CrazyGames.SDK.game.gameplayStart(); } catch (e) {}
       }
     }
 
     function triggerCrazyGamesStop() {
-      if (crazyGamesReady && window.CrazyGames?.SDK?.game) {
+      if (crazyGamesReady && window.CrazyGames?.SDK?.game?.gameplayStop) {
         try { window.CrazyGames.SDK.game.gameplayStop(); } catch (e) {}
       }
     }
 
-    function triggerCrazyGamesAd() {
-      if (crazyGamesReady && window.CrazyGames?.SDK?.ad) {
-        try {
-          window.CrazyGames.SDK.ad.requestAd("midroll", {
-            adStarted: () => console.log("CrazyGames Ad started"),
-            adFinished: () => console.log("CrazyGames Ad finished"),
-            adError: (err) => console.log("CrazyGames Ad skipped/test:", err)
-          });
-        } catch (e) {
-          console.log("CrazyGames Ad skipped in test mode:", e);
-        }
+    function triggerHappyTime() {
+      if (crazyGamesReady && window.CrazyGames?.SDK?.game?.happytime) {
+        try { window.CrazyGames.SDK.game.happytime(); } catch (e) {}
       }
     }
 
-    // --- SYNTHESIZED 8-BIT AUDIO ---
-    let audioCtx = null;
-    let isMuted = false;
+    // Midgame Video Ad with Bulletproof Pause-Lock
+    function triggerCrazyGamesAd(onComplete) {
+      if (!crazyGamesReady || !window.CrazyGames?.SDK?.ad?.requestAd) {
+        if (onComplete) onComplete();
+        return;
+      }
 
-    function playTone(freq, type = 'sine', duration = 0.08, vol = 0.1) {
-      if (isMuted) return;
+      const callbacks = {
+        adStarted: () => {
+          console.log("[StoneBuilt] Midgame Ad started -> Locking game loop & audio");
+          isAdPlaying = true;
+          triggerCrazyGamesStop();
+          enforceAudioPolicy();
+        },
+        adFinished: () => {
+          console.log("[StoneBuilt] Midgame Ad finished -> Unlocking game");
+          isAdPlaying = false;
+          enforceAudioPolicy();
+          if (onComplete) onComplete();
+        },
+        adError: (err) => {
+          console.warn("[StoneBuilt] Midgame Ad skipped/error:", err);
+          isAdPlaying = false;
+          enforceAudioPolicy();
+          if (onComplete) onComplete();
+        }
+      };
+
       try {
-        const AudioClass = window.AudioContext || window.webkitAudioContext;
-        if (!audioCtx) audioCtx = new AudioClass();
+        window.CrazyGames.SDK.ad.requestAd("midgame", callbacks);
+      } catch (e) {
+        isAdPlaying = false;
+        enforceAudioPolicy();
+        if (onComplete) onComplete();
+      }
+    }
+
+    // Rewarded Video Ad with Revive Reward Hook
+    function triggerCrazyGamesRewarded(onRewardGranted, onAdClosed) {
+      if (!crazyGamesReady || !window.CrazyGames?.SDK?.ad?.requestAd) {
+        // Fallback for offline local testing: grant reward immediately
+        if (onRewardGranted) onRewardGranted();
+        return;
+      }
+
+      let rewardEarned = false;
+
+      const callbacks = {
+        adStarted: () => {
+          console.log("[StoneBuilt] Rewarded Ad started -> Audio & Canvas frozen");
+          isAdPlaying = true;
+          triggerCrazyGamesStop();
+          enforceAudioPolicy();
+        },
+        adFinished: () => {
+          console.log("[StoneBuilt] Rewarded Ad completed -> Reward unlocked!");
+          rewardEarned = true;
+          isAdPlaying = false;
+          enforceAudioPolicy();
+          if (onRewardGranted) onRewardGranted();
+        },
+        adError: (err) => {
+          console.warn("[StoneBuilt] Rewarded Ad failed/cancelled:", err);
+          isAdPlaying = false;
+          enforceAudioPolicy();
+          if (onAdClosed && !rewardEarned) onAdClosed();
+        }
+      };
+
+      try {
+        window.CrazyGames.SDK.ad.requestAd("rewarded", callbacks);
+      } catch (e) {
+        isAdPlaying = false;
+        enforceAudioPolicy();
+        if (onAdClosed) onAdClosed();
+      }
+    }
+
+    // --- SYNTHESIZED 8-BIT AUDIO ENGINE ---
+    function playTone(freq, type = 'sine', duration = 0.08, vol = 0.1) {
+      if (isAdPlaying || userMuted || portalMuted) return;
+      initAudioEngine();
+      try {
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const noteGain = audioCtx.createGain();
         osc.type = type;
         osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        noteGain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(noteGain);
+        noteGain.connect(masterGainNode);
         osc.start();
         osc.stop(audioCtx.currentTime + duration);
       } catch (e) {}
@@ -355,12 +501,14 @@
     const gameoverScoreVal = document.getElementById('gameover-score-val');
     const gameoverModeLabel = document.getElementById('gameover-mode-label');
     const gameoverBestTag = document.getElementById('gameover-best-tag');
+    const btnRevive = document.getElementById('btn-revive');
 
     const W = 460;
     const H = 700;
 
     let gameState = 'MENU';
     let score = 0;
+    let reviveUsedThisSession = false;
 
     // --- PERSISTENT HIGH SCORE ENGINE ---
     let hiScore = 0;
@@ -382,6 +530,7 @@
         try {
           localStorage.setItem('sbc_neon_hiscore', hiScore.toString());
         } catch (e) {}
+        triggerHappyTime();
       }
     }
 
@@ -430,6 +579,7 @@
       hudBest.textContent = hiScore;
       retro.lives = 3;
       retro.level = 1;
+      reviveUsedThisSession = false;
       hudCenter.innerHTML = `LIVES: <span style="color:#ff007f;">❤️❤️❤️</span>`;
       initRetroBricks();
       resetRetroBall();
@@ -518,6 +668,7 @@
       swarm.shooter.y = H - 30;
       swarm.aiming = false;
       swarm.launching = false;
+      reviveUsedThisSession = false;
       hudCenter.innerHTML = `BALLS: <span class="hud-accent">${swarm.ballCount}</span>`;
       swarm.bricks = [];
       swarm.pickups = [];
@@ -626,7 +777,8 @@
     }
 
     function onPointerDown(e) {
-      if (gameState === 'MENU') return;
+      if (isAdPlaying || gameState === 'MENU') return;
+      initAudioEngine();
       const pt = getCanvasCoords(e);
 
       if (gameState === 'PLAYING_RETRO') {
@@ -648,7 +800,7 @@
     }
 
     function onPointerMove(e) {
-      if (gameState === 'MENU') return;
+      if (isAdPlaying || gameState === 'MENU') return;
       const pt = getCanvasCoords(e);
 
       if (gameState === 'PLAYING_RETRO') {
@@ -664,16 +816,15 @@
     }
 
     function onPointerUp() {
-      if (gameState === 'PLAYING_SWARM') {
-        if (swarm.aiming && !swarm.launching) {
-          swarm.aiming = false;
-          swarm.launching = true;
-          swarm.launchedCount = 0;
-          swarm.ballsReturned = 0;
-          swarm.launchTimer = 0;
-          swarm.balls = [];
-          swarm.newShooterX = null;
-        }
+      if (isAdPlaying || gameState !== 'PLAYING_SWARM') return;
+      if (swarm.aiming && !swarm.launching) {
+        swarm.aiming = false;
+        swarm.launching = true;
+        swarm.launchedCount = 0;
+        swarm.ballsReturned = 0;
+        swarm.launchTimer = 0;
+        swarm.balls = [];
+        swarm.newShooterX = null;
       }
     }
 
@@ -696,6 +847,8 @@
     });
 
     window.addEventListener('keydown', (e) => {
+      if (isAdPlaying) return;
+      initAudioEngine();
       if (e.code === 'Space') {
         if (gameState === 'PLAYING_RETRO') {
           if (retro.balls[0] && retro.balls[0].stuck) {
@@ -717,8 +870,9 @@
 
     hudMuteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      isMuted = !isMuted;
-      hudMuteBtn.textContent = isMuted ? '🔇' : '🔊';
+      initAudioEngine();
+      userMuted = !userMuted;
+      enforceAudioPolicy();
     });
 
     hudSpeedBtn.addEventListener('click', (e) => {
@@ -732,9 +886,17 @@
       gameoverModeLabel.textContent = `${modeTitle} GAME OVER`;
       gameoverScoreVal.textContent = score;
       gameoverBestTag.textContent = `ALL-TIME BEST: ${hiScore}`;
+      
+      // Offer Rewarded Revive if not already used this run
+      if (!reviveUsedThisSession) {
+        btnRevive.style.display = 'block';
+      } else {
+        btnRevive.style.display = 'none';
+      }
+
       gameoverScreen.style.display = 'flex';
 
-      // CrazyGames Ad Call & Gameplay Stop
+      // CrazyGames Midgame Ad & Gameplay Lifecycle Stop
       triggerCrazyGamesStop();
       triggerCrazyGamesAd();
     }
@@ -776,26 +938,26 @@
         b.x += b.vx;
         b.y += b.vy;
 
-        /* --- BULLETPROOF WALL BOUNCE PHYSICS (NO MORE STICKING!) --- */
+        /* --- BULLETPROOF WALL BOUNCE PHYSICS --- */
         // Left Wall
         if (b.x - b.r <= 0) {
-          b.x = b.r + 1; // Snap out of wall boundary
-          b.vx = Math.abs(b.vx); // Force rightward
-          if (Math.abs(b.vx) < 1.5) b.vx = 2.4; // Anti-jitter kick
+          b.x = b.r + 1;
+          b.vx = Math.abs(b.vx);
+          if (Math.abs(b.vx) < 1.5) b.vx = 2.4;
           sndHit(300);
         }
         // Right Wall
         else if (b.x + b.r >= W) {
-          b.x = W - b.r - 1; // Snap out of wall boundary
-          b.vx = -Math.abs(b.vx); // Force leftward
-          if (Math.abs(b.vx) < 1.5) b.vx = -2.4; // Anti-jitter kick
+          b.x = W - b.r - 1;
+          b.vx = -Math.abs(b.vx);
+          if (Math.abs(b.vx) < 1.5) b.vx = -2.4;
           sndHit(300);
         }
 
         // Top Wall
         if (b.y - b.r <= 0) {
-          b.y = b.r + 1; // Snap down
-          b.vy = Math.abs(b.vy); // Force downward
+          b.y = b.r + 1;
+          b.vy = Math.abs(b.vy);
           sndHit(300);
         }
 
@@ -877,6 +1039,7 @@
       if (retro.bricks.length > 0 && retro.bricks.every(b => !b.alive)) {
         retro.level++;
         triggerShake(5, 10);
+        triggerHappyTime();
         addPopup(W / 2, H / 2, 'LEVEL CLEAR!', '#39ff14');
         initRetroBricks();
         resetRetroBall();
@@ -992,9 +1155,15 @@
     }
 
     // =====================================
-    // DRAW LOOP
+    // DRAW & RENDER LOOP
     // =====================================
     function draw() {
+      // FREEZE ENGINE WHILE AD IS DISPLAYING
+      if (isAdPlaying) {
+        requestAnimationFrame(draw);
+        return;
+      }
+
       ctx.save();
 
       if (shakeTimer > 0) {
@@ -1232,19 +1401,51 @@
     }
 
     // =====================================
-    // BUTTON HOOKS
+    // BUTTON HOOKS & REWARDED AD LOGIC
     // =====================================
     document.getElementById('btn-retro').addEventListener('click', () => {
+      initAudioEngine();
       startRetro();
     });
 
     document.getElementById('btn-swarm').addEventListener('click', () => {
+      initAudioEngine();
       startSwarm();
     });
 
     document.getElementById('btn-restart').addEventListener('click', () => {
+      initAudioEngine();
       if (hudMode.textContent === 'RETRO') startRetro();
       else startSwarm();
+    });
+
+    // Rewarded Ad Revive Handler
+    btnRevive.addEventListener('click', () => {
+      triggerCrazyGamesRewarded(() => {
+        reviveUsedThisSession = true;
+        btnRevive.style.display = 'none';
+        gameoverScreen.style.display = 'none';
+
+        if (hudMode.textContent === 'RETRO') {
+          gameState = 'PLAYING_RETRO';
+          retro.lives = 1;
+          hudCenter.innerHTML = `LIVES: <span style="color:#ff007f;">❤️</span>`;
+          resetRetroBall();
+          addPopup(W / 2, H / 2, 'REVIVED!', '#39ff14');
+        } else {
+          gameState = 'PLAYING_SWARM';
+          // Clear bottom 4 rows of danger bricks
+          swarm.bricks = swarm.bricks.filter(b => b.row < 22);
+          swarm.balls = [];
+          swarm.launching = false;
+          swarm.aiming = false;
+          swarm.ballCount += 3;
+          hudCenter.innerHTML = `BALLS: <span class="hud-accent">${swarm.ballCount}</span>`;
+          addPopup(W / 2, H / 2, 'SURGE CLEARED!', '#00f0ff');
+        }
+
+        triggerCrazyGamesStart();
+      });
     });
 
     document.getElementById('btn-to-menu').addEventListener('click', () => {
@@ -1265,5 +1466,3 @@
   </script>
 </body>
 </html>
-
-
