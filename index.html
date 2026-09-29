@@ -282,7 +282,6 @@
         <div id="gameover-score-val" class="gameover-val">0</div>
         <div id="gameover-best-tag" class="hi-score-tag">ALL-TIME BEST: 0</div>
         
-        <!-- Rewarded Ad Revive Option -->
         <button id="btn-revive" class="revive-btn">⚡ REVIVE RUN (WATCH AD)</button>
         <button id="btn-restart" class="action-btn">PLAY AGAIN</button>
         <button id="btn-to-menu" class="sub-action-btn">RETURN TO MENU</button>
@@ -344,13 +343,11 @@
           crazyGamesReady = true;
           console.log("[StoneBuilt] CrazyGames SDK v3 Initialized successfully!");
 
-          // Check portal master mute setting
           if (window.CrazyGames.SDK.game?.settings) {
             portalMuted = !!window.CrazyGames.SDK.game.settings.muteAudio;
             enforceAudioPolicy();
           }
 
-          // Listen for portal mute changes
           if (window.CrazyGames.SDK.game?.addSettingsChangeListener) {
             window.CrazyGames.SDK.game.addSettingsChangeListener((settings) => {
               portalMuted = !!settings.muteAudio;
@@ -358,7 +355,7 @@
             });
           }
         } catch (e) {
-          console.log("[StoneBuilt] Running in standalone/local mode:", e);
+          console.log("[StoneBuilt] Standalone/local sandbox mode:", e);
         }
       }
     }
@@ -382,71 +379,93 @@
       }
     }
 
-    // Midgame Video Ad with Bulletproof Pause-Lock
+    // Midgame Video Ad with 3-second safety release timeout
     function triggerCrazyGamesAd(onComplete) {
       if (!crazyGamesReady || !window.CrazyGames?.SDK?.ad?.requestAd) {
         if (onComplete) onComplete();
         return;
       }
 
+      isAdPlaying = true;
+      triggerCrazyGamesStop();
+      enforceAudioPolicy();
+
+      let finished = false;
+      const finishAd = () => {
+        if (finished) return;
+        finished = true;
+        isAdPlaying = false;
+        enforceAudioPolicy();
+        if (onComplete) onComplete();
+      };
+
+      // Safety timeout: if ad network hangs in preview/test, unlock automatically after 3.5s
+      const safetyTimer = setTimeout(() => {
+        finishAd();
+      }, 3500);
+
       const callbacks = {
         adStarted: () => {
-          console.log("[StoneBuilt] Midgame Ad started -> Locking game loop & audio");
-          isAdPlaying = true;
-          triggerCrazyGamesStop();
-          enforceAudioPolicy();
+          console.log("[StoneBuilt] Midgame Ad started");
         },
         adFinished: () => {
-          console.log("[StoneBuilt] Midgame Ad finished -> Unlocking game");
-          isAdPlaying = false;
-          enforceAudioPolicy();
-          if (onComplete) onComplete();
+          clearTimeout(safetyTimer);
+          finishAd();
         },
         adError: (err) => {
+          clearTimeout(safetyTimer);
           console.warn("[StoneBuilt] Midgame Ad skipped/error:", err);
-          isAdPlaying = false;
-          enforceAudioPolicy();
-          if (onComplete) onComplete();
+          finishAd();
         }
       };
 
       try {
         window.CrazyGames.SDK.ad.requestAd("midgame", callbacks);
       } catch (e) {
-        isAdPlaying = false;
-        enforceAudioPolicy();
-        if (onComplete) onComplete();
+        clearTimeout(safetyTimer);
+        finishAd();
       }
     }
 
     // Rewarded Video Ad with Revive Reward Hook
     function triggerCrazyGamesRewarded(onRewardGranted, onAdClosed) {
       if (!crazyGamesReady || !window.CrazyGames?.SDK?.ad?.requestAd) {
-        // Fallback for offline local testing: grant reward immediately
         if (onRewardGranted) onRewardGranted();
         return;
       }
 
       let rewardEarned = false;
+      isAdPlaying = true;
+      triggerCrazyGamesStop();
+      enforceAudioPolicy();
+
+      let finished = false;
+      const finishReward = () => {
+        if (finished) return;
+        finished = true;
+        isAdPlaying = false;
+        enforceAudioPolicy();
+      };
+
+      const safetyTimer = setTimeout(() => {
+        finishReward();
+        if (onAdClosed) onAdClosed();
+      }, 4000);
 
       const callbacks = {
         adStarted: () => {
-          console.log("[StoneBuilt] Rewarded Ad started -> Audio & Canvas frozen");
-          isAdPlaying = true;
-          triggerCrazyGamesStop();
-          enforceAudioPolicy();
+          console.log("[StoneBuilt] Rewarded Ad playing");
         },
         adFinished: () => {
-          console.log("[StoneBuilt] Rewarded Ad completed -> Reward unlocked!");
+          clearTimeout(safetyTimer);
+          finishReward();
           rewardEarned = true;
-          isAdPlaying = false;
-          enforceAudioPolicy();
           if (onRewardGranted) onRewardGranted();
         },
         adError: (err) => {
+          clearTimeout(safetyTimer);
+          finishReward();
           console.warn("[StoneBuilt] Rewarded Ad failed/cancelled:", err);
-          isAdPlaying = false;
-          enforceAudioPolicy();
           if (onAdClosed && !rewardEarned) onAdClosed();
         }
       };
@@ -454,8 +473,8 @@
       try {
         window.CrazyGames.SDK.ad.requestAd("rewarded", callbacks);
       } catch (e) {
-        isAdPlaying = false;
-        enforceAudioPolicy();
+        clearTimeout(safetyTimer);
+        finishReward();
         if (onAdClosed) onAdClosed();
       }
     }
@@ -560,6 +579,8 @@
     // =====================================
     // 1. CLASSIC RETRO ENGINE
     // =====================================
+    let isTransitioningLevel = false;
+
     const retro = {
       lives: 3,
       level: 1,
@@ -579,6 +600,7 @@
       hudBest.textContent = hiScore;
       retro.lives = 3;
       retro.level = 1;
+      isTransitioningLevel = false;
       reviveUsedThisSession = false;
       hudCenter.innerHTML = `LIVES: <span style="color:#ff007f;">❤️❤️❤️</span>`;
       initRetroBricks();
@@ -616,6 +638,7 @@
       retro.paddle.w = 85;
       retro.paddle.hasLasers = false;
       retro.paddle.x = (W - 85) / 2;
+      retro.lasers = [];
       retro.balls = [{
         x: W / 2,
         y: H - 55,
@@ -625,6 +648,34 @@
         stuck: true,
         trail: []
       }];
+    }
+
+    function advanceRetroLevel() {
+      if (isTransitioningLevel) return;
+      isTransitioningLevel = true;
+      triggerHappyTime();
+      triggerShake(6, 14);
+      addPopup(W / 2, H / 2 - 20, 'LEVEL CLEAR!', '#39ff14');
+
+      // Clear projectiles and balls cleanly
+      retro.lasers = [];
+      retro.powerUps = [];
+      retro.balls = [];
+
+      setTimeout(() => {
+        retro.level++;
+        initRetroBricks();
+        resetRetroBall();
+        isTransitioningLevel = false;
+
+        // Auto launch after 1 second if player hasn't tapped yet
+        setTimeout(() => {
+          if (retro.balls[0] && retro.balls[0].stuck) {
+            retro.balls[0].stuck = false;
+            sndPaddle();
+          }
+        }, 1200);
+      }, 900);
     }
 
     // =====================================
@@ -777,7 +828,7 @@
     }
 
     function onPointerDown(e) {
-      if (isAdPlaying || gameState === 'MENU') return;
+      if (isAdPlaying || gameState === 'MENU' || isTransitioningLevel) return;
       initAudioEngine();
       const pt = getCanvasCoords(e);
 
@@ -800,7 +851,7 @@
     }
 
     function onPointerMove(e) {
-      if (isAdPlaying || gameState === 'MENU') return;
+      if (isAdPlaying || gameState === 'MENU' || isTransitioningLevel) return;
       const pt = getCanvasCoords(e);
 
       if (gameState === 'PLAYING_RETRO') {
@@ -847,7 +898,7 @@
     });
 
     window.addEventListener('keydown', (e) => {
-      if (isAdPlaying) return;
+      if (isAdPlaying || isTransitioningLevel) return;
       initAudioEngine();
       if (e.code === 'Space') {
         if (gameState === 'PLAYING_RETRO') {
@@ -887,7 +938,6 @@
       gameoverScoreVal.textContent = score;
       gameoverBestTag.textContent = `ALL-TIME BEST: ${hiScore}`;
       
-      // Offer Rewarded Revive if not already used this run
       if (!reviveUsedThisSession) {
         btnRevive.style.display = 'block';
       } else {
@@ -896,17 +946,19 @@
 
       gameoverScreen.style.display = 'flex';
 
-      // CrazyGames Midgame Ad & Gameplay Lifecycle Stop
       triggerCrazyGamesStop();
       triggerCrazyGamesAd();
     }
 
     // =====================================
-    // RETRO GAMEPLAY UPDATE (WITH FIXED WALL PHYSICS!)
+    // RETRO GAMEPLAY UPDATE
     // =====================================
     function updateRetroEngine() {
+      if (isTransitioningLevel) return;
+
       retro.paddle.y = H - 28;
 
+      // Laser Update
       for (let i = retro.lasers.length - 1; i >= 0; i--) {
         const l = retro.lasers[i];
         l.y += l.vy;
@@ -927,6 +979,7 @@
         }
       }
 
+      // Ball Update
       for (let i = retro.balls.length - 1; i >= 0; i--) {
         const b = retro.balls[i];
         if (b.stuck) continue;
@@ -938,16 +991,13 @@
         b.x += b.vx;
         b.y += b.vy;
 
-        /* --- BULLETPROOF WALL BOUNCE PHYSICS --- */
-        // Left Wall
+        // Left / Right Walls
         if (b.x - b.r <= 0) {
           b.x = b.r + 1;
           b.vx = Math.abs(b.vx);
           if (Math.abs(b.vx) < 1.5) b.vx = 2.4;
           sndHit(300);
-        }
-        // Right Wall
-        else if (b.x + b.r >= W) {
+        } else if (b.x + b.r >= W) {
           b.x = W - b.r - 1;
           b.vx = -Math.abs(b.vx);
           if (Math.abs(b.vx) < 1.5) b.vx = -2.4;
@@ -961,13 +1011,14 @@
           sndHit(300);
         }
 
-        // Paddle Collision
+        // Paddle Collision (Safe Math)
         if (b.y + b.r >= retro.paddle.y && b.y - b.r <= retro.paddle.y + retro.paddle.h && b.x >= retro.paddle.x && b.x <= retro.paddle.x + retro.paddle.w && b.vy > 0) {
           sndPaddle();
           const hit = (b.x - (retro.paddle.x + retro.paddle.w / 2)) / (retro.paddle.w / 2);
-          const spd = Math.hypot(b.vx, b.vy);
+          const currentSpd = Math.max(5.5, Math.hypot(b.vx, b.vy));
           b.vx = hit * 6;
-          b.vy = -Math.abs(Math.sqrt(Math.max(16, spd * spd - b.vx * b.vx)));
+          const remSq = Math.max(16, currentSpd * currentSpd - b.vx * b.vx);
+          b.vy = -Math.sqrt(remSq);
           b.y = retro.paddle.y - b.r;
         }
 
@@ -997,10 +1048,13 @@
           }
         }
 
-        if (b.y - b.r > H) retro.balls.splice(i, 1);
+        if (b.y - b.r > H) {
+          retro.balls.splice(i, 1);
+        }
       }
 
-      if (retro.balls.length === 0) {
+      // Ball Loss Check
+      if (retro.balls.length === 0 && !isTransitioningLevel) {
         retro.lives--;
         sndDie();
         triggerShake(8, 14);
@@ -1015,6 +1069,7 @@
         }
       }
 
+      // Powerups Update
       for (let i = retro.powerUps.length - 1; i >= 0; i--) {
         const p = retro.powerUps[i];
         p.y += p.vy;
@@ -1036,18 +1091,14 @@
         } else if (p.y > H) retro.powerUps.splice(i, 1);
       }
 
+      // Safe Level Clear Detection
       if (retro.bricks.length > 0 && retro.bricks.every(b => !b.alive)) {
-        retro.level++;
-        triggerShake(5, 10);
-        triggerHappyTime();
-        addPopup(W / 2, H / 2, 'LEVEL CLEAR!', '#39ff14');
-        initRetroBricks();
-        resetRetroBall();
+        advanceRetroLevel();
       }
     }
 
     // =====================================
-    // SWARM GAMEPLAY UPDATE (WITH FIXED WALL PHYSICS!)
+    // SWARM GAMEPLAY UPDATE
     // =====================================
     function updateSwarmEngine() {
       if (swarm.launching && swarm.launchedCount < swarm.ballCount) {
@@ -1077,7 +1128,6 @@
           b.x += b.vx;
           b.y += b.vy;
 
-          /* --- SAFE WALL SNAPPING IN SWARM MODE --- */
           if (b.x - b.r <= 0) { b.x = b.r + 1; b.vx = Math.abs(b.vx); }
           else if (b.x + b.r >= W) { b.x = W - b.r - 1; b.vx = -Math.abs(b.vx); }
           if (b.y - b.r <= 0) { b.y = b.r + 1; b.vy = Math.abs(b.vy); }
@@ -1155,249 +1205,261 @@
     }
 
     // =====================================
-    // DRAW & RENDER LOOP
+    // BULLETPROOF RENDER LOOP
     // =====================================
     function draw() {
-      // FREEZE ENGINE WHILE AD IS DISPLAYING
-      if (isAdPlaying) {
-        requestAnimationFrame(draw);
-        return;
-      }
-
-      ctx.save();
-
-      if (shakeTimer > 0) {
-        const sx = (Math.random() - 0.5) * shakeMag;
-        const sy = (Math.random() - 0.5) * shakeMag;
-        ctx.translate(sx, sy);
-        shakeTimer--;
-      }
-
-      ctx.clearRect(0, 0, W, H);
-
-      if (gameState === 'PLAYING_RETRO') {
-        for (let b of retro.bricks) {
-          if (!b.alive) continue;
-          ctx.fillStyle = b.color;
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = b.color;
-          ctx.fillRect(b.x, b.y, b.w, b.h);
-        }
-        ctx.shadowBlur = 0;
-
-        ctx.fillStyle = retro.paddle.hasLasers ? '#ff007f' : '#00f0ff';
-        ctx.shadowBlur = 14;
-        ctx.shadowColor = ctx.fillStyle;
-        ctx.fillRect(retro.paddle.x, retro.paddle.y, retro.paddle.w, retro.paddle.h);
-        ctx.shadowBlur = 0;
-
-        ctx.fillStyle = '#ff007f';
-        for (let l of retro.lasers) ctx.fillRect(l.x, l.y, 4, 10);
-
-        for (let p of retro.powerUps) {
-          ctx.fillStyle = p.type === 'LASER' ? '#ff007f' : (p.type === 'MULTI' ? '#39ff14' : '#ffe600');
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = '#060810';
-          ctx.font = 'bold 9px monospace';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(p.type[0], p.x, p.y);
-        }
-
-        for (let b of retro.balls) {
-          if (b.trail) {
-            for (let t = 0; t < b.trail.length; t++) {
-              const alpha = (t + 1) / b.trail.length * 0.45;
-              ctx.fillStyle = `rgba(255, 230, 0, ${alpha})`;
-              ctx.beginPath();
-              ctx.arc(b.trail[t].x, b.trail[t].y, b.r * 0.7, 0, Math.PI * 2);
-              ctx.fill();
-            }
-          }
-          ctx.fillStyle = '#ffe600';
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = '#ffe600';
-          ctx.beginPath();
-          ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.shadowBlur = 0;
-        }
-
-        updateRetroEngine();
-
-      } else if (gameState === 'PLAYING_SWARM') {
-        for (let b of swarm.bricks) {
-          if (!b.alive) continue;
-          const bx = SWARM_PAD + b.c * (SWARM_BW + SWARM_PAD);
-          const by = 40 + b.row * (SWARM_BH + SWARM_PAD);
-          const cStyle = getBrickColors(b.hp, b.isTNT);
-
-          ctx.fillStyle = cStyle.fill;
-          ctx.strokeStyle = cStyle.border;
-          ctx.lineWidth = 1.4;
-          ctx.shadowBlur = 6;
-          ctx.shadowColor = cStyle.border;
-          ctx.fillRect(bx, by, SWARM_BW, SWARM_BH);
-          ctx.strokeRect(bx, by, SWARM_BW, SWARM_BH);
-          ctx.shadowBlur = 0;
-
-          ctx.fillStyle = cStyle.text;
-          if (b.isTNT) {
-            ctx.font = 'bold 10px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('💣', bx + SWARM_BW / 2, by + SWARM_BH / 2);
-          } else {
-            ctx.font = 'bold 8.5px monospace';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(b.hp, bx + SWARM_BW / 2, by + SWARM_BH / 2);
-          }
-        }
-
-        for (let p of swarm.pickups) {
-          if (p.collected) continue;
-          const px = SWARM_PAD + p.c * (SWARM_BW + SWARM_PAD) + SWARM_BW / 2;
-          const py = 40 + p.row * (SWARM_BH + SWARM_PAD) + SWARM_BH / 2;
-          ctx.fillStyle = '#39ff14';
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = '#39ff14';
-          ctx.beginPath();
-          ctx.arc(px, py, 6, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.shadowBlur = 0;
-          ctx.fillStyle = '#060810';
-          ctx.font = 'bold 8px monospace';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('+', px, py);
-        }
-
-        if (swarm.aiming && !swarm.launching) {
-          let curX = swarm.shooter.x;
-          let curY = swarm.shooter.y;
-          let dirX = Math.cos(swarm.aimAngle);
-          let dirY = Math.sin(swarm.aimAngle);
-          const ballR = 3.5;
-          let totalDist = 520;
-
-          ctx.strokeStyle = '#00f0ff';
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = '#00f0ff';
-          ctx.setLineDash([5, 5]);
-          ctx.lineWidth = 2.2;
-          ctx.beginPath();
-          ctx.moveTo(curX, curY);
-
-          for (let bounce = 0; bounce < 2; bounce++) {
-            let hitT = totalDist;
-            let hitWall = 'NONE';
-
-            if (dirX < 0) {
-              const t = (ballR - curX) / dirX;
-              if (t > 0 && t < hitT) { hitT = t; hitWall = 'X'; }
-            } else if (dirX > 0) {
-              const t = (W - ballR - curX) / dirX;
-              if (t > 0 && t < hitT) { hitT = t; hitWall = 'X'; }
-            }
-
-            if (dirY < 0) {
-              const t = (ballR - curY) / dirY;
-              if (t > 0 && t < hitT) { hitT = t; hitWall = 'Y'; }
-            }
-
-            const nextX = curX + dirX * hitT;
-            const nextY = curY + dirY * hitT;
-            ctx.lineTo(nextX, nextY);
-
-            if (hitWall === 'X') {
-              curX = nextX;
-              curY = nextY;
-              dirX = -dirX;
-              totalDist -= hitT;
-            } else {
-              ctx.stroke();
-              ctx.beginPath();
-              ctx.arc(nextX, nextY, 4, 0, Math.PI * 2);
-              ctx.fillStyle = '#00f0ff';
-              ctx.fill();
-              break;
-            }
-          }
-
-          ctx.stroke();
-          ctx.setLineDash([]);
-          ctx.shadowBlur = 0;
-        }
-
-        ctx.fillStyle = '#00f0ff';
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = '#00f0ff';
-        ctx.beginPath();
-        ctx.arc(swarm.shooter.x, swarm.shooter.y, 6.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-
-        for (let b of swarm.balls) {
-          if (b.trail) {
-            for (let t = 0; t < b.trail.length; t++) {
-              const alpha = (t + 1) / b.trail.length * 0.4;
-              ctx.fillStyle = `rgba(0, 240, 255, ${alpha})`;
-              ctx.beginPath();
-              ctx.arc(b.trail[t].x, b.trail[t].y, b.r * 0.65, 0, Math.PI * 2);
-              ctx.fill();
-            }
-          }
-          ctx.fillStyle = '#00f0ff';
-          ctx.shadowBlur = 6;
-          ctx.shadowColor = '#00f0ff';
-          ctx.beginPath();
-          ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.shadowBlur = 0;
-        }
-
-        updateSwarmEngine();
-      }
-
-      for (let i = popups.length - 1; i >= 0; i--) {
-        const pop = popups[i];
-        pop.y += pop.vy;
-        pop.life -= 0.025;
-        if (pop.life <= 0) {
-          popups.splice(i, 1);
-          continue;
-        }
-        ctx.fillStyle = pop.color;
-        ctx.globalAlpha = Math.max(0, pop.life);
-        ctx.font = 'bold 12px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(pop.text, pop.x, pop.y);
-      }
-      ctx.globalAlpha = 1;
-
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const pt = particles[i];
-        pt.x += pt.vx;
-        pt.y += pt.vy;
-        pt.life -= 0.04;
-        if (pt.life <= 0) {
-          particles.splice(i, 1);
-          continue;
-        }
-        ctx.fillStyle = pt.color;
-        ctx.globalAlpha = Math.max(0, pt.life);
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-
-      ctx.restore();
-
+      // Re-queue frame immediately so loop can NEVER permanently halt
       requestAnimationFrame(draw);
+
+      if (isAdPlaying) return;
+
+      try {
+        ctx.save();
+
+        if (shakeTimer > 0) {
+          const sx = (Math.random() - 0.5) * shakeMag;
+          const sy = (Math.random() - 0.5) * shakeMag;
+          ctx.translate(sx, sy);
+          shakeTimer--;
+        }
+
+        ctx.clearRect(0, 0, W, H);
+
+        if (gameState === 'PLAYING_RETRO') {
+          for (let b of retro.bricks) {
+            if (!b.alive) continue;
+            ctx.fillStyle = b.color;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = b.color;
+            ctx.fillRect(b.x, b.y, b.w, b.h);
+          }
+          ctx.shadowBlur = 0;
+
+          ctx.fillStyle = retro.paddle.hasLasers ? '#ff007f' : '#00f0ff';
+          ctx.shadowBlur = 14;
+          ctx.shadowColor = ctx.fillStyle;
+          ctx.fillRect(retro.paddle.x, retro.paddle.y, retro.paddle.w, retro.paddle.h);
+          ctx.shadowBlur = 0;
+
+          ctx.fillStyle = '#ff007f';
+          for (let l of retro.lasers) ctx.fillRect(l.x, l.y, 4, 10);
+
+          for (let p of retro.powerUps) {
+            ctx.fillStyle = p.type === 'LASER' ? '#ff007f' : (p.type === 'MULTI' ? '#39ff14' : '#ffe600');
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#060810';
+            ctx.font = 'bold 9px monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(p.type[0], p.x, p.y);
+          }
+
+          for (let b of retro.balls) {
+            if (b.trail) {
+              for (let t = 0; t < b.trail.length; t++) {
+                const alpha = (t + 1) / b.trail.length * 0.45;
+                ctx.fillStyle = `rgba(255, 230, 0, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(b.trail[t].x, b.trail[t].y, b.r * 0.7, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            }
+            ctx.fillStyle = '#ffe600';
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = '#ffe600';
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          }
+
+          // Launch helper prompt if ball is waiting
+          if (retro.balls[0] && retro.balls[0].stuck && !isTransitioningLevel) {
+            ctx.fillStyle = '#00f0ff';
+            ctx.font = 'bold 12px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('TAP OR PRESS SPACE TO LAUNCH', W / 2, H - 75);
+          }
+
+          updateRetroEngine();
+
+        } else if (gameState === 'PLAYING_SWARM') {
+          for (let b of swarm.bricks) {
+            if (!brkAlive(b)) continue;
+            const bx = SWARM_PAD + b.c * (SWARM_BW + SWARM_PAD);
+            const by = 40 + b.row * (SWARM_BH + SWARM_PAD);
+            const cStyle = getBrickColors(b.hp, b.isTNT);
+
+            ctx.fillStyle = cStyle.fill;
+            ctx.strokeStyle = cStyle.border;
+            ctx.lineWidth = 1.4;
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = cStyle.border;
+            ctx.fillRect(bx, by, SWARM_BW, SWARM_BH);
+            ctx.strokeRect(bx, by, SWARM_BW, SWARM_BH);
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = cStyle.text;
+            if (b.isTNT) {
+              ctx.font = 'bold 10px sans-serif';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText('💣', bx + SWARM_BW / 2, by + SWARM_BH / 2);
+            } else {
+              ctx.font = 'bold 8.5px monospace';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(b.hp, bx + SWARM_BW / 2, by + SWARM_BH / 2);
+            }
+          }
+
+          for (let p of swarm.pickups) {
+            if (p.collected) continue;
+            const px = SWARM_PAD + p.c * (SWARM_BW + SWARM_PAD) + SWARM_BW / 2;
+            const py = 40 + p.row * (SWARM_BH + SWARM_PAD) + SWARM_BH / 2;
+            ctx.fillStyle = '#39ff14';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#39ff14';
+            ctx.beginPath();
+            ctx.arc(px, py, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#060810';
+            ctx.font = 'bold 8px monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('+', px, py);
+          }
+
+          if (swarm.aiming && !swarm.launching) {
+            let curX = swarm.shooter.x;
+            let curY = swarm.shooter.y;
+            let dirX = Math.cos(swarm.aimAngle);
+            let dirY = Math.sin(swarm.aimAngle);
+            const ballR = 3.5;
+            let totalDist = 520;
+
+            ctx.strokeStyle = '#00f0ff';
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = '#00f0ff';
+            ctx.setLineDash([5, 5]);
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            ctx.moveTo(curX, curY);
+
+            for (let bounce = 0; bounce < 2; bounce++) {
+              let hitT = totalDist;
+              let hitWall = 'NONE';
+
+              if (dirX < 0) {
+                const t = (ballR - curX) / dirX;
+                if (t > 0 && t < hitT) { hitT = t; hitWall = 'X'; }
+              } else if (dirX > 0) {
+                const t = (W - ballR - curX) / dirX;
+                if (t > 0 && t < hitT) { hitT = t; hitWall = 'X'; }
+              }
+
+              if (dirY < 0) {
+                const t = (ballR - curY) / dirY;
+                if (t > 0 && t < hitT) { hitT = t; hitWall = 'Y'; }
+              }
+
+              const nextX = curX + dirX * hitT;
+              const nextY = curY + dirY * hitT;
+              ctx.lineTo(nextX, nextY);
+
+              if (hitWall === 'X') {
+                curX = nextX;
+                curY = nextY;
+                dirX = -dirX;
+                totalDist -= hitT;
+              } else {
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(nextX, nextY, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#00f0ff';
+                ctx.fill();
+                break;
+              }
+            }
+
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.shadowBlur = 0;
+          }
+
+          ctx.fillStyle = '#00f0ff';
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = '#00f0ff';
+          ctx.beginPath();
+          ctx.arc(swarm.shooter.x, swarm.shooter.y, 6.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          for (let b of swarm.balls) {
+            if (b.trail) {
+              for (let t = 0; t < b.trail.length; t++) {
+                const alpha = (t + 1) / b.trail.length * 0.4;
+                ctx.fillStyle = `rgba(0, 240, 255, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(b.trail[t].x, b.trail[t].y, b.r * 0.65, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            }
+            ctx.fillStyle = '#00f0ff';
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = '#00f0ff';
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          }
+
+          updateSwarmEngine();
+        }
+
+        function brkAlive(b) { return b && b.alive; }
+
+        for (let i = popups.length - 1; i >= 0; i--) {
+          const pop = popups[i];
+          pop.y += pop.vy;
+          pop.life -= 0.025;
+          if (pop.life <= 0) {
+            popups.splice(i, 1);
+            continue;
+          }
+          ctx.fillStyle = pop.color;
+          ctx.globalAlpha = Math.max(0, pop.life);
+          ctx.font = 'bold 12px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(pop.text, pop.x, pop.y);
+        }
+        ctx.globalAlpha = 1;
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const pt = particles[i];
+          pt.x += pt.vx;
+          pt.y += pt.vy;
+          pt.life -= 0.04;
+          if (pt.life <= 0) {
+            particles.splice(i, 1);
+            continue;
+          }
+          ctx.fillStyle = pt.color;
+          ctx.globalAlpha = Math.max(0, pt.life);
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        ctx.restore();
+
+      } catch (err) {
+        console.error("[StoneBuilt Engine Guard Caught Error]:", err);
+      }
     }
 
     // =====================================
@@ -1419,7 +1481,6 @@
       else startSwarm();
     });
 
-    // Rewarded Ad Revive Handler
     btnRevive.addEventListener('click', () => {
       triggerCrazyGamesRewarded(() => {
         reviveUsedThisSession = true;
@@ -1434,7 +1495,6 @@
           addPopup(W / 2, H / 2, 'REVIVED!', '#39ff14');
         } else {
           gameState = 'PLAYING_SWARM';
-          // Clear bottom 4 rows of danger bricks
           swarm.bricks = swarm.bricks.filter(b => b.row < 22);
           swarm.balls = [];
           swarm.launching = false;
