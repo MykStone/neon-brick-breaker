@@ -339,7 +339,6 @@
     function isCrazyGamesEnvironment() {
       if (!window.CrazyGames?.SDK) return false;
       const env = window.CrazyGames.SDK.environment;
-      // In SDK v3, only "crazygames" and "local" accept API calls
       return env === 'crazygames' || env === 'local';
     }
 
@@ -389,7 +388,7 @@
       }
     }
 
-    // Midgame Video Ad with 3-second safety release timeout
+    // Midgame Video Ad with 3.5s safety release timeout
     function triggerCrazyGamesAd(onComplete) {
       if (!crazyGamesReady || !isCrazyGamesEnvironment() || !window.CrazyGames?.SDK?.ad?.requestAd) {
         if (onComplete) onComplete();
@@ -580,7 +579,9 @@
       balls: [],
       bricks: [],
       powerUps: [],
-      lasers: []
+      lasers: [],
+      laserTimeout: null,
+      wideTimeout: null
     };
 
     function startRetro() {
@@ -626,6 +627,10 @@
     }
 
     function resetRetroBall() {
+      // Clear any pending power-up timers
+      if (retro.laserTimeout) { clearTimeout(retro.laserTimeout); retro.laserTimeout = null; }
+      if (retro.wideTimeout) { clearTimeout(retro.wideTimeout); retro.wideTimeout = null; }
+
       retro.paddle.w = 85;
       retro.paddle.hasLasers = false;
       retro.paddle.x = (W - 85) / 2;
@@ -645,7 +650,7 @@
     function advanceRetroLevel() {
       triggerHappyTime();
       triggerShake(6, 12);
-      addScore(100); // 100 pt level clear bonus
+      addScore(100);
       addPopup(W / 2, H / 2 - 30, '+100 LEVEL BONUS!', '#ffe600');
       addPopup(W / 2, H / 2, 'LEVEL CLEAR!', '#39ff14');
 
@@ -1049,7 +1054,7 @@
         }
       }
 
-      // Powerups Update
+      // Powerups Update with Clean Timers
       for (let i = retro.powerUps.length - 1; i >= 0; i--) {
         const p = retro.powerUps[i];
         p.y += p.vy;
@@ -1057,11 +1062,20 @@
           sndPower();
           if (p.type === 'WIDE') {
             retro.paddle.w = 125;
-            setTimeout(() => { retro.paddle.w = 85; }, 9000);
-            addPopup(p.x, p.y - 10, 'WIDE PADDLE', '#ffe600');
+            if (retro.wideTimeout) clearTimeout(retro.wideTimeout);
+            retro.wideTimeout = setTimeout(() => {
+              retro.paddle.w = 85;
+              retro.wideTimeout = null;
+            }, 9000);
+            addPopup(p.x, p.y - 10, 'WIDE PADDLE (9s)', '#ffe600');
           } else if (p.type === 'LASER') {
             retro.paddle.hasLasers = true;
-            addPopup(p.x, p.y - 10, 'LASERS ACTIVE', '#ff007f');
+            if (retro.laserTimeout) clearTimeout(retro.laserTimeout);
+            retro.laserTimeout = setTimeout(() => {
+              retro.paddle.hasLasers = false;
+              retro.laserTimeout = null;
+            }, 10000);
+            addPopup(p.x, p.y - 10, 'LASERS ACTIVE (10s)', '#ff007f');
           } else if (p.type === 'MULTI' && retro.balls[0]) {
             retro.balls.push({ x: retro.balls[0].x, y: retro.balls[0].y, vx: -3, vy: -4, r: 6, stuck: false, trail: [] });
             retro.balls.push({ x: retro.balls[0].x, y: retro.balls[0].y, vx: 3, vy: -4, r: 6, stuck: false, trail: [] });
@@ -1265,7 +1279,7 @@
 
         } else if (gameState === 'PLAYING_SWARM') {
           for (let b of swarm.bricks) {
-            if (!b.alive) continue;
+            if (!brkAlive(b)) continue;
             const bx = SWARM_PAD + b.c * (SWARM_BW + SWARM_PAD);
             const by = 40 + b.row * (SWARM_BH + SWARM_PAD);
             const cStyle = getBrickColors(b.hp, b.isTNT);
@@ -1397,6 +1411,8 @@
 
           updateSwarmEngine();
         }
+
+        function brkAlive(b) { return b && b.alive; }
 
         for (let i = popups.length - 1; i >= 0; i--) {
           const pop = popups[i];
