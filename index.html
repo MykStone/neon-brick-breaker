@@ -336,52 +336,62 @@
       }
     }
 
+    function isCrazyGamesEnvironment() {
+      if (!window.CrazyGames?.SDK) return false;
+      const env = window.CrazyGames.SDK.environment;
+      // In SDK v3, only "crazygames" and "local" accept API calls
+      return env === 'crazygames' || env === 'local';
+    }
+
     async function initCrazyGames() {
       if (window.CrazyGames && window.CrazyGames.SDK) {
         try {
           await window.CrazyGames.SDK.init();
           crazyGamesReady = true;
-          console.log("[StoneBuilt] CrazyGames SDK v3 Initialized successfully!");
+          console.log("[StoneBuilt] CrazyGames SDK initialized. Environment:", window.CrazyGames.SDK.environment);
 
-          if (window.CrazyGames.SDK.game?.settings) {
+          if (isCrazyGamesEnvironment() && window.CrazyGames.SDK.game?.settings) {
             portalMuted = !!window.CrazyGames.SDK.game.settings.muteAudio;
             enforceAudioPolicy();
           }
 
-          if (window.CrazyGames.SDK.game?.addSettingsChangeListener) {
+          if (isCrazyGamesEnvironment() && window.CrazyGames.SDK.game?.addSettingsChangeListener) {
             window.CrazyGames.SDK.game.addSettingsChangeListener((settings) => {
               portalMuted = !!settings.muteAudio;
               enforceAudioPolicy();
             });
           }
         } catch (e) {
-          console.log("[StoneBuilt] Standalone/local sandbox mode:", e);
+          console.log("[StoneBuilt] Standalone mode (Vercel preview):", e);
         }
       }
     }
     initCrazyGames();
 
     function triggerCrazyGamesStart() {
-      if (crazyGamesReady && window.CrazyGames?.SDK?.game?.gameplayStart) {
+      if (crazyGamesReady && isCrazyGamesEnvironment() && window.CrazyGames?.SDK?.game?.gameplayStart) {
         try { window.CrazyGames.SDK.game.gameplayStart(); } catch (e) {}
       }
     }
 
     function triggerCrazyGamesStop() {
-      if (crazyGamesReady && window.CrazyGames?.SDK?.game?.gameplayStop) {
+      if (crazyGamesReady && isCrazyGamesEnvironment() && window.CrazyGames?.SDK?.game?.gameplayStop) {
         try { window.CrazyGames.SDK.game.gameplayStop(); } catch (e) {}
       }
     }
 
     function triggerHappyTime() {
-      if (crazyGamesReady && window.CrazyGames?.SDK?.game?.happytime) {
-        try { window.CrazyGames.SDK.game.happytime(); } catch (e) {}
+      if (crazyGamesReady && isCrazyGamesEnvironment() && window.CrazyGames?.SDK?.game?.happytime) {
+        try {
+          const res = window.CrazyGames.SDK.game.happytime();
+          if (res && res.catch) res.catch(() => {});
+        } catch (e) {}
       }
     }
 
     // Midgame Video Ad with 3-second safety release timeout
     function triggerCrazyGamesAd(onComplete) {
-      if (!crazyGamesReady || !window.CrazyGames?.SDK?.ad?.requestAd) {
+      if (!crazyGamesReady || !isCrazyGamesEnvironment() || !window.CrazyGames?.SDK?.ad?.requestAd) {
         if (onComplete) onComplete();
         return;
       }
@@ -399,24 +409,12 @@
         if (onComplete) onComplete();
       };
 
-      // Safety timeout: if ad network hangs in preview/test, unlock automatically after 3.5s
-      const safetyTimer = setTimeout(() => {
-        finishAd();
-      }, 3500);
+      const safetyTimer = setTimeout(() => { finishAd(); }, 3500);
 
       const callbacks = {
-        adStarted: () => {
-          console.log("[StoneBuilt] Midgame Ad started");
-        },
-        adFinished: () => {
-          clearTimeout(safetyTimer);
-          finishAd();
-        },
-        adError: (err) => {
-          clearTimeout(safetyTimer);
-          console.warn("[StoneBuilt] Midgame Ad skipped/error:", err);
-          finishAd();
-        }
+        adStarted: () => { console.log("[StoneBuilt] Midgame Ad started"); },
+        adFinished: () => { clearTimeout(safetyTimer); finishAd(); },
+        adError: (err) => { clearTimeout(safetyTimer); console.warn("[StoneBuilt] Ad skipped:", err); finishAd(); }
       };
 
       try {
@@ -429,7 +427,7 @@
 
     // Rewarded Video Ad with Revive Reward Hook
     function triggerCrazyGamesRewarded(onRewardGranted, onAdClosed) {
-      if (!crazyGamesReady || !window.CrazyGames?.SDK?.ad?.requestAd) {
+      if (!crazyGamesReady || !isCrazyGamesEnvironment() || !window.CrazyGames?.SDK?.ad?.requestAd) {
         if (onRewardGranted) onRewardGranted();
         return;
       }
@@ -453,9 +451,7 @@
       }, 4000);
 
       const callbacks = {
-        adStarted: () => {
-          console.log("[StoneBuilt] Rewarded Ad playing");
-        },
+        adStarted: () => { console.log("[StoneBuilt] Rewarded Ad playing"); },
         adFinished: () => {
           clearTimeout(safetyTimer);
           finishReward();
@@ -465,7 +461,6 @@
         adError: (err) => {
           clearTimeout(safetyTimer);
           finishReward();
-          console.warn("[StoneBuilt] Rewarded Ad failed/cancelled:", err);
           if (onAdClosed && !rewardEarned) onAdClosed();
         }
       };
@@ -556,7 +551,6 @@
     let particles = [];
     let popups = [];
 
-    // Screen Shake
     let shakeTimer = 0;
     let shakeMag = 0;
 
@@ -579,8 +573,6 @@
     // =====================================
     // 1. CLASSIC RETRO ENGINE
     // =====================================
-    let isTransitioningLevel = false;
-
     const retro = {
       lives: 3,
       level: 1,
@@ -600,7 +592,6 @@
       hudBest.textContent = hiScore;
       retro.lives = 3;
       retro.level = 1;
-      isTransitioningLevel = false;
       reviveUsedThisSession = false;
       hudCenter.innerHTML = `LIVES: <span style="color:#ff007f;">❤️❤️❤️</span>`;
       initRetroBricks();
@@ -639,11 +630,12 @@
       retro.paddle.hasLasers = false;
       retro.paddle.x = (W - 85) / 2;
       retro.lasers = [];
+      retro.powerUps = [];
       retro.balls = [{
         x: W / 2,
         y: H - 55,
         vx: 3.5 * (Math.random() > 0.5 ? 1 : -1),
-        vy: -5,
+        vy: -5.5,
         r: 6,
         stuck: true,
         trail: []
@@ -651,31 +643,15 @@
     }
 
     function advanceRetroLevel() {
-      if (isTransitioningLevel) return;
-      isTransitioningLevel = true;
       triggerHappyTime();
-      triggerShake(6, 14);
-      addPopup(W / 2, H / 2 - 20, 'LEVEL CLEAR!', '#39ff14');
+      triggerShake(6, 12);
+      addScore(100); // 100 pt level clear bonus
+      addPopup(W / 2, H / 2 - 30, '+100 LEVEL BONUS!', '#ffe600');
+      addPopup(W / 2, H / 2, 'LEVEL CLEAR!', '#39ff14');
 
-      // Clear projectiles and balls cleanly
-      retro.lasers = [];
-      retro.powerUps = [];
-      retro.balls = [];
-
-      setTimeout(() => {
-        retro.level++;
-        initRetroBricks();
-        resetRetroBall();
-        isTransitioningLevel = false;
-
-        // Auto launch after 1 second if player hasn't tapped yet
-        setTimeout(() => {
-          if (retro.balls[0] && retro.balls[0].stuck) {
-            retro.balls[0].stuck = false;
-            sndPaddle();
-          }
-        }, 1200);
-      }, 900);
+      retro.level++;
+      initRetroBricks();
+      resetRetroBall();
     }
 
     // =====================================
@@ -828,7 +804,7 @@
     }
 
     function onPointerDown(e) {
-      if (isAdPlaying || gameState === 'MENU' || isTransitioningLevel) return;
+      if (isAdPlaying || gameState === 'MENU') return;
       initAudioEngine();
       const pt = getCanvasCoords(e);
 
@@ -851,7 +827,7 @@
     }
 
     function onPointerMove(e) {
-      if (isAdPlaying || gameState === 'MENU' || isTransitioningLevel) return;
+      if (isAdPlaying || gameState === 'MENU') return;
       const pt = getCanvasCoords(e);
 
       if (gameState === 'PLAYING_RETRO') {
@@ -898,7 +874,7 @@
     });
 
     window.addEventListener('keydown', (e) => {
-      if (isAdPlaying || isTransitioningLevel) return;
+      if (isAdPlaying) return;
       initAudioEngine();
       if (e.code === 'Space') {
         if (gameState === 'PLAYING_RETRO') {
@@ -914,8 +890,14 @@
         }
       }
       if (gameState === 'PLAYING_RETRO') {
-        if (e.code === 'ArrowLeft') retro.paddle.x = Math.max(0, retro.paddle.x - 32);
-        if (e.code === 'ArrowRight') retro.paddle.x = Math.min(W - retro.paddle.w, retro.paddle.x + 32);
+        if (e.code === 'ArrowLeft') {
+          retro.paddle.x = Math.max(0, retro.paddle.x - 32);
+          if (retro.balls[0] && retro.balls[0].stuck) retro.balls[0].x = retro.paddle.x + retro.paddle.w / 2;
+        }
+        if (e.code === 'ArrowRight') {
+          retro.paddle.x = Math.min(W - retro.paddle.w, retro.paddle.x + 32);
+          if (retro.balls[0] && retro.balls[0].stuck) retro.balls[0].x = retro.paddle.x + retro.paddle.w / 2;
+        }
       }
     });
 
@@ -954,8 +936,6 @@
     // RETRO GAMEPLAY UPDATE
     // =====================================
     function updateRetroEngine() {
-      if (isTransitioningLevel) return;
-
       retro.paddle.y = H - 28;
 
       // Laser Update
@@ -1054,7 +1034,7 @@
       }
 
       // Ball Loss Check
-      if (retro.balls.length === 0 && !isTransitioningLevel) {
+      if (retro.balls.length === 0) {
         retro.lives--;
         sndDie();
         triggerShake(8, 14);
@@ -1091,7 +1071,7 @@
         } else if (p.y > H) retro.powerUps.splice(i, 1);
       }
 
-      // Safe Level Clear Detection
+      // Bulletproof Level Clear Detection
       if (retro.bricks.length > 0 && retro.bricks.every(b => !b.alive)) {
         advanceRetroLevel();
       }
@@ -1208,7 +1188,6 @@
     // BULLETPROOF RENDER LOOP
     // =====================================
     function draw() {
-      // Re-queue frame immediately so loop can NEVER permanently halt
       requestAnimationFrame(draw);
 
       if (isAdPlaying) return;
@@ -1275,19 +1254,18 @@
             ctx.shadowBlur = 0;
           }
 
-          // Launch helper prompt if ball is waiting
-          if (retro.balls[0] && retro.balls[0].stuck && !isTransitioningLevel) {
+          if (retro.balls[0] && retro.balls[0].stuck) {
             ctx.fillStyle = '#00f0ff';
             ctx.font = 'bold 12px monospace';
             ctx.textAlign = 'center';
-            ctx.fillText('TAP OR PRESS SPACE TO LAUNCH', W / 2, H - 75);
+            ctx.fillText(`LEVEL ${retro.level} - TAP OR SPACE TO LAUNCH`, W / 2, H - 75);
           }
 
           updateRetroEngine();
 
         } else if (gameState === 'PLAYING_SWARM') {
           for (let b of swarm.bricks) {
-            if (!brkAlive(b)) continue;
+            if (!b.alive) continue;
             const bx = SWARM_PAD + b.c * (SWARM_BW + SWARM_PAD);
             const by = 40 + b.row * (SWARM_BH + SWARM_PAD);
             const cStyle = getBrickColors(b.hp, b.isTNT);
@@ -1419,8 +1397,6 @@
 
           updateSwarmEngine();
         }
-
-        function brkAlive(b) { return b && b.alive; }
 
         for (let i = popups.length - 1; i >= 0; i--) {
           const pop = popups[i];
