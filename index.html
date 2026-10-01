@@ -43,7 +43,7 @@
     #top-hud {
       height: 52px;
       width: 100%;
-      padding: 0 12px;
+      padding: 0 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -51,15 +51,15 @@
       border-bottom: 2px solid #00f0ff44;
       font-size: 11px;
       font-weight: 800;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       z-index: 10;
     }
     .hud-badge {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       font-family: monospace;
-      font-size: 13px;
+      font-size: 12px;
     }
     .hud-accent {
       color: #00f0ff;
@@ -75,14 +75,14 @@
     }
     .hud-btn-group {
       display: flex;
-      gap: 6px;
+      gap: 5px;
       align-items: center;
     }
     .hud-ctrl-btn {
       background: #10172e;
       border: 1px solid #00f0ff66;
       color: #00f0ff;
-      padding: 6px 9px;
+      padding: 5px 8px;
       border-radius: 6px;
       font-size: 11px;
       font-weight: 800;
@@ -104,7 +104,47 @@
       display: block;
       touch-action: none;
     }
-    #overlay, #gameover-screen {
+    /* In-Game Tactile Power Bar (Swarm Mode) */
+    #swarm-action-bar {
+      position: absolute;
+      bottom: 8px;
+      left: 12px;
+      right: 12px;
+      display: none;
+      justify-content: space-between;
+      gap: 8px;
+      z-index: 50;
+    }
+    .power-btn {
+      flex: 1;
+      background: rgba(9, 14, 31, 0.88);
+      border: 1.5px solid;
+      border-radius: 8px;
+      padding: 8px 6px;
+      color: #fff;
+      font-size: 10.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+    }
+    .power-btn:active {
+      transform: scale(0.96);
+    }
+    .btn-nuke {
+      border-color: #ff007f;
+      color: #ff007f;
+      text-shadow: 0 0 8px rgba(255, 0, 127, 0.6);
+    }
+    .btn-surge {
+      border-color: #00f0ff;
+      color: #00f0ff;
+      text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+    }
+    #overlay, #gameover-screen, #pause-screen {
       position: absolute;
       inset: 0;
       background: rgba(3, 5, 12, 0.94);
@@ -246,13 +286,15 @@
 <body>
 
   <div id="cabinet">
-    <!-- Top HUD -->
+    <!-- Top HUD (Fully Restored & Balanced) -->
     <div id="top-hud">
       <div class="hud-badge">🏆 <span id="hud-score" class="hud-accent">0</span></div>
+      <div class="hud-badge">👑 <span id="hud-best" class="hud-gold">0</span></div>
       <div class="hud-badge">🪙 <span id="hud-tokens" class="hud-tokens">0</span></div>
-      <div class="hud-badge">LEVEL: <span id="hud-level" class="hud-gold">1</span></div>
+      <div class="hud-badge">LVL: <span id="hud-level" class="hud-gold">1</span></div>
       <div class="hud-btn-group">
-        <button id="hud-music-btn" class="hud-ctrl-btn" title="Toggle Synthwave Groove">🎵 ON</button>
+        <button id="hud-pause-btn" class="hud-ctrl-btn" title="Pause Game">⏸️</button>
+        <button id="hud-music-btn" class="hud-ctrl-btn" title="Toggle Synthwave">🎵</button>
         <button id="hud-mute-btn" class="hud-ctrl-btn" title="Toggle SFX">🔊</button>
         <button id="hud-menu-btn" class="hud-ctrl-btn">MENU</button>
       </div>
@@ -261,6 +303,12 @@
     <!-- Playfield Canvas Area -->
     <div id="canvas-wrap">
       <canvas id="gameCanvas" width="460" height="700"></canvas>
+
+      <!-- In-Game Tactile Power Bar (Swarm Mode) -->
+      <div id="swarm-action-bar">
+        <button id="btn-power-nuke" class="power-btn btn-nuke">⚡ EMP NUKE (10🪙)</button>
+        <button id="btn-power-surge" class="power-btn btn-surge">🚀 +10 BALLS (15🪙)</button>
+      </div>
 
       <!-- Main Menu Screen -->
       <div id="overlay">
@@ -276,9 +324,18 @@
 
           <button id="btn-swarm" class="menu-card-btn card-swarm">
             <div class="btn-header" style="color:#00f0ff;">⚡ MODERN SWARM ARENA</div>
-            <div class="btn-body">Bank-shot aiming slider, dense micro-bricks, and explosive TNT chain blasts.</div>
+            <div class="btn-body">Deep scaled brick HP, angled prism deflectors, and tactile EMP nuke buttons.</div>
           </button>
         </div>
+      </div>
+
+      <!-- Pause Screen -->
+      <div id="pause-screen" style="display:none;">
+        <div class="brand-eyebrow">GAME PAUSED</div>
+        <div class="main-title" style="font-size:26px;">SYSTEM HALTED</div>
+        <div class="menu-sub">StoneBuilt Arcade Core</div>
+        <button id="btn-resume" class="action-btn">RESUME GAME</button>
+        <button id="btn-pause-menu" class="sub-action-btn">ABORT TO MENU</button>
       </div>
 
       <!-- Game Over Screen -->
@@ -297,13 +354,14 @@
 
   <script>
     /* ==============================================================
-       1. CRAZYGAMES SDK v3 INTEGRATION
+       1. CRAZYGAMES SDK v3 INTEGRATION & LIFECYCLE
        ============================================================== */
     let crazyGamesReady = false;
     let isAdPlaying = false;
     let portalMuted = false;
     let userMuted = false;
     let musicEnabled = true;
+    let isGamePaused = false;
 
     function isCrazyGamesEnvironment() {
       if (!window.CrazyGames?.SDK) return false;
@@ -378,7 +436,7 @@
       const callbacks = {
         adStarted: () => {},
         adFinished: () => { clearTimeout(safetyTimer); finishAd(); },
-        adError: (err) => { clearTimeout(safetyTimer); finishAd(); }
+        adError: () => { clearTimeout(safetyTimer); finishAd(); }
       };
 
       try {
@@ -421,7 +479,7 @@
           rewardEarned = true;
           if (onRewardGranted) onRewardGranted();
         },
-        adError: (err) => {
+        adError: () => {
           clearTimeout(safetyTimer);
           finishReward();
           if (onAdClosed && !rewardEarned) onAdClosed();
@@ -438,7 +496,7 @@
     }
 
     /* ==============================================================
-       2. REALISTIC 128 BPM ANALOG SYNTHWAVE AUDIO ENGINE
+       2. 128 BPM ANALOG SYNTHWAVE AUDIO ENGINE
        ============================================================== */
     let audioCtx = null;
     let masterGainNode = null;
@@ -448,9 +506,7 @@
     let musicStep = 0;
 
     const BPM = 128;
-    const STEP_TIME = (60 / BPM) / 4; // 16th notes
-
-    // Realistic Analog Bass Frequencies (Am - F - C - G Progression)
+    const STEP_TIME = (60 / BPM) / 4;
     const BASS_ROOTS = [55, 55, 43.65, 43.65, 65.41, 65.41, 49.00, 49.00];
 
     function initAudioEngine() {
@@ -459,7 +515,6 @@
           const AudioClass = window.AudioContext || window.webkitAudioContext;
           audioCtx = new AudioClass();
 
-          // Master Studio Compressor (Gives punch and weight like a finished record)
           masterCompressor = audioCtx.createDynamicsCompressor();
           masterCompressor.threshold.setValueAtTime(-18, audioCtx.currentTime);
           masterCompressor.knee.setValueAtTime(12, audioCtx.currentTime);
@@ -471,14 +526,10 @@
           masterGainNode.connect(masterCompressor);
           masterCompressor.connect(audioCtx.destination);
 
-          // Build White Noise Buffer for Realistic Snare
           buildWhiteNoiseBuffer();
-
           enforceAudioPolicy();
           startSynthwaveLoop();
-        } catch (e) {
-          console.warn("[StoneBuilt] Audio init warning:", e);
-        }
+        } catch (e) {}
       } else if (audioCtx.state === 'suspended') {
         audioCtx.resume().catch(() => {});
       }
@@ -488,13 +539,11 @@
       const bufferSize = audioCtx.sampleRate * 0.5;
       noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
       const data = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-      }
+      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
     }
 
     function enforceAudioPolicy() {
-      const shouldMute = isAdPlaying || portalMuted || userMuted;
+      const shouldMute = isAdPlaying || portalMuted || userMuted || isGamePaused;
       if (masterGainNode && audioCtx) {
         const now = audioCtx.currentTime;
         masterGainNode.gain.setValueAtTime(masterGainNode.gain.value, now);
@@ -516,25 +565,12 @@
     function startSynthwaveLoop() {
       if (musicTimer) clearInterval(musicTimer);
       musicTimer = setInterval(() => {
-        if (!musicEnabled || isAdPlaying || userMuted || portalMuted || gameState === 'MENU') return;
+        if (!musicEnabled || isAdPlaying || userMuted || portalMuted || isGamePaused || gameState === 'MENU') return;
         if (!audioCtx || audioCtx.state !== 'running') return;
 
-        // 1. Pumping 808 Sub Kick on 1 and 3 (beats 0, 4, 8, 12)
-        if (musicStep % 4 === 0) {
-          play808Kick();
-        }
-
-        // 2. Realistic 80s Snare on 2 and 4 (beats 4, 12 in 8-step measure)
-        if (musicStep % 8 === 4) {
-          playRealSnare();
-        }
-
-        // 3. Crisp Hi-Hat Shuffle on every off-beat 16th note
-        if (musicStep % 2 === 1) {
-          playHiHat();
-        }
-
-        // 4. Warm Dual-Oscillator Moog Bassline
+        if (musicStep % 4 === 0) play808Kick();
+        if (musicStep % 8 === 4) playRealSnare();
+        if (musicStep % 2 === 1) playHiHat();
         if (musicStep % 2 === 0) {
           const chordIndex = Math.floor(musicStep / 4) % BASS_ROOTS.length;
           const octave = (musicStep % 4 === 2) ? 2 : 1;
@@ -545,20 +581,15 @@
       }, STEP_TIME * 1000);
     }
 
-    // REAL STUDIO 808 KICK DRUM (Sub-bass pitch drop)
     function play808Kick() {
       try {
         const now = audioCtx.currentTime;
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-
-        // Rapid pitch drop: 150 Hz -> 38 Hz (Produces chest-thumping punch)
         osc.frequency.setValueAtTime(150, now);
         osc.frequency.exponentialRampToValueAtTime(38, now + 0.09);
-
         gain.gain.setValueAtTime(0.35, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
-
         osc.connect(gain);
         gain.connect(masterGainNode);
         osc.start(now);
@@ -566,23 +597,19 @@
       } catch (e) {}
     }
 
-    // REAL 80s LINNDRUM SNARE (Filtered Noise Buffer + Tone Body)
     function playRealSnare() {
       if (!noiseBuffer) return;
       try {
         const now = audioCtx.currentTime;
-
-        // 1. Noise Snap (Crack)
         const noiseSource = audioCtx.createBufferSource();
         noiseSource.buffer = noiseBuffer;
-
         const noiseFilter = audioCtx.createBiquadFilter();
         noiseFilter.type = 'bandpass';
         noiseFilter.frequency.setValueAtTime(1200, now);
         noiseFilter.Q.setValueAtTime(1.5, now);
 
         const noiseGain = audioCtx.createGain();
-        noiseGain.gain.setValueAtTime(0.25, now);
+        noiseGain.gain.setValueAtTime(0.24, now);
         noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
 
         noiseSource.connect(noiseFilter);
@@ -590,39 +617,21 @@
         noiseGain.connect(masterGainNode);
         noiseSource.start(now);
         noiseSource.stop(now + 0.16);
-
-        // 2. Tonal Body (Thump)
-        const osc = audioCtx.createOscillator();
-        const oscGain = audioCtx.createGain();
-        osc.frequency.setValueAtTime(180, now);
-        osc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
-
-        oscGain.gain.setValueAtTime(0.18, now);
-        oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-
-        osc.connect(oscGain);
-        oscGain.connect(masterGainNode);
-        osc.start(now);
-        osc.stop(now + 0.08);
       } catch (e) {}
     }
 
-    // CRISP STUDIO HI-HAT
     function playHiHat() {
       if (!noiseBuffer) return;
       try {
         const now = audioCtx.currentTime;
         const source = audioCtx.createBufferSource();
         source.buffer = noiseBuffer;
-
         const filter = audioCtx.createBiquadFilter();
         filter.type = 'highpass';
         filter.frequency.setValueAtTime(7000, now);
-
         const gain = audioCtx.createGain();
-        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.setValueAtTime(0.05, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-
         source.connect(filter);
         filter.connect(gain);
         gain.connect(masterGainNode);
@@ -631,21 +640,16 @@
       } catch (e) {}
     }
 
-    // DUAL-OSCILLATOR ANALOG MOOG BASS (Detuned with Resonant Low-Pass Filter)
     function playWarmMoogBass(freq) {
       try {
         const now = audioCtx.currentTime;
-
-        // Two detuned sawtooth oscillators for analog thickness
         const osc1 = audioCtx.createOscillator();
         const osc2 = audioCtx.createOscillator();
         osc1.type = 'sawtooth';
         osc2.type = 'sawtooth';
-
         osc1.frequency.setValueAtTime(freq, now);
-        osc2.frequency.setValueAtTime(freq * 1.008, now); // Slight detune
+        osc2.frequency.setValueAtTime(freq * 1.008, now);
 
-        // Resonant Moog-style Low-pass Filter Sweep
         const filter = audioCtx.createBiquadFilter();
         filter.type = 'lowpass';
         filter.Q.setValueAtTime(5.5, now);
@@ -660,7 +664,6 @@
         osc2.connect(filter);
         filter.connect(gain);
         gain.connect(masterGainNode);
-
         osc1.start(now);
         osc2.start(now);
         osc1.stop(now + 0.18);
@@ -668,7 +671,6 @@
       } catch (e) {}
     }
 
-    // PUNCHY ARCADE SFX
     function playTone(freq, type = 'sine', duration = 0.08, vol = 0.14) {
       if (isAdPlaying || userMuted || portalMuted) return;
       initAudioEngine();
@@ -694,18 +696,25 @@
     const sndDie = () => playTone(120, 'sawtooth', 0.45, 0.18);
 
     /* ==============================================================
-       3. DOM REFERENCES & ENGINE STATE
+       3. DOM REFERENCES & RESTORED HUD STATE
        ============================================================== */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const overlay = document.getElementById('overlay');
     const gameoverScreen = document.getElementById('gameover-screen');
+    const pauseScreen = document.getElementById('pause-screen');
+    const swarmActionBar = document.getElementById('swarm-action-bar');
+    
+    // Top HUD Nodes
     const hudScore = document.getElementById('hud-score');
+    const hudBest = document.getElementById('hud-best');
     const hudTokens = document.getElementById('hud-tokens');
     const hudLevel = document.getElementById('hud-level');
     const hudMuteBtn = document.getElementById('hud-mute-btn');
     const hudMusicBtn = document.getElementById('hud-music-btn');
+    const hudPauseBtn = document.getElementById('hud-pause-btn');
     const hudMenuBtn = document.getElementById('hud-menu-btn');
+    
     const gameoverScoreVal = document.getElementById('gameover-score-val');
     const gameoverModeLabel = document.getElementById('gameover-mode-label');
     const gameoverBestTag = document.getElementById('gameover-best-tag');
@@ -718,10 +727,8 @@
     let score = 0;
     let reviveUsedThisSession = false;
 
-    // Tokens & Quests
+    // Tokens & High Scores (Persistent)
     let arcadeTokens = 0;
-    let bricksDestroyedTotal = 0;
-
     try {
       arcadeTokens = parseInt(localStorage.getItem('sbc_tokens') || '0', 10);
       if (isNaN(arcadeTokens)) arcadeTokens = 0;
@@ -733,6 +740,7 @@
       hiScore = parseInt(localStorage.getItem('sbc_neon_hiscore') || '0', 10);
       if (isNaN(hiScore)) hiScore = 0;
     } catch (e) { hiScore = 0; }
+    hudBest.textContent = hiScore;
 
     function addScore(points) {
       score += points;
@@ -740,6 +748,7 @@
 
       if (score > hiScore) {
         hiScore = score;
+        hudBest.textContent = hiScore;
         try {
           localStorage.setItem('sbc_neon_hiscore', hiScore.toString());
         } catch (e) {}
@@ -773,7 +782,7 @@
     }
 
     /* ==============================================================
-       4. PROCEDURAL CAMPAIGN ENGINE (INFINITE ARCHITECTURE)
+       4. PROCEDURAL RETRO ENGINE (CAMPAIGN MODE)
        ============================================================== */
     const retro = {
       lives: 3,
@@ -789,15 +798,18 @@
       gameState = 'PLAYING_RETRO';
       score = 0;
       hudScore.textContent = score;
+      hudBest.textContent = hiScore;
       retro.lives = 3;
       retro.level = 1;
       hudLevel.textContent = retro.level;
       reviveUsedThisSession = false;
       retro.combo = 0;
+      swarmActionBar.style.display = 'none';
 
       generateProceduralStage(retro.level);
       resetRetroBall();
       overlay.style.display = 'none';
+      pauseScreen.style.display = 'none';
       gameoverScreen.style.display = 'none';
 
       triggerCrazyGamesStart();
@@ -820,7 +832,6 @@
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols / 2; c++) {
           let spawn = true;
-
           if (archetype === 1 && (c < (rows - r - 2))) spawn = false;
           if (archetype === 2 && (c % 2 === 0 && r > 4)) spawn = false;
           if (archetype === 3 && (r + c < 2 || r - c > 3)) spawn = false;
@@ -880,21 +891,21 @@
       resetRetroBall();
     }
 
-    /* =====================================
-       5. MODERN SWARM ENGINE (SUITE ENGINE 2)
-       ===================================== */
-    const SWARM_COLS = 16;
-    const SWARM_PAD = 3;
+    /* ==============================================================
+       5. MODERN SWARM ENGINE (SCALED BRICK HP & ANGLED PRISMS)
+       ============================================================== */
+    const SWARM_COLS = 14;
+    const SWARM_PAD = 4;
     const SWARM_BW = (W - (SWARM_PAD * (SWARM_COLS + 1))) / SWARM_COLS;
-    const SWARM_BH = 17;
+    const SWARM_BH = 20;
 
     const swarm = {
       level: 1,
-      ballCount: 5,
+      ballCount: 15,
       balls: [],
       bricks: [],
       pickups: [],
-      shooter: { x: W / 2, y: H - 30 },
+      shooter: { x: W / 2, y: H - 42 },
       aiming: false,
       aimAngle: -Math.PI / 2,
       launching: false,
@@ -908,8 +919,9 @@
       gameState = 'PLAYING_SWARM';
       score = 0;
       hudScore.textContent = score;
+      hudBest.textContent = hiScore;
       swarm.level = 1;
-      swarm.ballCount = 5;
+      swarm.ballCount = 15; // Starts with a punchy swarm!
       swarm.balls = [];
       swarm.shooter.x = W / 2;
       swarm.aiming = false;
@@ -919,9 +931,13 @@
       swarm.bricks = [];
       swarm.pickups = [];
 
-      for (let i = 0; i < 5; i++) addSwarmWave();
+      swarmActionBar.style.display = 'flex';
+
+      // Spawn initial waves
+      for (let i = 0; i < 4; i++) addSwarmWave();
 
       overlay.style.display = 'none';
+      pauseScreen.style.display = 'none';
       gameoverScreen.style.display = 'none';
       triggerCrazyGamesStart();
     }
@@ -932,21 +948,69 @@
 
       let spawnedPickup = false;
 
+      // DYNAMIC HP SCALING (Matches competitor: HP scales up to 25, 35, 50+)
+      const baseWaveHp = Math.max(3, Math.round(swarm.ballCount * 0.8 + swarm.level * 1.5));
+
       for (let c = 0; c < SWARM_COLS; c++) {
         const rand = Math.random();
-        if (rand < 0.46) {
-          let hp = Math.max(1, Math.round(swarm.level * (0.8 + Math.random() * 1.2)));
+        if (rand < 0.44) {
+          let hp = Math.max(1, Math.round(baseWaveHp * (0.8 + Math.random() * 0.4)));
           const isTNT = Math.random() < 0.08;
+          const isTriangle = !isTNT && (Math.random() < 0.22); // Angled Prism Bricks!
+          const triDir = Math.random() > 0.5 ? 'TL' : 'TR'; // Top-left vs Top-right slope
+
           swarm.bricks.push({
             c: c, row: 1, w: SWARM_BW, h: SWARM_BH,
-            hp: hp, maxHp: hp, isTNT: isTNT, alive: true
+            hp: hp, maxHp: hp, isTNT: isTNT,
+            isTriangle: isTriangle, triDir: triDir, alive: true
           });
-        } else if (!spawnedPickup && rand < 0.52) {
+        } else if (!spawnedPickup && rand < 0.54) {
           spawnedPickup = true;
           swarm.pickups.push({ c: c, row: 1, w: SWARM_BW, h: SWARM_BH, collected: false });
         }
       }
     }
+
+    // Tactile Swarm In-Game Buttons
+    document.getElementById('btn-power-nuke').addEventListener('click', (e) => {
+      e.stopPropagation();
+      initAudioEngine();
+      if (arcadeTokens >= 10 && gameState === 'PLAYING_SWARM') {
+        arcadeTokens -= 10;
+        hudTokens.textContent = arcadeTokens;
+        localStorage.setItem('sbc_tokens', arcadeTokens.toString());
+        
+        // Vaporize the lowest 3 danger rows
+        let nukeCount = 0;
+        for (let b of swarm.bricks) {
+          if (b.alive && b.row >= 18) {
+            b.alive = false;
+            nukeCount++;
+            spawnSparks(SWARM_PAD + b.c * (SWARM_BW + SWARM_PAD) + SWARM_BW / 2, 45 + b.row * (SWARM_BH + SWARM_PAD), '#ff007f', 16);
+          }
+        }
+        sndBomb();
+        triggerShake(14, 20);
+        addPopup(W / 2, H / 2, `EMP DETONATED (${nukeCount} BRICKS)!`, '#ff007f');
+      } else {
+        addPopup(W / 2, H / 2, 'NEED 10 TOKENS FOR NUKE!', '#ffe600');
+      }
+    });
+
+    document.getElementById('btn-power-surge').addEventListener('click', (e) => {
+      e.stopPropagation();
+      initAudioEngine();
+      if (arcadeTokens >= 15 && gameState === 'PLAYING_SWARM') {
+        arcadeTokens -= 15;
+        hudTokens.textContent = arcadeTokens;
+        localStorage.setItem('sbc_tokens', arcadeTokens.toString());
+        swarm.ballCount += 10;
+        sndPower();
+        addPopup(W / 2, H / 2, '+10 BALL STREAM SURGE!', '#00f0ff');
+      } else {
+        addPopup(W / 2, H / 2, 'NEED 15 TOKENS FOR SURGE!', '#ffe600');
+      }
+    });
 
     /* ==============================================================
        6. INPUTS & CONTROLS
@@ -964,7 +1028,7 @@
     }
 
     function onPointerDown(e) {
-      if (isAdPlaying || gameState === 'MENU') return;
+      if (isAdPlaying || isGamePaused || gameState === 'MENU') return;
       initAudioEngine();
       const pt = getCanvasCoords(e);
 
@@ -980,7 +1044,7 @@
     }
 
     function onPointerMove(e) {
-      if (isAdPlaying || gameState === 'MENU') return;
+      if (isAdPlaying || isGamePaused || gameState === 'MENU') return;
       const pt = getCanvasCoords(e);
 
       if (gameState === 'PLAYING_RETRO') {
@@ -994,7 +1058,7 @@
     }
 
     function onPointerUp() {
-      if (isAdPlaying || gameState !== 'PLAYING_SWARM') return;
+      if (isAdPlaying || isGamePaused || gameState !== 'PLAYING_SWARM') return;
       if (swarm.aiming && !swarm.launching) {
         swarm.aiming = false;
         swarm.launching = true;
@@ -1026,7 +1090,7 @@
     window.addEventListener('touchend', onPointerUp);
 
     window.addEventListener('keydown', (e) => {
-      if (isAdPlaying) return;
+      if (isAdPlaying || isGamePaused) return;
       initAudioEngine();
       if (e.code === 'Space' && gameState === 'PLAYING_RETRO') {
         if (retro.balls[0] && retro.balls[0].stuck) {
@@ -1057,11 +1121,36 @@
       e.stopPropagation();
       initAudioEngine();
       musicEnabled = !musicEnabled;
-      hudMusicBtn.textContent = musicEnabled ? '🎵 ON' : '🎵 OFF';
+      hudMusicBtn.textContent = musicEnabled ? '🎵' : '🔇';
+    });
+
+    hudPauseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (gameState === 'MENU') return;
+      isGamePaused = !isGamePaused;
+      pauseScreen.style.display = isGamePaused ? 'flex' : 'none';
+      enforceAudioPolicy();
+    });
+
+    document.getElementById('btn-resume').addEventListener('click', () => {
+      isGamePaused = false;
+      pauseScreen.style.display = 'none';
+      enforceAudioPolicy();
+    });
+
+    document.getElementById('btn-pause-menu').addEventListener('click', () => {
+      isGamePaused = false;
+      pauseScreen.style.display = 'none';
+      gameState = 'MENU';
+      swarmActionBar.style.display = 'none';
+      overlay.style.display = 'flex';
+      triggerCrazyGamesStop();
+      enforceAudioPolicy();
     });
 
     function showGameOver(modeTitle) {
       gameState = 'MENU';
+      swarmActionBar.style.display = 'none';
       gameoverModeLabel.textContent = `${modeTitle} GAME OVER`;
       gameoverScoreVal.textContent = score;
       gameoverBestTag.textContent = `ALL-TIME BEST: ${hiScore}`;
@@ -1078,14 +1167,12 @@
     function updateRetroEngine() {
       retro.paddle.y = H - 28;
 
-      // CONTINUOUS MEGA PLASMA CUTTING BEAM
       if (retro.paddle.hasMegaLaser) {
         retro.paddle.laserTime -= 0.016;
         if (retro.paddle.laserTime <= 0) {
           retro.paddle.hasMegaLaser = false;
         } else {
           if (Math.random() < 0.3) sndLaserBeam();
-
           const beamX = retro.paddle.x + retro.paddle.w / 2;
           const beamWidth = 26;
 
@@ -1095,7 +1182,6 @@
               if (b.hp <= 0) {
                 b.alive = false;
                 addScore(25);
-                bricksDestroyedTotal++;
                 spawnSparks(b.x + b.w / 2, b.y + b.h / 2, b.color, 16);
                 addPopup(b.x + b.w / 2, b.y, '+25', '#ff007f');
               }
@@ -1104,7 +1190,6 @@
         }
       }
 
-      // KINETIC BALL PHYSICS
       for (let i = retro.balls.length - 1; i >= 0; i--) {
         const b = retro.balls[i];
         if (b.stuck) continue;
@@ -1136,8 +1221,6 @@
           if (b.x + b.r > brk.x && b.x - b.r < brk.x + brk.w && b.y + b.r > brk.y && b.y - b.r < brk.y + brk.h) {
             brk.hp--;
             retro.combo++;
-            bricksDestroyedTotal++;
-
             b.vx *= 1.02;
             b.vy *= 1.02;
 
@@ -1205,18 +1288,18 @@
     }
 
     /* ==============================================================
-       8. SWARM ARENA UPDATE
+       8. SWARM ARENA UPDATE (WITH ANGLED PRISM DEFLECTION)
        ============================================================== */
     function updateSwarmEngine() {
       if (swarm.launching && swarm.launchedCount < swarm.ballCount) {
         swarm.launchTimer++;
         if (swarm.launchTimer % 3 === 0) {
-          const spd = 8.5;
+          const spd = 8.8;
           swarm.balls.push({
             x: swarm.shooter.x, y: swarm.shooter.y,
             vx: Math.cos(swarm.aimAngle) * spd,
             vy: Math.sin(swarm.aimAngle) * spd,
-            r: 3.5, trail: []
+            r: 3.6, trail: []
           });
           swarm.launchedCount++;
         }
@@ -1234,12 +1317,21 @@
         for (let brk of swarm.bricks) {
           if (!brk.alive) continue;
           const bx = SWARM_PAD + brk.c * (SWARM_BW + SWARM_PAD);
-          const by = 40 + brk.row * (SWARM_BH + SWARM_PAD);
+          const by = 45 + brk.row * (SWARM_BH + SWARM_PAD);
 
           if (b.x + b.r > bx && b.x - b.r < bx + SWARM_BW && b.y + b.r > by && b.y - b.r < by + SWARM_BH) {
             brk.hp--;
             addScore(1);
-            sndHit(450 + Math.min(300, brk.hp * 8));
+            sndHit(450 + Math.min(320, brk.hp * 6));
+
+            // Angled Triangle Prism Deflection (45-degree angle bounce)
+            if (brk.isTriangle) {
+              const temp = b.vx;
+              b.vx = brk.triDir === 'TL' ? -Math.abs(b.vy) : Math.abs(b.vy);
+              b.vy = -Math.abs(temp);
+            } else {
+              b.vy *= -1;
+            }
 
             if (brk.isTNT && brk.hp <= 0) {
               sndBomb();
@@ -1249,7 +1341,7 @@
 
               for (let other of swarm.bricks) {
                 if (other.alive && Math.abs(other.c - brk.c) <= 1 && Math.abs(other.row - brk.row) <= 1) {
-                  other.hp -= 20;
+                  other.hp -= 25;
                   addScore(5);
                   if (other.hp <= 0) other.alive = false;
                 }
@@ -1260,12 +1352,11 @@
               brk.alive = false;
               spawnSparks(bx + SWARM_BW / 2, by + SWARM_BH / 2, '#00f0ff', 8);
             }
-            b.vy *= -1;
             break;
           }
         }
 
-        if (b.y + b.r >= H - 15) {
+        if (b.y + b.r >= H - 42) {
           if (swarm.newShooterX === null) swarm.newShooterX = b.x;
           swarm.balls.splice(i, 1);
           swarm.ballsReturned++;
@@ -1279,7 +1370,7 @@
         addSwarmWave();
 
         for (let b of swarm.bricks) {
-          if (b.alive && b.row >= 26) {
+          if (b.alive && b.row >= 25) {
             triggerShake(14, 22);
             showGameOver('SWARM ARENA');
             return;
@@ -1301,11 +1392,11 @@
     }
 
     /* ==============================================================
-       9. MASTER RENDER ENGINE (SYNTHWAVE NEON AESTHETIC)
+       9. MASTER RENDER ENGINE (NEON PRISMS & SYNTHWAVE)
        ============================================================== */
     function draw() {
       requestAnimationFrame(draw);
-      if (isAdPlaying) return;
+      if (isAdPlaying || isGamePaused) return;
 
       try {
         ctx.save();
@@ -1357,7 +1448,7 @@
             }
           }
 
-          // RENDER ROARING CONTINUOUS MEGA PLASMA CUTTING BEAM
+          // Roaring Mega Cutting Laser Beam
           if (retro.paddle.hasMegaLaser) {
             const beamX = retro.paddle.x + retro.paddle.w / 2;
             ctx.save();
@@ -1395,7 +1486,7 @@
             ctx.fillText(p.type[0], p.x, p.y);
           }
 
-          // Kinetic Heat Ball & Fiery Particle Comet Trail
+          // Kinetic Heat Ball
           for (let b of retro.balls) {
             if (b.trail) {
               for (let t = 0; t < b.trail.length; t++) {
@@ -1427,24 +1518,53 @@
           updateRetroEngine();
 
         } else if (gameState === 'PLAYING_SWARM') {
+          // Render Swarm Bricks (Squares, TNT, and Angled Prisms)
           for (let b of swarm.bricks) {
             if (!b.alive) continue;
             const bx = SWARM_PAD + b.c * (SWARM_BW + SWARM_PAD);
-            const by = 40 + b.row * (SWARM_BH + SWARM_PAD);
+            const by = 45 + b.row * (SWARM_BH + SWARM_PAD);
 
-            ctx.fillStyle = b.isTNT ? '#ff4400' : '#0a1d37';
-            ctx.strokeStyle = b.isTNT ? '#ffaa00' : '#00f0ff';
-            ctx.lineWidth = 1.4;
-            ctx.fillRect(bx, by, SWARM_BW, SWARM_BH);
-            ctx.strokeRect(bx, by, SWARM_BW, SWARM_BH);
+            if (b.isTriangle) {
+              // RENDER ANGLED NEON PRISM
+              ctx.fillStyle = '#1e1138';
+              ctx.strokeStyle = '#b026ff';
+              ctx.lineWidth = 1.6;
+              ctx.beginPath();
+              if (b.triDir === 'TL') {
+                ctx.moveTo(bx, by);
+                ctx.lineTo(bx + SWARM_BW, by);
+                ctx.lineTo(bx, by + SWARM_BH);
+              } else {
+                ctx.moveTo(bx, by);
+                ctx.lineTo(bx + SWARM_BW, by);
+                ctx.lineTo(bx + SWARM_BW, by + SWARM_BH);
+              }
+              ctx.closePath();
+              ctx.fill();
+              ctx.stroke();
 
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 8.5px monospace';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(b.isTNT ? '💣' : b.hp, bx + SWARM_BW / 2, by + SWARM_BH / 2);
+              ctx.fillStyle = '#ff007f';
+              ctx.font = 'bold 9px monospace';
+              ctx.textAlign = 'center';
+              ctx.fillText(b.hp, bx + SWARM_BW / 2, by + SWARM_BH / 2);
+
+            } else {
+              // Standard & TNT Square Bricks
+              ctx.fillStyle = b.isTNT ? '#ff4400' : (b.hp > 25 ? '#280d38' : '#0a1d37');
+              ctx.strokeStyle = b.isTNT ? '#ffaa00' : (b.hp > 25 ? '#b026ff' : '#00f0ff');
+              ctx.lineWidth = 1.5;
+              ctx.fillRect(bx, by, SWARM_BW, SWARM_BH);
+              ctx.strokeRect(bx, by, SWARM_BW, SWARM_BH);
+
+              ctx.fillStyle = '#ffffff';
+              ctx.font = 'bold 9px monospace';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(b.isTNT ? '💣' : b.hp, bx + SWARM_BW / 2, by + SWARM_BH / 2);
+            }
           }
 
+          // Trajectory Aiming Line
           if (swarm.aiming && !swarm.launching) {
             ctx.strokeStyle = '#00f0ff';
             ctx.shadowBlur = 12;
@@ -1458,10 +1578,16 @@
             ctx.shadowBlur = 0;
           }
 
+          // Swarm Launcher Node & Ball Count Display
           ctx.fillStyle = '#00f0ff';
           ctx.beginPath();
-          ctx.arc(swarm.shooter.x, swarm.shooter.y, 7, 0, Math.PI * 2);
+          ctx.arc(swarm.shooter.x, swarm.shooter.y, 7.5, 0, Math.PI * 2);
           ctx.fill();
+
+          ctx.fillStyle = '#00f0ff';
+          ctx.font = 'bold 11px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(`x${swarm.ballCount}`, swarm.shooter.x, swarm.shooter.y + 18);
 
           for (let b of swarm.balls) {
             ctx.fillStyle = '#00f0ff';
@@ -1488,7 +1614,7 @@
         }
         ctx.globalAlpha = 1;
 
-        // Floating Combo Popups
+        // Floating Popups
         for (let i = popups.length - 1; i >= 0; i--) {
           const pop = popups[i];
           pop.y += pop.vy;
@@ -1535,10 +1661,11 @@
 
         if (hudLevel.textContent === 'SWARM') {
           gameState = 'PLAYING_SWARM';
-          swarm.bricks = swarm.bricks.filter(b => b.row < 22);
+          swarmActionBar.style.display = 'flex';
+          swarm.bricks = swarm.bricks.filter(b => b.row < 20);
           swarm.balls = [];
-          swarm.ballCount += 3;
-          addPopup(W / 2, H / 2, 'SURGE CLEARED!', '#00f0ff');
+          swarm.ballCount += 5;
+          addPopup(W / 2, H / 2, 'SURGE CLEARED (+5 BALLS)!', '#00f0ff');
         } else {
           gameState = 'PLAYING_RETRO';
           retro.lives = 1;
@@ -1553,12 +1680,15 @@
       gameoverScreen.style.display = 'none';
       overlay.style.display = 'flex';
       gameState = 'MENU';
+      swarmActionBar.style.display = 'none';
       triggerCrazyGamesStop();
     });
 
     hudMenuBtn.addEventListener('click', () => {
       gameState = 'MENU';
       gameoverScreen.style.display = 'none';
+      pauseScreen.style.display = 'none';
+      swarmActionBar.style.display = 'none';
       overlay.style.display = 'flex';
       triggerCrazyGamesStop();
     });
