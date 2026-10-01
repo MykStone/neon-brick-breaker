@@ -43,7 +43,7 @@
     #top-hud {
       height: 60px;
       width: 100%;
-      padding: 0 12px;
+      padding: 0 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -53,7 +53,7 @@
     }
     .hud-stat-group {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       align-items: center;
     }
     .hud-badge {
@@ -61,25 +61,39 @@
       align-items: center;
       gap: 3px;
       font-family: monospace;
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 900;
     }
     .hud-accent { color: #00f0ff; text-shadow: 0 0 8px rgba(0, 240, 255, 0.6); }
     .hud-gold { color: #ffe600; text-shadow: 0 0 8px rgba(255, 230, 0, 0.6); }
-    .hud-tokens { color: #ff007f; text-shadow: 0 0 8px rgba(255, 0, 127, 0.6); }
+    .hud-tokens-btn {
+      background: #1e0924;
+      border: 1px solid #ff007f;
+      color: #ff007f;
+      padding: 4px 7px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      text-shadow: 0 0 8px rgba(255, 0, 127, 0.6);
+    }
+    .hud-tokens-btn:active { transform: scale(0.95); }
     .hud-btn-group {
       display: flex;
-      gap: 6px;
+      gap: 5px;
       align-items: center;
     }
     .hud-ctrl-btn {
       background: #121c3b;
       border: 1.5px solid #00f0ff66;
       color: #00f0ff;
-      min-width: 35px;
-      height: 35px;
-      border-radius: 8px;
-      font-size: 13px;
+      min-width: 34px;
+      height: 34px;
+      border-radius: 7px;
+      font-size: 12px;
       font-weight: 800;
       cursor: pointer;
       display: flex;
@@ -134,15 +148,16 @@
     .btn-nuke { border-color: #ff007f; color: #ff007f; text-shadow: 0 0 8px rgba(255, 0, 127, 0.6); }
     .btn-surge { border-color: #00f0ff; color: #00f0ff; text-shadow: 0 0 8px rgba(0, 240, 255, 0.6); }
 
-    #overlay, #gameover-screen, #pause-screen {
+    /* Modals & Overlays */
+    #overlay, #gameover-screen, #pause-screen, #vault-modal {
       position: absolute;
       inset: 0;
-      background: rgba(3, 5, 12, 0.94);
+      background: rgba(3, 5, 12, 0.95);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 20px;
       z-index: 100;
       text-align: center;
     }
@@ -156,15 +171,15 @@
       text-shadow: 0 0 10px #ff007f;
     }
     .main-title {
-      font-size: 32px;
+      font-size: 30px;
       font-weight: 900;
       color: #00f0ff;
-      text-shadow: 0 0 20px #00f0ff, 0 0 40px rgba(0,240,255,0.4);
+      text-shadow: 0 0 20px #00f0ff;
       letter-spacing: 2px;
       margin-bottom: 4px;
     }
-    .menu-sub { font-size: 12px; color: #94a3b8; margin-bottom: 20px; }
-    .menu-button-stack { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 14px; }
+    .menu-sub { font-size: 12px; color: #94a3b8; margin-bottom: 18px; }
+    .menu-button-stack { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 12px; }
     .menu-card-btn {
       background: #090e1f;
       border: 2px solid;
@@ -175,51 +190,49 @@
       display: block;
       width: 100%;
       box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-      transition: transform 0.1s, box-shadow 0.2s;
     }
     .menu-card-btn:active { transform: scale(0.97); }
     .card-retro { border-color: #ff007f; }
-    .card-retro:hover { box-shadow: 0 0 25px rgba(255, 0, 127, 0.4); }
     .card-swarm { border-color: #00f0ff; }
-    .card-swarm:hover { box-shadow: 0 0 25px rgba(0, 240, 255, 0.4); }
-    .btn-header { font-size: 15px; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px; }
+    .btn-header { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
     .btn-body { font-size: 11px; color: #94a3b8; line-height: 1.4; }
-    .gameover-val { font-size: 42px; font-weight: 900; color: #ffe600; font-family: monospace; margin-bottom: 6px; }
-    .hi-score-tag { font-size: 13px; color: #00f0ff; font-family: monospace; margin-bottom: 16px; }
+    .gameover-val { font-size: 40px; font-weight: 900; color: #ffe600; font-family: monospace; margin-bottom: 4px; }
+    .hi-score-tag { font-size: 13px; color: #00f0ff; font-family: monospace; margin-bottom: 14px; }
+    
     .action-btn {
       background: #00f0ff;
       color: #060810;
       border: none;
-      padding: 14px 28px;
-      font-size: 15px;
+      padding: 13px 24px;
+      font-size: 14px;
       font-weight: 800;
       border-radius: 8px;
       cursor: pointer;
       width: 100%;
       max-width: 250px;
-      margin-bottom: 10px;
-      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+      margin-bottom: 8px;
+      box-shadow: 0 0 18px rgba(0, 240, 255, 0.4);
     }
     .action-btn:active { transform: scale(0.97); }
     .revive-btn {
       background: #ff007f;
       color: #fff;
       border: none;
-      padding: 12px 24px;
+      padding: 12px 20px;
       font-size: 13px;
       font-weight: 800;
       border-radius: 8px;
       cursor: pointer;
       width: 100%;
       max-width: 250px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       display: none;
     }
     .sub-action-btn {
       background: transparent;
       border: 1px solid #475569;
       color: #94a3b8;
-      padding: 10px 20px;
+      padding: 9px 18px;
       font-size: 12px;
       font-weight: 700;
       border-radius: 6px;
@@ -227,24 +240,86 @@
       width: 100%;
       max-width: 250px;
     }
+
+    /* Vault / Goals & Shop Tabs */
+    .vault-tabs {
+      display: flex;
+      width: 100%;
+      max-width: 360px;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .vault-tab-btn {
+      flex: 1;
+      padding: 8px;
+      background: #090e1f;
+      border: 1.5px solid #475569;
+      color: #94a3b8;
+      font-weight: 800;
+      font-size: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .vault-tab-btn.active {
+      border-color: #00f0ff;
+      color: #00f0ff;
+      background: #121c3b;
+    }
+    .vault-content-box {
+      width: 100%;
+      max-width: 360px;
+      max-height: 380px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .vault-item {
+      background: #090e1f;
+      border: 1px solid #00f0ff33;
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-align: left;
+    }
+    .vault-item-title { font-size: 12px; font-weight: 800; color: #fff; margin-bottom: 2px; }
+    .vault-item-sub { font-size: 10.5px; color: #94a3b8; }
+    .vault-claim-btn {
+      background: #ffe600;
+      color: #060810;
+      border: none;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 900;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .vault-claim-btn.disabled {
+      background: #1e293b;
+      color: #64748b;
+      cursor: default;
+    }
   </style>
 </head>
 <body>
 
   <div id="cabinet">
-    <!-- Spacious Top HUD -->
+    <!-- Top HUD -->
     <div id="top-hud">
       <div class="hud-stat-group">
         <div class="hud-badge">🏆 <span id="hud-score" class="hud-accent">0</span></div>
         <div class="hud-badge">👑 <span id="hud-best" class="hud-gold">0</span></div>
-        <div class="hud-badge">🪙 <span id="hud-tokens" class="hud-tokens">0</span></div>
+        <button id="btn-open-vault" class="hud-tokens-btn" title="Open Token Vault & Goals">🪙 <span id="hud-tokens">0</span></button>
         <div class="hud-badge">LVL: <span id="hud-level" class="hud-gold">1</span></div>
       </div>
       <div class="hud-btn-group">
         <button id="hud-pause-btn" class="hud-ctrl-btn" title="Pause Game">⏸️</button>
-        <button id="hud-music-btn" class="hud-ctrl-btn" title="Toggle Synthwave">🎵</button>
+        <button id="hud-music-btn" class="hud-ctrl-btn" title="Toggle Music">🎵</button>
         <button id="hud-mute-btn" class="hud-ctrl-btn" title="Toggle SFX">🔊</button>
-        <button id="hud-menu-btn" class="hud-ctrl-btn" style="min-width: 48px;">MENU</button>
+        <button id="hud-menu-btn" class="hud-ctrl-btn" style="min-width: 44px;">MENU</button>
       </div>
     </div>
 
@@ -268,7 +343,7 @@
         <div class="menu-button-stack">
           <button id="btn-retro" class="menu-card-btn card-retro">
             <div class="btn-header" style="color:#ff007f;">🕹️ CLASSIC CAMPAIGN</div>
-            <div class="btn-body">Infinite procedural sectors, mega plasma cutting beam, kinetic heat fireball.</div>
+            <div class="btn-body">Infinite procedural sectors, mega cutting beam, kinetic heat fireball.</div>
           </button>
 
           <button id="btn-swarm" class="menu-card-btn card-swarm">
@@ -276,6 +351,76 @@
             <div class="btn-body">Bank-shot reflection aim, instant recall, and high-scaled brick HP.</div>
           </button>
         </div>
+      </div>
+
+      <!-- StoneBuilt Token Vault Modal (Goals & Shop) -->
+      <div id="vault-modal" style="display:none;">
+        <div class="brand-eyebrow">STONEBUILT ARCADE VAULT</div>
+        <div class="main-title" style="font-size:24px; margin-bottom:10px;">TOKEN HEADQUARTERS</div>
+
+        <div class="vault-tabs">
+          <button id="tab-btn-goals" class="vault-tab-btn active">🏆 GOALS & REWARDS</button>
+          <button id="tab-btn-shop" class="vault-tab-btn">🛒 ARCADE SHOP</button>
+        </div>
+
+        <!-- Goals Tab Content -->
+        <div id="vault-goals-view" class="vault-content-box">
+          <div class="vault-item">
+            <div>
+              <div class="vault-item-title">Shatter 50 Bricks</div>
+              <div id="goal-sub-1" class="vault-item-sub">Progress: 0 / 50</div>
+            </div>
+            <button id="btn-claim-1" class="vault-claim-btn disabled">CLAIM +5 🪙</button>
+          </div>
+          <div class="vault-item">
+            <div>
+              <div class="vault-item-title">Score 2,500 Points</div>
+              <div id="goal-sub-2" class="vault-item-sub">Progress: 0 / 2500</div>
+            </div>
+            <button id="btn-claim-2" class="vault-claim-btn disabled">CLAIM +10 🪙</button>
+          </div>
+          <div class="vault-item">
+            <div>
+              <div class="vault-item-title">Shatter 200 Bricks</div>
+              <div id="goal-sub-3" class="vault-item-sub">Progress: 0 / 200</div>
+            </div>
+            <button id="btn-claim-3" class="vault-claim-btn disabled">CLAIM +15 🪙</button>
+          </div>
+          <div class="vault-item">
+            <div>
+              <div class="vault-item-title">Reach Level / Wave 5</div>
+              <div id="goal-sub-4" class="vault-item-sub">Progress: 1 / 5</div>
+            </div>
+            <button id="btn-claim-4" class="vault-claim-btn disabled">CLAIM +20 🪙</button>
+          </div>
+        </div>
+
+        <!-- Shop Tab Content -->
+        <div id="vault-shop-view" class="vault-content-box" style="display:none;">
+          <div class="vault-item">
+            <div>
+              <div class="vault-item-title">Reinforced Core (+1 Life)</div>
+              <div class="vault-item-sub">Start Campaign runs with 4 Lives</div>
+            </div>
+            <button id="btn-buy-life" class="vault-claim-btn">30 🪙 BUY</button>
+          </div>
+          <div class="vault-item">
+            <div>
+              <div class="vault-item-title">Swarm Stream (+5 Balls)</div>
+              <div class="vault-item-sub">Start Swarm Arena with 20 Balls</div>
+            </div>
+            <button id="btn-buy-balls" class="vault-claim-btn">25 🪙 BUY</button>
+          </div>
+          <div class="vault-item">
+            <div>
+              <div class="vault-item-title">Laser Overclock (+2s)</div>
+              <div class="vault-item-sub">Mega Cutting Beam lasts 10 seconds</div>
+            </div>
+            <button id="btn-buy-laser" class="vault-claim-btn">20 🪙 BUY</button>
+          </div>
+        </div>
+
+        <button id="btn-close-vault" class="action-btn" style="max-width:200px;">CLOSE VAULT</button>
       </div>
 
       <!-- Pause Screen -->
@@ -303,7 +448,7 @@
 
   <script>
     /* ==============================================================
-       1. CRAZYGAMES SDK v3 INTEGRATION
+       1. CRAZYGAMES SDK v3 INTEGRATION & LIFECYCLE
        ============================================================== */
     let crazyGamesReady = false;
     let isAdPlaying = false;
@@ -445,7 +590,7 @@
     }
 
     /* ==============================================================
-       2. LOUDER & PUNCHIER 128 BPM SYNTHWAVE AUDIO ENGINE
+       2. 128 BPM SYNTHWAVE AUDIO & THROTTLED ARCADE SFX
        ============================================================== */
     let audioCtx = null;
     let masterGainNode = null;
@@ -453,6 +598,7 @@
     let noiseBuffer = null;
     let musicTimer = null;
     let musicStep = 0;
+    let lastHitSoundTime = 0; // Eliminates sound buzzing!
 
     const BPM = 128;
     const STEP_TIME = (60 / BPM) / 4;
@@ -537,7 +683,7 @@
         const gain = audioCtx.createGain();
         osc.frequency.setValueAtTime(155, now);
         osc.frequency.exponentialRampToValueAtTime(36, now + 0.1);
-        gain.gain.setValueAtTime(0.48, now);
+        gain.gain.setValueAtTime(0.46, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
         osc.connect(gain);
         gain.connect(masterGainNode);
@@ -558,7 +704,7 @@
         noiseFilter.Q.setValueAtTime(1.5, now);
 
         const noiseGain = audioCtx.createGain();
-        noiseGain.gain.setValueAtTime(0.32, now);
+        noiseGain.gain.setValueAtTime(0.30, now);
         noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
 
         noiseSource.connect(noiseFilter);
@@ -571,7 +717,7 @@
         const oscGain = audioCtx.createGain();
         osc.frequency.setValueAtTime(180, now);
         osc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
-        oscGain.gain.setValueAtTime(0.24, now);
+        oscGain.gain.setValueAtTime(0.22, now);
         oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
 
         osc.connect(oscGain);
@@ -633,6 +779,14 @@
       } catch (e) {}
     }
 
+    // THROTTLED ARCADE IMPACT SOUND (Zero audio pile-up buzzing!)
+    function sndHit(f = 480) {
+      const now = performance.now();
+      if (now - lastHitSoundTime < 35) return; // 35ms governor
+      lastHitSoundTime = now;
+      playTone(f, 'triangle', 0.04, 0.14);
+    }
+
     function playTone(freq, type = 'sine', duration = 0.08, vol = 0.14) {
       if (isAdPlaying || userMuted || portalMuted) return;
       initAudioEngine();
@@ -650,12 +804,12 @@
       } catch (e) {}
     }
 
-    const sndHit = (f = 480) => playTone(f, 'triangle', 0.05, 0.15);
     const sndPaddle = () => playTone(360, 'sine', 0.08, 0.18);
     const sndLaserBeam = () => playTone(820 + Math.random() * 80, 'sawtooth', 0.04, 0.09);
     const sndPower = () => playTone(740, 'square', 0.18, 0.12);
     const sndBomb = () => playTone(90, 'sawtooth', 0.4, 0.25);
     const sndDie = () => playTone(120, 'sawtooth', 0.45, 0.18);
+    const sndCoin = () => playTone(987.77, 'sine', 0.25, 0.22); // High-value token ding!
 
     /* ==============================================================
        3. DOM REFERENCES & TOP HUD STATE
@@ -665,6 +819,7 @@
     const overlay = document.getElementById('overlay');
     const gameoverScreen = document.getElementById('gameover-screen');
     const pauseScreen = document.getElementById('pause-screen');
+    const vaultModal = document.getElementById('vault-modal');
     const swarmActionBar = document.getElementById('swarm-action-bar');
     const btnSwarmRecall = document.getElementById('btn-swarm-recall');
     
@@ -689,11 +844,27 @@
     let score = 0;
     let reviveUsedThisSession = false;
 
+    // Tokens, Upgrades & Goals Engine (Persistent)
     let arcadeTokens = 0;
+    let totalBricksBroken = 0;
+    let maxLevelReached = 1;
+    let perkExtraLife = false;
+    let perkExtraBalls = false;
+    let perkLaserOverclock = false;
+
+    // Goal Claim Flags
+    let goalClaimed = [false, false, false, false, false];
+
     try {
       arcadeTokens = parseInt(localStorage.getItem('sbc_tokens') || '0', 10);
-      if (isNaN(arcadeTokens)) arcadeTokens = 0;
-    } catch (e) { arcadeTokens = 0; }
+      totalBricksBroken = parseInt(localStorage.getItem('sbc_bricks_total') || '0', 10);
+      maxLevelReached = parseInt(localStorage.getItem('sbc_max_level') || '1', 10);
+      perkExtraLife = localStorage.getItem('sbc_perk_life') === 'true';
+      perkExtraBalls = localStorage.getItem('sbc_perk_balls') === 'true';
+      perkLaserOverclock = localStorage.getItem('sbc_perk_laser') === 'true';
+      goalClaimed = JSON.parse(localStorage.getItem('sbc_claimed_goals') || '[false,false,false,false,false]');
+    } catch (e) {}
+
     hudTokens.textContent = arcadeTokens;
 
     let hiScore = 0;
@@ -715,6 +886,7 @@
         } catch (e) {}
         triggerHappyTime();
       }
+      updateGoalsState();
     }
 
     function addTokens(amount, reason) {
@@ -723,6 +895,7 @@
       try {
         localStorage.setItem('sbc_tokens', arcadeTokens.toString());
       } catch (e) {}
+      sndCoin();
       addPopup(W / 2, H / 2 - 40, `+${amount} TOKENS! (${reason})`, '#ffe600');
       triggerHappyTime();
     }
@@ -760,7 +933,7 @@
       score = 0;
       hudScore.textContent = score;
       hudBest.textContent = hiScore;
-      retro.lives = 3;
+      retro.lives = perkExtraLife ? 4 : 3;
       retro.level = 1;
       hudLevel.textContent = retro.level;
       reviveUsedThisSession = false;
@@ -771,6 +944,7 @@
       resetRetroBall();
       overlay.style.display = 'none';
       pauseScreen.style.display = 'none';
+      vaultModal.style.display = 'none';
       gameoverScreen.style.display = 'none';
 
       triggerCrazyGamesStart();
@@ -832,7 +1006,8 @@
         vy: -6.4,
         r: 8.0,
         stuck: true,
-        trail: []
+        trail: [],
+        hitCooldown: 0
       }];
     }
 
@@ -843,11 +1018,14 @@
       addPopup(W / 2, H / 2 - 30, '+150 SECTOR BONUS!', '#ffe600');
       addPopup(W / 2, H / 2, `STAGE ${retro.level} CLEARED!`, '#39ff14');
 
-      if (retro.level === 3) addTokens(5, "Stage 3 Complete");
-      if (retro.level === 7) addTokens(15, "Sector Master");
-
       retro.level++;
+      if (retro.level > maxLevelReached) {
+        maxLevelReached = retro.level;
+        localStorage.setItem('sbc_max_level', maxLevelReached.toString());
+      }
       hudLevel.textContent = retro.level;
+      updateGoalsState();
+
       generateProceduralStage(retro.level);
       resetRetroBall();
     }
@@ -882,7 +1060,7 @@
       hudScore.textContent = score;
       hudBest.textContent = hiScore;
       swarm.level = 1;
-      swarm.ballCount = 15;
+      swarm.ballCount = perkExtraBalls ? 20 : 15;
       swarm.balls = [];
       swarm.shooter.x = W / 2;
       swarm.shooter.y = H - 45;
@@ -900,6 +1078,7 @@
 
       overlay.style.display = 'none';
       pauseScreen.style.display = 'none';
+      vaultModal.style.display = 'none';
       gameoverScreen.style.display = 'none';
       triggerCrazyGamesStart();
     }
@@ -985,7 +1164,7 @@
     });
 
     /* ==============================================================
-       6. ROBUST INPUT CONTROLS
+       6. ROBUST INPUT CONTROLS & AIM
        ============================================================== */
     function getCanvasCoords(e) {
       const rect = canvas.getBoundingClientRect();
@@ -1141,7 +1320,182 @@
     }
 
     /* ==============================================================
-       7. RETRO GAMEPLAY & CONTINUOUS CUTTING LASER LOGIC
+       7. TOKEN VAULT (GOALS & SHOP) LOGIC
+       ============================================================== */
+    const btnOpenVault = document.getElementById('btn-open-vault');
+    const btnCloseVault = document.getElementById('btn-close-vault');
+    const tabBtnGoals = document.getElementById('tab-btn-goals');
+    const tabBtnShop = document.getElementById('tab-btn-shop');
+    const vaultGoalsView = document.getElementById('vault-goals-view');
+    const vaultShopView = document.getElementById('vault-shop-view');
+
+    btnOpenVault.addEventListener('click', () => {
+      initAudioEngine();
+      updateGoalsState();
+      vaultModal.style.display = 'flex';
+      if (gameState !== 'MENU') {
+        isGamePaused = true;
+        enforceAudioPolicy();
+      }
+    });
+
+    btnCloseVault.addEventListener('click', () => {
+      vaultModal.style.display = 'none';
+      if (isGamePaused) {
+        isGamePaused = false;
+        enforceAudioPolicy();
+      }
+    });
+
+    tabBtnGoals.addEventListener('click', () => {
+      tabBtnGoals.classList.add('active');
+      tabBtnShop.classList.remove('active');
+      vaultGoalsView.style.display = 'flex';
+      vaultShopView.style.display = 'none';
+    });
+
+    tabBtnShop.addEventListener('click', () => {
+      tabBtnShop.classList.add('active');
+      tabBtnGoals.classList.remove('active');
+      vaultShopView.style.display = 'flex';
+      vaultGoalsView.style.display = 'none';
+      updateShopState();
+    });
+
+    function updateGoalsState() {
+      // Goal 1: 50 Bricks
+      const g1Btn = document.getElementById('btn-claim-1');
+      const g1Sub = document.getElementById('goal-sub-1');
+      g1Sub.textContent = `Progress: ${Math.min(50, totalBricksBroken)} / 50`;
+      if (goalClaimed[0]) {
+        g1Btn.textContent = 'CLAIMED ✓';
+        g1Btn.className = 'vault-claim-btn disabled';
+      } else if (totalBricksBroken >= 50) {
+        g1Btn.textContent = 'CLAIM +5 🪙';
+        g1Btn.className = 'vault-claim-btn';
+      }
+
+      // Goal 2: 2500 Score
+      const g2Btn = document.getElementById('btn-claim-2');
+      const g2Sub = document.getElementById('goal-sub-2');
+      g2Sub.textContent = `Progress: ${Math.min(2500, hiScore)} / 2500`;
+      if (goalClaimed[1]) {
+        g2Btn.textContent = 'CLAIMED ✓';
+        g2Btn.className = 'vault-claim-btn disabled';
+      } else if (hiScore >= 2500) {
+        g2Btn.textContent = 'CLAIM +10 🪙';
+        g2Btn.className = 'vault-claim-btn';
+      }
+
+      // Goal 3: 200 Bricks
+      const g3Btn = document.getElementById('btn-claim-3');
+      const g3Sub = document.getElementById('goal-sub-3');
+      g3Sub.textContent = `Progress: ${Math.min(200, totalBricksBroken)} / 200`;
+      if (goalClaimed[2]) {
+        g3Btn.textContent = 'CLAIMED ✓';
+        g3Btn.className = 'vault-claim-btn disabled';
+      } else if (totalBricksBroken >= 200) {
+        g3Btn.textContent = 'CLAIM +15 🪙';
+        g3Btn.className = 'vault-claim-btn';
+      }
+
+      // Goal 4: Level 5
+      const g4Btn = document.getElementById('btn-claim-4');
+      const g4Sub = document.getElementById('goal-sub-4');
+      g4Sub.textContent = `Progress: ${Math.min(5, maxLevelReached)} / 5`;
+      if (goalClaimed[3]) {
+        g4Btn.textContent = 'CLAIMED ✓';
+        g4Btn.className = 'vault-claim-btn disabled';
+      } else if (maxLevelReached >= 5) {
+        g4Btn.textContent = 'CLAIM +20 🪙';
+        g4Btn.className = 'vault-claim-btn';
+      }
+    }
+
+    document.getElementById('btn-claim-1').addEventListener('click', () => {
+      if (!goalClaimed[0] && totalBricksBroken >= 50) {
+        goalClaimed[0] = true;
+        localStorage.setItem('sbc_claimed_goals', JSON.stringify(goalClaimed));
+        addTokens(5, "50 Bricks Smashed");
+        updateGoalsState();
+      }
+    });
+
+    document.getElementById('btn-claim-2').addEventListener('click', () => {
+      if (!goalClaimed[1] && hiScore >= 2500) {
+        goalClaimed[1] = true;
+        localStorage.setItem('sbc_claimed_goals', JSON.stringify(goalClaimed));
+        addTokens(10, "2500 Pts Reached");
+        updateGoalsState();
+      }
+    });
+
+    document.getElementById('btn-claim-3').addEventListener('click', () => {
+      if (!goalClaimed[2] && totalBricksBroken >= 200) {
+        goalClaimed[2] = true;
+        localStorage.setItem('sbc_claimed_goals', JSON.stringify(goalClaimed));
+        addTokens(15, "200 Bricks Smashed");
+        updateGoalsState();
+      }
+    });
+
+    document.getElementById('btn-claim-4').addEventListener('click', () => {
+      if (!goalClaimed[3] && maxLevelReached >= 5) {
+        goalClaimed[3] = true;
+        localStorage.setItem('sbc_claimed_goals', JSON.stringify(goalClaimed));
+        addTokens(20, "Sector 5 Reached");
+        updateGoalsState();
+      }
+    });
+
+    function updateShopState() {
+      const bLife = document.getElementById('btn-buy-life');
+      const bBalls = document.getElementById('btn-buy-balls');
+      const bLaser = document.getElementById('btn-buy-laser');
+
+      if (perkExtraLife) { bLife.textContent = 'OWNED ✓'; bLife.className = 'vault-claim-btn disabled'; }
+      if (perkExtraBalls) { bBalls.textContent = 'OWNED ✓'; bBalls.className = 'vault-claim-btn disabled'; }
+      if (perkLaserOverclock) { bLaser.textContent = 'OWNED ✓'; bLaser.className = 'vault-claim-btn disabled'; }
+    }
+
+    document.getElementById('btn-buy-life').addEventListener('click', () => {
+      if (!perkExtraLife && arcadeTokens >= 30) {
+        arcadeTokens -= 30;
+        perkExtraLife = true;
+        localStorage.setItem('sbc_tokens', arcadeTokens.toString());
+        localStorage.setItem('sbc_perk_life', 'true');
+        hudTokens.textContent = arcadeTokens;
+        sndCoin();
+        updateShopState();
+      }
+    });
+
+    document.getElementById('btn-buy-balls').addEventListener('click', () => {
+      if (!perkExtraBalls && arcadeTokens >= 25) {
+        arcadeTokens -= 25;
+        perkExtraBalls = true;
+        localStorage.setItem('sbc_tokens', arcadeTokens.toString());
+        localStorage.setItem('sbc_perk_balls', 'true');
+        hudTokens.textContent = arcadeTokens;
+        sndCoin();
+        updateShopState();
+      }
+    });
+
+    document.getElementById('btn-buy-laser').addEventListener('click', () => {
+      if (!perkLaserOverclock && arcadeTokens >= 20) {
+        arcadeTokens -= 20;
+        perkLaserOverclock = true;
+        localStorage.setItem('sbc_tokens', arcadeTokens.toString());
+        localStorage.setItem('sbc_perk_laser', 'true');
+        hudTokens.textContent = arcadeTokens;
+        sndCoin();
+        updateShopState();
+      }
+    });
+
+    /* ==============================================================
+       8. RETRO GAMEPLAY & CONTINUOUS CUTTING LASER LOGIC
        ============================================================== */
     function updateRetroEngine() {
       retro.paddle.y = H - 28;
@@ -1161,6 +1515,8 @@
               if (b.hp <= 0) {
                 b.alive = false;
                 addScore(25);
+                totalBricksBroken++;
+                localStorage.setItem('sbc_bricks_total', totalBricksBroken.toString());
                 spawnSparks(b.x + b.w / 2, b.y + b.h / 2, b.color, 16);
                 addPopup(b.x + b.w / 2, b.y, '+25', '#ff007f');
               }
@@ -1172,6 +1528,8 @@
       for (let i = retro.balls.length - 1; i >= 0; i--) {
         const b = retro.balls[i];
         if (b.stuck) continue;
+
+        if (b.hitCooldown > 0) b.hitCooldown--;
 
         if (!b.trail) b.trail = [];
         b.trail.push({ x: b.x, y: b.y, combo: retro.combo });
@@ -1197,10 +1555,14 @@
 
         // PHYSICAL EVICTION COLLISION ON RETRO BRICKS
         for (let brk of retro.bricks) {
-          if (!brk.alive) continue;
+          if (!brk.alive || b.hitCooldown > 0) continue;
           if (b.x + b.r > brk.x && b.x - b.r < brk.x + brk.w && b.y + b.r > brk.y && b.y - b.r < brk.y + brk.h) {
             brk.hp--;
             retro.combo++;
+            totalBricksBroken++;
+            localStorage.setItem('sbc_bricks_total', totalBricksBroken.toString());
+            b.hitCooldown = 2; // Prevents buzzing
+
             b.vx *= 1.02;
             b.vy *= 1.02;
 
@@ -1266,15 +1628,15 @@
           sndPower();
           if (p.type === 'BEAM') {
             retro.paddle.hasMegaLaser = true;
-            retro.paddle.laserTime = 8.0;
-            addPopup(p.x, p.y - 12, 'MEGA PLASMA BEAM (8s)', '#00f0ff');
+            retro.paddle.laserTime = perkLaserOverclock ? 10.0 : 8.0;
+            addPopup(p.x, p.y - 12, 'MEGA PLASMA BEAM!', '#00f0ff');
           } else if (p.type === 'WIDE') {
             retro.paddle.w = 130;
             setTimeout(() => { retro.paddle.w = 88; }, 10000);
             addPopup(p.x, p.y - 12, 'WIDE PADDLE (10s)', '#ffe600');
           } else if (p.type === 'MULTI' && retro.balls[0]) {
-            retro.balls.push({ x: retro.balls[0].x, y: retro.balls[0].y, vx: -3.5, vy: -5, r: 8.0, stuck: false, trail: [] });
-            retro.balls.push({ x: retro.balls[0].x, y: retro.balls[0].y, vx: 3.5, vy: -5, r: 8.0, stuck: false, trail: [] });
+            retro.balls.push({ x: retro.balls[0].x, y: retro.balls[0].y, vx: -3.5, vy: -5, r: 8.0, stuck: false, trail: [], hitCooldown: 0 });
+            retro.balls.push({ x: retro.balls[0].x, y: retro.balls[0].y, vx: 3.5, vy: -5, r: 8.0, stuck: false, trail: [], hitCooldown: 0 });
             addPopup(p.x, p.y - 12, 'TRIPLE MULTIBALL', '#39ff14');
           }
           retro.powerUps.splice(i, 1);
@@ -1287,7 +1649,7 @@
     }
 
     /* ==============================================================
-       8. SWARM ARENA UPDATE (TRUE PHYSICAL EVICTION - NO BUZZING!)
+       9. SWARM ARENA UPDATE (ANTI-BUZZING PHYSICAL EVICTION)
        ============================================================== */
     function updateSwarmEngine() {
       if (swarm.launching && swarm.launchedCount < swarm.ballCount) {
@@ -1299,7 +1661,8 @@
             y: swarm.shooter.y,
             vx: Math.cos(swarm.aimAngle) * spd,
             vy: Math.sin(swarm.aimAngle) * spd,
-            r: 5.8
+            r: 5.8,
+            hitCooldown: 0
           });
           swarm.launchedCount++;
         }
@@ -1307,24 +1670,29 @@
 
       for (let i = swarm.balls.length - 1; i >= 0; i--) {
         const b = swarm.balls[i];
+        if (b.hitCooldown > 0) b.hitCooldown--;
+
         b.x += b.vx;
         b.y += b.vy;
 
-        // Left / Right Walls
+        // Wall collisions
         if (b.x - b.r <= 0) { b.x = b.r + 1; b.vx = Math.abs(b.vx); sndHit(300); }
         else if (b.x + b.r >= W) { b.x = W - b.r - 1; b.vx = -Math.abs(b.vx); sndHit(300); }
-        // Ceiling
         if (b.y - b.r <= 0) { b.y = b.r + 1; b.vy = Math.abs(b.vy); sndHit(300); }
 
-        // Brick Impacts with Proper Side-of-Impact Physical Eviction
+        // Brick Impacts with 2-Frame Anti-Buzz Cooldown
         for (let brk of swarm.bricks) {
-          if (!brk.alive) continue;
+          if (!brk.alive || b.hitCooldown > 0) continue;
           const bx = SWARM_PAD + brk.c * (SWARM_BW + SWARM_PAD);
           const by = 45 + brk.row * (SWARM_BH + SWARM_PAD);
 
           if (b.x + b.r > bx && b.x - b.r < bx + SWARM_BW && b.y + b.r > by && b.y - b.r < by + SWARM_BH) {
             brk.hp--;
             addScore(1);
+            totalBricksBroken++;
+            localStorage.setItem('sbc_bricks_total', totalBricksBroken.toString());
+            b.hitCooldown = 2; // Mathematically stops machine-gun buzzing!
+
             sndHit(450 + Math.min(320, brk.hp * 6));
 
             if (brk.isTriangle) {
@@ -1333,14 +1701,12 @@
               b.vy = -Math.abs(temp);
               b.y = by + SWARM_BH + b.r + 1;
             } else {
-              // Calculate Minimum Overlap to find exact collision face
               const overlapL = (b.x + b.r) - bx;
               const overlapR = (bx + SWARM_BW) - (b.x - b.r);
               const overlapT = (b.y + b.r) - by;
               const overlapB = (by + SWARM_BH) - (b.y - b.r);
               const minOverlap = Math.min(overlapL, overlapR, overlapT, overlapB);
 
-              // Evict physically so ball NEVER gets stuck inside!
               if (minOverlap === overlapL) {
                 b.x = bx - b.r - 0.5;
                 b.vx = -Math.abs(b.vx);
@@ -1392,6 +1758,11 @@
         btnSwarmRecall.style.display = 'none';
         swarm.shooter.x = Math.max(25, Math.min(W - 25, swarm.newShooterX || W / 2));
         swarm.level++;
+        if (swarm.level > maxLevelReached) {
+          maxLevelReached = swarm.level;
+          localStorage.setItem('sbc_max_level', maxLevelReached.toString());
+        }
+        updateGoalsState();
         addSwarmWave();
 
         for (let b of swarm.bricks) {
@@ -1417,7 +1788,7 @@
     }
 
     /* ==============================================================
-       9. MASTER RENDER ENGINE
+       10. MASTER RENDER ENGINE (COMPLETE & POLISHED)
        ============================================================== */
     function draw() {
       requestAnimationFrame(draw);
@@ -1675,7 +2046,7 @@
           updateSwarmEngine();
         }
 
-        // Particle Bursts
+        // Particles
         for (let i = particles.length - 1; i >= 0; i--) {
           const pt = particles[i];
           pt.x += pt.vx;
@@ -1712,7 +2083,7 @@
     }
 
     /* ==============================================================
-       10. BUTTON HOOKS & REWARDED AD LOGIC
+       11. BUTTON HOOKS & REWARDED AD LOGIC
        ============================================================== */
     document.getElementById('btn-retro').addEventListener('click', () => {
       initAudioEngine();
@@ -1765,6 +2136,7 @@
       gameState = 'MENU';
       gameoverScreen.style.display = 'none';
       pauseScreen.style.display = 'none';
+      vaultModal.style.display = 'none';
       swarmActionBar.style.display = 'none';
       overlay.style.display = 'flex';
       triggerCrazyGamesStop();
