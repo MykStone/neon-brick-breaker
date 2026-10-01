@@ -104,7 +104,6 @@
       display: block;
       touch-action: none;
     }
-    /* In-Game Tactile Power Bar (Swarm Mode) */
     #swarm-action-bar {
       position: absolute;
       bottom: 8px;
@@ -496,7 +495,7 @@
     }
 
     /* ==============================================================
-       2. 128 BPM ANALOG SYNTHWAVE AUDIO ENGINE
+       2. LOUDER & PUNCHIER 128 BPM ANALOG SYNTHWAVE AUDIO ENGINE
        ============================================================== */
     let audioCtx = null;
     let masterGainNode = null;
@@ -516,11 +515,11 @@
           audioCtx = new AudioClass();
 
           masterCompressor = audioCtx.createDynamicsCompressor();
-          masterCompressor.threshold.setValueAtTime(-18, audioCtx.currentTime);
-          masterCompressor.knee.setValueAtTime(12, audioCtx.currentTime);
-          masterCompressor.ratio.setValueAtTime(8, audioCtx.currentTime);
+          masterCompressor.threshold.setValueAtTime(-16, audioCtx.currentTime);
+          masterCompressor.knee.setValueAtTime(10, audioCtx.currentTime);
+          masterCompressor.ratio.setValueAtTime(6, audioCtx.currentTime);
           masterCompressor.attack.setValueAtTime(0.003, audioCtx.currentTime);
-          masterCompressor.release.setValueAtTime(0.15, audioCtx.currentTime);
+          masterCompressor.release.setValueAtTime(0.12, audioCtx.currentTime);
 
           masterGainNode = audioCtx.createGain();
           masterGainNode.connect(masterCompressor);
@@ -568,9 +567,13 @@
         if (!musicEnabled || isAdPlaying || userMuted || portalMuted || isGamePaused || gameState === 'MENU') return;
         if (!audioCtx || audioCtx.state !== 'running') return;
 
+        // Pumping Kick
         if (musicStep % 4 === 0) play808Kick();
+        // Snare
         if (musicStep % 8 === 4) playRealSnare();
+        // Hi-Hat
         if (musicStep % 2 === 1) playHiHat();
+        // Louder Moog Bassline
         if (musicStep % 2 === 0) {
           const chordIndex = Math.floor(musicStep / 4) % BASS_ROOTS.length;
           const octave = (musicStep % 4 === 2) ? 2 : 1;
@@ -581,22 +584,24 @@
       }, STEP_TIME * 1000);
     }
 
+    // LOUDER 808 SUB KICK
     function play808Kick() {
       try {
         const now = audioCtx.currentTime;
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.frequency.setValueAtTime(150, now);
-        osc.frequency.exponentialRampToValueAtTime(38, now + 0.09);
-        gain.gain.setValueAtTime(0.35, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+        osc.frequency.setValueAtTime(155, now);
+        osc.frequency.exponentialRampToValueAtTime(36, now + 0.1);
+        gain.gain.setValueAtTime(0.48, now); // Boosted volume
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
         osc.connect(gain);
         gain.connect(masterGainNode);
         osc.start(now);
-        osc.stop(now + 0.28);
+        osc.stop(now + 0.3);
       } catch (e) {}
     }
 
+    // CRISP LINNDRUM SNARE
     function playRealSnare() {
       if (!noiseBuffer) return;
       try {
@@ -609,14 +614,26 @@
         noiseFilter.Q.setValueAtTime(1.5, now);
 
         const noiseGain = audioCtx.createGain();
-        noiseGain.gain.setValueAtTime(0.24, now);
-        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+        noiseGain.gain.setValueAtTime(0.32, now); // Boosted volume
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
 
         noiseSource.connect(noiseFilter);
         noiseFilter.connect(noiseGain);
         noiseGain.connect(masterGainNode);
         noiseSource.start(now);
-        noiseSource.stop(now + 0.16);
+        noiseSource.stop(now + 0.18);
+
+        const osc = audioCtx.createOscillator();
+        const oscGain = audioCtx.createGain();
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
+        oscGain.gain.setValueAtTime(0.24, now);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+        osc.connect(oscGain);
+        oscGain.connect(masterGainNode);
+        osc.start(now);
+        osc.stop(now + 0.08);
       } catch (e) {}
     }
 
@@ -628,9 +645,9 @@
         source.buffer = noiseBuffer;
         const filter = audioCtx.createBiquadFilter();
         filter.type = 'highpass';
-        filter.frequency.setValueAtTime(7000, now);
+        filter.frequency.setValueAtTime(6800, now);
         const gain = audioCtx.createGain();
-        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.setValueAtTime(0.09, now); // Boosted volume
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
         source.connect(filter);
         filter.connect(gain);
@@ -640,6 +657,7 @@
       } catch (e) {}
     }
 
+    // LOUDER DUAL-OSCILLATOR MOOG BASSLINE (Doubled Presence)
     function playWarmMoogBass(freq) {
       try {
         const now = audioCtx.currentTime;
@@ -652,18 +670,19 @@
 
         const filter = audioCtx.createBiquadFilter();
         filter.type = 'lowpass';
-        filter.Q.setValueAtTime(5.5, now);
-        filter.frequency.setValueAtTime(1200, now);
-        filter.frequency.exponentialRampToValueAtTime(260, now + 0.16);
+        filter.Q.setValueAtTime(5.8, now);
+        filter.frequency.setValueAtTime(1400, now);
+        filter.frequency.exponentialRampToValueAtTime(320, now + 0.16);
 
         const gain = audioCtx.createGain();
-        gain.gain.setValueAtTime(0.14, now);
+        gain.gain.setValueAtTime(0.28, now); // Doubled from 0.14!
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
 
         osc1.connect(filter);
         osc2.connect(filter);
         filter.connect(gain);
         gain.connect(masterGainNode);
+
         osc1.start(now);
         osc2.start(now);
         osc1.stop(now + 0.18);
@@ -705,7 +724,6 @@
     const pauseScreen = document.getElementById('pause-screen');
     const swarmActionBar = document.getElementById('swarm-action-bar');
     
-    // Top HUD Nodes
     const hudScore = document.getElementById('hud-score');
     const hudBest = document.getElementById('hud-best');
     const hudTokens = document.getElementById('hud-tokens');
@@ -727,7 +745,6 @@
     let score = 0;
     let reviveUsedThisSession = false;
 
-    // Tokens & High Scores (Persistent)
     let arcadeTokens = 0;
     try {
       arcadeTokens = parseInt(localStorage.getItem('sbc_tokens') || '0', 10);
@@ -864,12 +881,13 @@
       retro.powerUps = [];
       retro.combo = 0;
 
+      // CHUNKIER 8.0 RADIUS CLASSIC BALL
       retro.balls = [{
         x: W / 2,
         y: H - 55,
         vx: 3.8 * (Math.random() > 0.5 ? 1 : -1),
-        vy: -6.2,
-        r: 6.5,
+        vy: -6.4,
+        r: 8.0, // Chunky, solid presence!
         stuck: true,
         trail: []
       }];
@@ -892,7 +910,7 @@
     }
 
     /* ==============================================================
-       5. MODERN SWARM ENGINE (SCALED BRICK HP & ANGLED PRISMS)
+       5. MODERN SWARM ENGINE (CHUNKY 5.8 BALLS & ANGLED PRISMS)
        ============================================================== */
     const SWARM_COLS = 14;
     const SWARM_PAD = 4;
@@ -921,7 +939,7 @@
       hudScore.textContent = score;
       hudBest.textContent = hiScore;
       swarm.level = 1;
-      swarm.ballCount = 15; // Starts with a punchy swarm!
+      swarm.ballCount = 15;
       swarm.balls = [];
       swarm.shooter.x = W / 2;
       swarm.aiming = false;
@@ -933,7 +951,6 @@
 
       swarmActionBar.style.display = 'flex';
 
-      // Spawn initial waves
       for (let i = 0; i < 4; i++) addSwarmWave();
 
       overlay.style.display = 'none';
@@ -947,8 +964,6 @@
       for (let p of swarm.pickups) p.row++;
 
       let spawnedPickup = false;
-
-      // DYNAMIC HP SCALING (Matches competitor: HP scales up to 25, 35, 50+)
       const baseWaveHp = Math.max(3, Math.round(swarm.ballCount * 0.8 + swarm.level * 1.5));
 
       for (let c = 0; c < SWARM_COLS; c++) {
@@ -956,8 +971,8 @@
         if (rand < 0.44) {
           let hp = Math.max(1, Math.round(baseWaveHp * (0.8 + Math.random() * 0.4)));
           const isTNT = Math.random() < 0.08;
-          const isTriangle = !isTNT && (Math.random() < 0.22); // Angled Prism Bricks!
-          const triDir = Math.random() > 0.5 ? 'TL' : 'TR'; // Top-left vs Top-right slope
+          const isTriangle = !isTNT && (Math.random() < 0.22);
+          const triDir = Math.random() > 0.5 ? 'TL' : 'TR';
 
           swarm.bricks.push({
             c: c, row: 1, w: SWARM_BW, h: SWARM_BH,
@@ -971,7 +986,7 @@
       }
     }
 
-    // Tactile Swarm In-Game Buttons
+    // Tactile Buttons
     document.getElementById('btn-power-nuke').addEventListener('click', (e) => {
       e.stopPropagation();
       initAudioEngine();
@@ -980,7 +995,6 @@
         hudTokens.textContent = arcadeTokens;
         localStorage.setItem('sbc_tokens', arcadeTokens.toString());
         
-        // Vaporize the lowest 3 danger rows
         let nukeCount = 0;
         for (let b of swarm.bricks) {
           if (b.alive && b.row >= 18) {
@@ -1209,7 +1223,7 @@
           sndPaddle();
           retro.combo = 0;
           const hit = (b.x - (retro.paddle.x + retro.paddle.w / 2)) / (retro.paddle.w / 2);
-          const currentSpd = Math.max(6.8, Math.min(10.5, Math.hypot(b.vx, b.vy)));
+          const currentSpd = Math.max(7.0, Math.min(10.8, Math.hypot(b.vx, b.vy)));
           b.vx = hit * 6.5;
           const remSq = Math.max(16, currentSpd * currentSpd - b.vx * b.vx);
           b.vy = -Math.sqrt(remSq);
@@ -1274,8 +1288,8 @@
             setTimeout(() => { retro.paddle.w = 88; }, 10000);
             addPopup(p.x, p.y - 12, 'WIDE PADDLE (10s)', '#ffe600');
           } else if (p.type === 'MULTI' && retro.balls[0]) {
-            retro.balls.push({ x: retro.balls[0].x, y: retro.balls[0].y, vx: -3.5, vy: -5, r: 6.5, stuck: false, trail: [] });
-            retro.balls.push({ x: retro.balls[0].x, y: retro.balls[0].y, vx: 3.5, vy: -5, r: 6.5, stuck: false, trail: [] });
+            retro.balls.push({ x: retro.balls[0].x, y: retro.balls[0].y, vx: -3.5, vy: -5, r: 8.0, stuck: false, trail: [] });
+            retro.balls.push({ x: retro.balls[0].x, y: retro.balls[0].y, vx: 3.5, vy: -5, r: 8.0, stuck: false, trail: [] });
             addPopup(p.x, p.y - 12, 'TRIPLE MULTIBALL', '#39ff14');
           }
           retro.powerUps.splice(i, 1);
@@ -1288,18 +1302,20 @@
     }
 
     /* ==============================================================
-       8. SWARM ARENA UPDATE (WITH ANGLED PRISM DEFLECTION)
+       8. SWARM ARENA UPDATE (CHUNKY 5.8 BALLS WITH COLLISION SNAP)
        ============================================================== */
     function updateSwarmEngine() {
       if (swarm.launching && swarm.launchedCount < swarm.ballCount) {
         swarm.launchTimer++;
         if (swarm.launchTimer % 3 === 0) {
-          const spd = 8.8;
+          const spd = 9.0;
+          // CHUNKY 5.8 RADIUS SWARM BALL
           swarm.balls.push({
             x: swarm.shooter.x, y: swarm.shooter.y,
             vx: Math.cos(swarm.aimAngle) * spd,
             vy: Math.sin(swarm.aimAngle) * spd,
-            r: 3.6, trail: []
+            r: 5.8, // Chunky glowing marble!
+            trail: []
           });
           swarm.launchedCount++;
         }
@@ -1324,7 +1340,6 @@
             addScore(1);
             sndHit(450 + Math.min(320, brk.hp * 6));
 
-            // Angled Triangle Prism Deflection (45-degree angle bounce)
             if (brk.isTriangle) {
               const temp = b.vx;
               b.vx = brk.triDir === 'TL' ? -Math.abs(b.vy) : Math.abs(b.vy);
@@ -1392,7 +1407,7 @@
     }
 
     /* ==============================================================
-       9. MASTER RENDER ENGINE (NEON PRISMS & SYNTHWAVE)
+       9. MASTER RENDER ENGINE (CHUNKY GLOWING BALLS)
        ============================================================== */
     function draw() {
       requestAnimationFrame(draw);
@@ -1410,7 +1425,7 @@
 
         ctx.clearRect(0, 0, W, H);
 
-        // Animated Synthwave Horizon Grid
+        // Animated Horizon Grid
         gridOffset = (gridOffset + 1.2) % 30;
         ctx.strokeStyle = '#00f0ff18';
         ctx.lineWidth = 1;
@@ -1428,7 +1443,7 @@
         }
         ctx.stroke();
 
-        // RENDER RETRO CAMPAIGN
+        // RETRO CAMPAIGN
         if (gameState === 'PLAYING_RETRO') {
           for (let b of retro.bricks) {
             if (!b.alive) continue;
@@ -1448,7 +1463,6 @@
             }
           }
 
-          // Roaring Mega Cutting Laser Beam
           if (retro.paddle.hasMegaLaser) {
             const beamX = retro.paddle.x + retro.paddle.w / 2;
             ctx.save();
@@ -1461,7 +1475,6 @@
             ctx.restore();
           }
 
-          // Cyber Paddle
           ctx.fillStyle = retro.paddle.hasMegaLaser ? '#ff007f' : '#00f0ff';
           ctx.shadowBlur = 16;
           ctx.shadowColor = ctx.fillStyle;
@@ -1470,7 +1483,6 @@
           ctx.fillRect(retro.paddle.x + 4, retro.paddle.y + 2, retro.paddle.w - 8, 3);
           ctx.shadowBlur = 0;
 
-          // Powerup Capsules
           for (let p of retro.powerUps) {
             ctx.fillStyle = p.type === 'BEAM' ? '#00f0ff' : (p.type === 'MULTI' ? '#39ff14' : '#ffe600');
             ctx.shadowBlur = 10;
@@ -1486,7 +1498,7 @@
             ctx.fillText(p.type[0], p.x, p.y);
           }
 
-          // Kinetic Heat Ball
+          // Chunky Retro Ball
           for (let b of retro.balls) {
             if (b.trail) {
               for (let t = 0; t < b.trail.length; t++) {
@@ -1494,16 +1506,22 @@
                 const trailColor = retro.combo > 5 ? `rgba(255, 230, 0, ${alpha})` : `rgba(0, 240, 255, ${alpha})`;
                 ctx.fillStyle = trailColor;
                 ctx.beginPath();
-                ctx.arc(b.trail[t].x, b.trail[t].y, b.r * 0.75, 0, Math.PI * 2);
+                ctx.arc(b.trail[t].x, b.trail[t].y, b.r * 0.8, 0, Math.PI * 2);
                 ctx.fill();
               }
             }
             const ballColor = retro.combo > 8 ? '#ffe600' : (retro.combo > 4 ? '#ff007f' : '#00f0ff');
             ctx.fillStyle = ballColor;
-            ctx.shadowBlur = 15;
+            ctx.shadowBlur = 16;
             ctx.shadowColor = ballColor;
             ctx.beginPath();
             ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Inner White Hot Core
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.r * 0.45, 0, Math.PI * 2);
             ctx.fill();
             ctx.shadowBlur = 0;
           }
@@ -1518,14 +1536,13 @@
           updateRetroEngine();
 
         } else if (gameState === 'PLAYING_SWARM') {
-          // Render Swarm Bricks (Squares, TNT, and Angled Prisms)
+          // Render Swarm Bricks
           for (let b of swarm.bricks) {
             if (!b.alive) continue;
             const bx = SWARM_PAD + b.c * (SWARM_BW + SWARM_PAD);
             const by = 45 + b.row * (SWARM_BH + SWARM_PAD);
 
             if (b.isTriangle) {
-              // RENDER ANGLED NEON PRISM
               ctx.fillStyle = '#1e1138';
               ctx.strokeStyle = '#b026ff';
               ctx.lineWidth = 1.6;
@@ -1549,7 +1566,6 @@
               ctx.fillText(b.hp, bx + SWARM_BW / 2, by + SWARM_BH / 2);
 
             } else {
-              // Standard & TNT Square Bricks
               ctx.fillStyle = b.isTNT ? '#ff4400' : (b.hp > 25 ? '#280d38' : '#0a1d37');
               ctx.strokeStyle = b.isTNT ? '#ffaa00' : (b.hp > 25 ? '#b026ff' : '#00f0ff');
               ctx.lineWidth = 1.5;
@@ -1578,10 +1594,10 @@
             ctx.shadowBlur = 0;
           }
 
-          // Swarm Launcher Node & Ball Count Display
+          // Swarm Launcher
           ctx.fillStyle = '#00f0ff';
           ctx.beginPath();
-          ctx.arc(swarm.shooter.x, swarm.shooter.y, 7.5, 0, Math.PI * 2);
+          ctx.arc(swarm.shooter.x, swarm.shooter.y, 8.5, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.fillStyle = '#00f0ff';
@@ -1589,17 +1605,27 @@
           ctx.textAlign = 'center';
           ctx.fillText(`x${swarm.ballCount}`, swarm.shooter.x, swarm.shooter.y + 18);
 
+          // CHUNKY GLOWING SWARM BALLS (WHITE CORE + CYAN HALO)
           for (let b of swarm.balls) {
             ctx.fillStyle = '#00f0ff';
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#00f0ff';
             ctx.beginPath();
             ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
             ctx.fill();
+
+            // Inner solid white core gives them marble weight!
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.r * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
           }
 
           updateSwarmEngine();
         }
 
-        // Particle Bursts
+        // Particles
         for (let i = particles.length - 1; i >= 0; i--) {
           const pt = particles[i];
           pt.x += pt.vx;
@@ -1614,7 +1640,7 @@
         }
         ctx.globalAlpha = 1;
 
-        // Floating Popups
+        // Popups
         for (let i = popups.length - 1; i >= 0; i--) {
           const pop = popups[i];
           pop.y += pop.vy;
