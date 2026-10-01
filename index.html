@@ -343,7 +343,7 @@
 
           <button id="btn-swarm" class="menu-card-btn card-swarm">
             <div class="btn-header" style="color:#00f0ff;">⚡ MODERN SWARM ARENA</div>
-            <div class="btn-body">Bank-shot reflection aim, instant recall, and high-scaled brick HP.</div>
+            <div class="btn-body">Bank-shot reflection aim, magnetic tractor beam recall, and high-scaled brick HP.</div>
           </button>
         </div>
       </div>
@@ -923,7 +923,7 @@
     }
 
     /* ==============================================================
-       5. MODERN SWARM ENGINE (BULLETPROOF SPAWN & LAUNCH PHYSICS)
+       5. MODERN SWARM ENGINE (MAGNETIC TRACTOR BEAM RECALL)
        ============================================================== */
     const SWARM_COLS = 14;
     const SWARM_PAD = 4;
@@ -940,6 +940,7 @@
       aiming: false,
       aimAngle: -Math.PI / 2,
       launching: false,
+      recalling: false, // Magnetic tractor beam state!
       launchTimer: 0,
       launchedCount: 0,
       ballsReturned: 0,
@@ -955,9 +956,9 @@
       swarm.ballCount = 15;
       swarm.balls = [];
       swarm.shooter.x = W / 2;
-      swarm.shooter.y = H - 45;
       swarm.aiming = false;
       swarm.launching = false;
+      swarm.recalling = false;
       reviveUsedThisSession = false;
       hudLevel.textContent = 'SWARM';
       swarm.bricks = [];
@@ -1001,18 +1002,15 @@
       }
     }
 
-    // RECALL BUTTON (Instant Return for In-Flight Balls)
+    // MAGNETIC TRACTOR BEAM ENGAGE
     btnSwarmRecall.addEventListener('click', (e) => {
       e.stopPropagation();
       initAudioEngine();
-      if (swarm.launching && swarm.balls.length > 0) {
-        for (let b of swarm.balls) {
-          b.y = H - 5;
-          b.vx = 0;
-          b.vy = 28;
-        }
-        sndPaddle();
-        addPopup(W / 2, H / 2, '⚡ BALLS RECALLED!', '#ffe600');
+      if (swarm.launching && swarm.balls.length > 0 && !swarm.recalling) {
+        swarm.recalling = true;
+        playTone(220, 'sawtooth', 0.35, 0.22);
+        triggerShake(5, 12);
+        addPopup(W / 2, H / 2, '🧲 TRACTOR BEAM ACTIVE!', '#00f0ff');
       }
     });
 
@@ -1074,6 +1072,7 @@
       if (!swarm.launching && swarm.balls.length === 0) {
         swarm.aiming = false;
         swarm.launching = true;
+        swarm.recalling = false;
         swarm.launchedCount = 0;
         swarm.ballsReturned = 0;
         swarm.launchTimer = 0;
@@ -1338,10 +1337,11 @@
     }
 
     /* ==============================================================
-       8. SWARM ARENA UPDATE (FIXED DOWNWARD FLOOR RECOVERY)
+       8. SWARM ARENA (HIGH-SPEED MAGNETIC TRACTOR BEAM RECALL)
        ============================================================== */
     function updateSwarmEngine() {
-      if (swarm.launching && swarm.launchedCount < swarm.ballCount) {
+      // Stream launch
+      if (swarm.launching && !swarm.recalling && swarm.launchedCount < swarm.ballCount) {
         swarm.launchTimer++;
         if (swarm.launchTimer % 3 === 0) {
           const spd = 9.2;
@@ -1356,18 +1356,43 @@
         }
       }
 
+      const targetX = swarm.newShooterX !== null ? swarm.newShooterX : swarm.shooter.x;
+      const targetY = swarm.shooter.y;
+
       for (let i = swarm.balls.length - 1; i >= 0; i--) {
         const b = swarm.balls[i];
+
+        // 1. TRACTOR BEAM ACTIVE: Direct Magnetic Gravity Suction!
+        if (swarm.recalling) {
+          const dx = targetX - b.x;
+          const dy = targetY - b.y;
+          const dist = Math.hypot(dx, dy);
+
+          if (dist < 22) {
+            // Ball successfully captured by launcher!
+            swarm.balls.splice(i, 1);
+            swarm.ballsReturned++;
+            continue;
+          } else {
+            const pullSpeed = 36; // Warp return speed!
+            b.vx = (dx / dist) * pullSpeed;
+            b.vy = (dy / dist) * pullSpeed;
+            b.x += b.vx;
+            b.y += b.vy;
+            continue; // Skip normal wall/brick collision during tractor recall
+          }
+        }
+
+        // 2. NORMAL BALL FLIGHT
         b.x += b.vx;
         b.y += b.vy;
 
-        // Left / Right Walls
+        // Walls
         if (b.x - b.r <= 0) { b.x = b.r + 1; b.vx = Math.abs(b.vx); sndHit(300); }
         else if (b.x + b.r >= W) { b.x = W - b.r - 1; b.vx = -Math.abs(b.vx); sndHit(300); }
-        // Ceiling
         if (b.y - b.r <= 0) { b.y = b.r + 1; b.vy = Math.abs(b.vy); sndHit(300); }
 
-        // Brick Impacts
+        // Brick Collisions
         for (let brk of swarm.bricks) {
           if (!brk.alive) continue;
           const bx = SWARM_PAD + brk.c * (SWARM_BW + SWARM_PAD);
@@ -1409,7 +1434,7 @@
           }
         }
 
-        // CRITICAL FIX: Only catch balls if moving DOWNWARDS and near bottom edge!
+        // Normal Floor Landing (Only when falling downward!)
         if (b.vy > 0 && b.y + b.r >= H - 18) {
           if (swarm.newShooterX === null) swarm.newShooterX = b.x;
           swarm.balls.splice(i, 1);
@@ -1420,6 +1445,7 @@
       // Volley Complete
       if (swarm.launching && swarm.ballsReturned >= swarm.ballCount) {
         swarm.launching = false;
+        swarm.recalling = false;
         btnSwarmRecall.style.display = 'none';
         swarm.shooter.x = Math.max(25, Math.min(W - 25, swarm.newShooterX || W / 2));
         swarm.level++;
@@ -1448,7 +1474,7 @@
     }
 
     /* ==============================================================
-       9. MASTER RENDER ENGINE
+       9. MASTER RENDER ENGINE (GLOWING TRACTOR BEAM VISUALS)
        ============================================================== */
     function draw() {
       requestAnimationFrame(draw);
@@ -1614,8 +1640,7 @@
               ctx.fillStyle = '#ffffff';
               ctx.font = 'bold 9px monospace';
               ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillText(b.isTNT ? '💣' : b.hp, bx + SWARM_BW / 2, by + SWARM_BH / 2);
+              ctx.fillText(b.hp, bx + SWARM_BW / 2, by + SWARM_BH / 2);
             }
           }
 
@@ -1677,22 +1702,52 @@
             ctx.shadowBlur = 0;
           }
 
-          // Swarm Shooter Node
-          ctx.fillStyle = '#00f0ff';
+          // RENDER MAGNETIC TRACTOR BEAM VISUALS
+          const targetX = swarm.newShooterX !== null ? swarm.newShooterX : swarm.shooter.x;
+          const targetY = swarm.shooter.y;
+
+          if (swarm.recalling) {
+            ctx.save();
+            ctx.strokeStyle = 'rgba(0, 240, 255, 0.45)';
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 16;
+            ctx.shadowColor = '#00f0ff';
+
+            // Draw glowing magnetic laser rays to each sucked ball
+            for (let b of swarm.balls) {
+              ctx.beginPath();
+              ctx.moveTo(targetX, targetY);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
+
+            // Magnetic funnel glow at launcher
+            ctx.fillStyle = 'rgba(0, 240, 255, 0.25)';
+            ctx.beginPath();
+            ctx.arc(targetX, targetY, 28, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+
+          // Swarm Launcher
+          ctx.fillStyle = swarm.recalling ? '#ffe600' : '#00f0ff';
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = ctx.fillStyle;
           ctx.beginPath();
-          ctx.arc(swarm.shooter.x, swarm.shooter.y, 8.5, 0, Math.PI * 2);
+          ctx.arc(targetX, targetY, 8.5, 0, Math.PI * 2);
           ctx.fill();
+          ctx.shadowBlur = 0;
 
           ctx.fillStyle = '#00f0ff';
           ctx.font = 'bold 11px monospace';
           ctx.textAlign = 'center';
-          ctx.fillText(`x${swarm.ballCount}`, swarm.shooter.x, swarm.shooter.y - 14);
+          ctx.fillText(`x${swarm.ballCount}`, targetX, targetY - 14);
 
-          // Chunky Glowing Swarm Balls
+          // Swarm Balls
           for (let b of swarm.balls) {
-            ctx.fillStyle = '#00f0ff';
-            ctx.shadowBlur = 8;
-            ctx.shadowColor = '#00f0ff';
+            ctx.fillStyle = swarm.recalling ? '#ffe600' : '#00f0ff';
+            ctx.shadowBlur = swarm.recalling ? 16 : 8;
+            ctx.shadowColor = ctx.fillStyle;
             ctx.beginPath();
             ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
             ctx.fill();
@@ -1707,7 +1762,7 @@
           updateSwarmEngine();
         }
 
-        // Particle Bursts
+        // Particles
         for (let i = particles.length - 1; i >= 0; i--) {
           const pt = particles[i];
           pt.x += pt.vx;
