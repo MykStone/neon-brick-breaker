@@ -33,82 +33,75 @@
       width: 100%;
       max-width: 480px;
       height: 100%;
-      max-height: 820px;
+      max-height: 780px;
       background: radial-gradient(circle at center, #0a1128 0%, #03050c 100%);
       border: 2px solid #00f0ff55;
       box-shadow: 0 0 35px rgba(0, 240, 255, 0.3), inset 0 0 20px rgba(0, 240, 255, 0.1);
       display: flex;
       flex-direction: column;
     }
-    
-    /* Spacious Two-Tier Control Deck */
+    /* Spacious Top HUD */
     #top-hud {
+      height: 64px;
       width: 100%;
-      background: #080d21;
-      border-bottom: 2px solid #00f0ff44;
-      display: flex;
-      flex-direction: column;
-      padding: 8px 12px;
-      gap: 8px;
-      z-index: 10;
-    }
-    /* Tier 1: Large Stats */
-    #hud-tier-stats {
+      padding: 0 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 4px;
+      background: #090e21;
+      border-bottom: 2px solid #00f0ff44;
+      z-index: 10;
+    }
+    .hud-stat-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
     }
     .hud-badge {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       font-family: monospace;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 900;
     }
     .hud-accent {
       color: #00f0ff;
-      text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+      text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
     }
     .hud-gold {
       color: #ffe600;
-      text-shadow: 0 0 10px rgba(255, 230, 0, 0.6);
+      text-shadow: 0 0 8px rgba(255, 230, 0, 0.6);
     }
     .hud-tokens {
       color: #ff007f;
-      text-shadow: 0 0 10px rgba(255, 0, 127, 0.6);
+      text-shadow: 0 0 8px rgba(255, 0, 127, 0.6);
     }
-    /* Tier 2: Big Tactile Control Buttons */
-    #hud-tier-controls {
+    .hud-btn-group {
       display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      width: 100%;
+      gap: 7px;
+      align-items: center;
     }
     .hud-ctrl-btn {
-      flex: 1;
-      height: 38px;
-      background: #111a3b;
-      border: 1.5px solid #00f0ff77;
+      background: #121c3b;
+      border: 1.5px solid #00f0ff66;
       color: #00f0ff;
+      min-width: 36px;
+      height: 36px;
       border-radius: 8px;
-      font-size: 12px;
+      font-size: 14px;
       font-weight: 800;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 4px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-      transition: background 0.1s, transform 0.1s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
     }
     .hud-ctrl-btn:active {
       background: #00f0ff;
       color: #080b16;
-      transform: scale(0.96);
+      transform: scale(0.95);
     }
-
     #canvas-wrap {
       position: relative;
       flex: 1;
@@ -121,11 +114,10 @@
       display: block;
       touch-action: none;
     }
-
-    /* Bottom Tactile Swarm Power Bar */
+    /* Bottom Tactile Action Bar (Swarm Mode) */
     #swarm-action-bar {
       position: absolute;
-      bottom: 12px;
+      bottom: 8px;
       left: 12px;
       right: 12px;
       display: none;
@@ -135,19 +127,19 @@
     }
     .power-btn {
       flex: 1;
-      background: rgba(10, 17, 40, 0.94);
-      border: 2px solid;
+      background: rgba(10, 17, 40, 0.92);
+      border: 1.8px solid;
       border-radius: 10px;
-      height: 44px;
+      padding: 9px 6px;
       color: #fff;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 900;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.7);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.6);
     }
     .power-btn:active {
       transform: scale(0.96);
@@ -155,24 +147,23 @@
     .btn-recall {
       border-color: #ffe600;
       color: #ffe600;
-      text-shadow: 0 0 10px rgba(255, 230, 0, 0.6);
+      text-shadow: 0 0 8px rgba(255, 230, 0, 0.6);
       display: none;
     }
     .btn-nuke {
       border-color: #ff007f;
       color: #ff007f;
-      text-shadow: 0 0 10px rgba(255, 0, 127, 0.6);
+      text-shadow: 0 0 8px rgba(255, 0, 127, 0.6);
     }
     .btn-surge {
       border-color: #00f0ff;
       color: #00f0ff;
-      text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+      text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
     }
-
     #overlay, #gameover-screen, #pause-screen {
       position: absolute;
       inset: 0;
-      background: rgba(3, 5, 12, 0.95);
+      background: rgba(3, 5, 12, 0.94);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -311,27 +302,25 @@
 <body>
 
   <div id="cabinet">
-    <!-- Spacious Two-Tier Deck -->
+    <!-- Spacious Top HUD -->
     <div id="top-hud">
-      <!-- Tier 1: Large Stats -->
-      <div id="hud-tier-stats">
+      <div class="hud-stat-group">
         <div class="hud-badge">🏆 <span id="hud-score" class="hud-accent">0</span></div>
         <div class="hud-badge">👑 <span id="hud-best" class="hud-gold">0</span></div>
         <div class="hud-badge">🪙 <span id="hud-tokens" class="hud-tokens">0</span></div>
         <div class="hud-badge">LVL: <span id="hud-level" class="hud-gold">1</span></div>
       </div>
-      <!-- Tier 2: Large Tactile Buttons with Clear Labels -->
-      <div id="hud-tier-controls">
-        <button id="hud-pause-btn" class="hud-ctrl-btn">⏸️ PAUSE</button>
-        <button id="hud-music-btn" class="hud-ctrl-btn">🎵 MUSIC: ON</button>
-        <button id="hud-mute-btn" class="hud-ctrl-btn">🔊 SFX: ON</button>
-        <button id="hud-menu-btn" class="hud-ctrl-btn">📋 MENU</button>
+      <div class="hud-btn-group">
+        <button id="hud-pause-btn" class="hud-ctrl-btn" title="Pause Game">⏸️</button>
+        <button id="hud-music-btn" class="hud-ctrl-btn" title="Toggle Synthwave">🎵</button>
+        <button id="hud-mute-btn" class="hud-ctrl-btn" title="Toggle SFX">🔊</button>
+        <button id="hud-menu-btn" class="hud-ctrl-btn" style="min-width: 48px;">MENU</button>
       </div>
     </div>
 
     <!-- Playfield Canvas Area -->
     <div id="canvas-wrap">
-      <canvas id="gameCanvas" width="460" height="680"></canvas>
+      <canvas id="gameCanvas" width="460" height="700"></canvas>
 
       <!-- Bottom Action Bar (Swarm Mode) -->
       <div id="swarm-action-bar">
@@ -354,7 +343,7 @@
 
           <button id="btn-swarm" class="menu-card-btn card-swarm">
             <div class="btn-header" style="color:#00f0ff;">⚡ MODERN SWARM ARENA</div>
-            <div class="btn-body">Bank-shot reflection aim, tractor-beam recall, and high-scaled brick HP.</div>
+            <div class="btn-body">Bank-shot reflection aim, instant recall, and high-scaled brick HP.</div>
           </button>
         </div>
       </div>
@@ -588,7 +577,7 @@
       
       const muteBtn = document.getElementById('hud-mute-btn');
       if (muteBtn) {
-        muteBtn.textContent = (userMuted || portalMuted) ? '🔇 SFX: OFF' : '🔊 SFX: ON';
+        muteBtn.textContent = (userMuted || portalMuted) ? '🔇' : '🔊';
       }
     }
 
@@ -739,7 +728,7 @@
     const sndDie = () => playTone(120, 'sawtooth', 0.45, 0.18);
 
     /* ==============================================================
-       3. DOM REFERENCES & RESTORED HUD STATE
+       3. DOM REFERENCES & TOP HUD STATE
        ============================================================== */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -764,7 +753,7 @@
     const btnRevive = document.getElementById('btn-revive');
 
     const W = 460;
-    const H = 680;
+    const H = 700;
 
     let gameState = 'MENU';
     let score = 0;
@@ -829,7 +818,7 @@
     const retro = {
       lives: 3,
       level: 1,
-      paddle: { w: 88, h: 14, x: 186, y: 640, hasMegaLaser: false, laserTime: 0 },
+      paddle: { w: 88, h: 14, x: 186, y: 655, hasMegaLaser: false, laserTime: 0 },
       balls: [],
       bricks: [],
       powerUps: [],
@@ -934,7 +923,7 @@
     }
 
     /* ==============================================================
-       5. MODERN SWARM ENGINE (WITH TRACTOR BEAM RECALL)
+       5. MODERN SWARM ENGINE (BULLETPROOF SPAWN & LAUNCH PHYSICS)
        ============================================================== */
     const SWARM_COLS = 14;
     const SWARM_PAD = 4;
@@ -947,15 +936,14 @@
       balls: [],
       bricks: [],
       pickups: [],
-      shooter: { x: W / 2, y: H - 42 },
+      shooter: { x: W / 2, y: H - 45 },
       aiming: false,
       aimAngle: -Math.PI / 2,
       launching: false,
       launchTimer: 0,
       launchedCount: 0,
       ballsReturned: 0,
-      newShooterX: null,
-      isTractorRecalling: false // Magnetic Tractor Return Mode!
+      newShooterX: null
     };
 
     function startSwarm() {
@@ -967,9 +955,9 @@
       swarm.ballCount = 15;
       swarm.balls = [];
       swarm.shooter.x = W / 2;
+      swarm.shooter.y = H - 45;
       swarm.aiming = false;
       swarm.launching = false;
-      swarm.isTractorRecalling = false;
       reviveUsedThisSession = false;
       hudLevel.textContent = 'SWARM';
       swarm.bricks = [];
@@ -1013,14 +1001,18 @@
       }
     }
 
-    // TRACTOR BEAM RECALL (Animates balls flying back into the launcher!)
+    // RECALL BUTTON (Instant Return for In-Flight Balls)
     btnSwarmRecall.addEventListener('click', (e) => {
       e.stopPropagation();
       initAudioEngine();
-      if (swarm.launching && swarm.balls.length > 0 && !swarm.isTractorRecalling) {
-        swarm.isTractorRecalling = true;
+      if (swarm.launching && swarm.balls.length > 0) {
+        for (let b of swarm.balls) {
+          b.y = H - 5;
+          b.vx = 0;
+          b.vy = 28;
+        }
         sndPaddle();
-        addPopup(W / 2, H / 2, '⚡ TRACTOR BEAM ACTIVATED!', '#ffe600');
+        addPopup(W / 2, H / 2, '⚡ BALLS RECALLED!', '#ffe600');
       }
     });
 
@@ -1064,7 +1056,7 @@
     });
 
     /* ==============================================================
-       6. INPUTS & CONTROLS
+       6. ROBUST INPUT CONTROLS
        ============================================================== */
     function getCanvasCoords(e) {
       const rect = canvas.getBoundingClientRect();
@@ -1078,6 +1070,19 @@
       return { x: (cx - rect.left) * scaleX, y: (cy - rect.top) * scaleY };
     }
 
+    function triggerLaunchSwarm() {
+      if (!swarm.launching && swarm.balls.length === 0) {
+        swarm.aiming = false;
+        swarm.launching = true;
+        swarm.launchedCount = 0;
+        swarm.ballsReturned = 0;
+        swarm.launchTimer = 0;
+        swarm.balls = [];
+        swarm.newShooterX = null;
+        btnSwarmRecall.style.display = 'flex';
+      }
+    }
+
     function onPointerDown(e) {
       if (isAdPlaying || isGamePaused || gameState === 'MENU') return;
       initAudioEngine();
@@ -1085,7 +1090,7 @@
 
       if (gameState === 'PLAYING_RETRO') {
         retro.paddle.x = Math.max(0, Math.min(W - retro.paddle.w, pt.x - retro.paddle.w / 2));
-        if (retro.balls[0] && retro.balls[0].stuck) {
+        if (retro.balls[0]?.stuck) {
           retro.balls[0].stuck = false;
           sndPaddle();
         }
@@ -1100,7 +1105,7 @@
 
       if (gameState === 'PLAYING_RETRO') {
         retro.paddle.x = Math.max(0, Math.min(W - retro.paddle.w, pt.x - retro.paddle.w / 2));
-        if (retro.balls[0] && retro.balls[0].stuck) {
+        if (retro.balls[0]?.stuck) {
           retro.balls[0].x = retro.paddle.x + retro.paddle.w / 2;
         }
       } else if (gameState === 'PLAYING_SWARM' && !swarm.launching) {
@@ -1108,19 +1113,9 @@
       }
     }
 
-    function onPointerUp() {
+    function onPointerUp(e) {
       if (isAdPlaying || isGamePaused || gameState !== 'PLAYING_SWARM') return;
-      if (swarm.aiming && !swarm.launching) {
-        swarm.aiming = false;
-        swarm.launching = true;
-        swarm.isTractorRecalling = false;
-        swarm.launchedCount = 0;
-        swarm.ballsReturned = 0;
-        swarm.launchTimer = 0;
-        swarm.balls = [];
-        swarm.newShooterX = null;
-        btnSwarmRecall.style.display = 'flex';
-      }
+      triggerLaunchSwarm();
     }
 
     function updateAimAngle(pt) {
@@ -1145,10 +1140,12 @@
     window.addEventListener('keydown', (e) => {
       if (isAdPlaying || isGamePaused) return;
       initAudioEngine();
-      if (e.code === 'Space' && gameState === 'PLAYING_RETRO') {
-        if (retro.balls[0] && retro.balls[0].stuck) {
+      if (e.code === 'Space') {
+        if (gameState === 'PLAYING_RETRO' && retro.balls[0]?.stuck) {
           retro.balls[0].stuck = false;
           sndPaddle();
+        } else if (gameState === 'PLAYING_SWARM' && !swarm.launching) {
+          triggerLaunchSwarm();
         }
       }
       if (gameState === 'PLAYING_RETRO') {
@@ -1174,7 +1171,7 @@
       e.stopPropagation();
       initAudioEngine();
       musicEnabled = !musicEnabled;
-      hudMusicBtn.textContent = musicEnabled ? '🎵 MUSIC: ON' : '🔇 MUSIC: OFF';
+      hudMusicBtn.textContent = musicEnabled ? '🎵' : '🔇';
     });
 
     hudPauseBtn.addEventListener('click', (e) => {
@@ -1215,7 +1212,7 @@
     }
 
     /* ==============================================================
-       7. RETRO GAMEPLAY UPDATE
+       7. RETRO GAMEPLAY & CONTINUOUS CUTTING LASER LOGIC
        ============================================================== */
     function updateRetroEngine() {
       retro.paddle.y = H - 28;
@@ -1341,60 +1338,36 @@
     }
 
     /* ==============================================================
-       8. SWARM ARENA UPDATE (ANIMATED TRACTOR BEAM HOMING)
+       8. SWARM ARENA UPDATE (FIXED DOWNWARD FLOOR RECOVERY)
        ============================================================== */
     function updateSwarmEngine() {
-      // 1. Spawning Volley
-      if (swarm.launching && swarm.launchedCount < swarm.ballCount && !swarm.isTractorRecalling) {
+      if (swarm.launching && swarm.launchedCount < swarm.ballCount) {
         swarm.launchTimer++;
         if (swarm.launchTimer % 3 === 0) {
-          const spd = 9.0;
+          const spd = 9.2;
           swarm.balls.push({
-            x: swarm.shooter.x, y: swarm.shooter.y,
+            x: swarm.shooter.x,
+            y: swarm.shooter.y,
             vx: Math.cos(swarm.aimAngle) * spd,
             vy: Math.sin(swarm.aimAngle) * spd,
-            r: 5.8,
-            trail: []
+            r: 5.8
           });
           swarm.launchedCount++;
         }
       }
 
-      // 2. Ball Simulation & Collision Loop
       for (let i = swarm.balls.length - 1; i >= 0; i--) {
         const b = swarm.balls[i];
-
-        // TRACTOR BEAM MAGNETIC HOMING: Balls smoothly stream toward shooter!
-        if (swarm.isTractorRecalling) {
-          const targetX = swarm.newShooterX || swarm.shooter.x;
-          const targetY = H - 35;
-          const dx = targetX - b.x;
-          const dy = targetY - b.y;
-          const dist = Math.hypot(dx, dy);
-
-          if (dist < 22) {
-            // Ball has docked safely into the launcher!
-            if (swarm.newShooterX === null) swarm.newShooterX = b.x;
-            swarm.balls.splice(i, 1);
-            swarm.ballsReturned++;
-            continue;
-          } else {
-            // Accelerate directly toward the dock!
-            const homingSpd = 20.0;
-            b.x += (dx / dist) * homingSpd;
-            b.y += (dy / dist) * homingSpd;
-            continue;
-          }
-        }
-
-        // Standard Flight Physics
         b.x += b.vx;
         b.y += b.vy;
 
-        if (b.x - b.r <= 0) { b.x = b.r + 1; b.vx = Math.abs(b.vx); }
-        else if (b.x + b.r >= W) { b.x = W - b.r - 1; b.vx = -Math.abs(b.vx); }
-        if (b.y - b.r <= 0) { b.y = b.r + 1; b.vy = Math.abs(b.vy); }
+        // Left / Right Walls
+        if (b.x - b.r <= 0) { b.x = b.r + 1; b.vx = Math.abs(b.vx); sndHit(300); }
+        else if (b.x + b.r >= W) { b.x = W - b.r - 1; b.vx = -Math.abs(b.vx); sndHit(300); }
+        // Ceiling
+        if (b.y - b.r <= 0) { b.y = b.r + 1; b.vy = Math.abs(b.vy); sndHit(300); }
 
+        // Brick Impacts
         for (let brk of swarm.bricks) {
           if (!brk.alive) continue;
           const bx = SWARM_PAD + brk.c * (SWARM_BW + SWARM_PAD);
@@ -1436,18 +1409,17 @@
           }
         }
 
-        // Standard Floor Return
-        if (b.y + b.r >= H - 35) {
+        // CRITICAL FIX: Only catch balls if moving DOWNWARDS and near bottom edge!
+        if (b.vy > 0 && b.y + b.r >= H - 18) {
           if (swarm.newShooterX === null) swarm.newShooterX = b.x;
           swarm.balls.splice(i, 1);
           swarm.ballsReturned++;
         }
       }
 
-      // Volley Complete Check
-      if (swarm.launching && swarm.balls.length === 0) {
+      // Volley Complete
+      if (swarm.launching && swarm.ballsReturned >= swarm.ballCount) {
         swarm.launching = false;
-        swarm.isTractorRecalling = false;
         btnSwarmRecall.style.display = 'none';
         swarm.shooter.x = Math.max(25, Math.min(W - 25, swarm.newShooterX || W / 2));
         swarm.level++;
@@ -1593,7 +1565,7 @@
             ctx.shadowBlur = 0;
           }
 
-          if (retro.balls[0] && retro.balls[0].stuck) {
+          if (retro.balls[0]?.stuck) {
             ctx.fillStyle = '#00f0ff';
             ctx.font = 'bold 12px monospace';
             ctx.textAlign = 'center';
@@ -1603,6 +1575,7 @@
           updateRetroEngine();
 
         } else if (gameState === 'PLAYING_SWARM') {
+          // Render Swarm Bricks
           for (let b of swarm.bricks) {
             if (!b.alive) continue;
             const bx = SWARM_PAD + b.c * (SWARM_BW + SWARM_PAD);
@@ -1646,14 +1619,14 @@
             }
           }
 
-          // MULTI-BOUNCE REFLECTION TRAJECTORY
+          // Trajectory Aiming Line (Multi-Bounce Wall Reflection)
           if (swarm.aiming && !swarm.launching) {
             let curX = swarm.shooter.x;
             let curY = swarm.shooter.y;
             let dirX = Math.cos(swarm.aimAngle);
             let dirY = Math.sin(swarm.aimAngle);
             const ballR = 5.8;
-            let remainingDist = 580;
+            let remainingDist = 600;
 
             ctx.strokeStyle = '#00f0ff';
             ctx.shadowBlur = 14;
@@ -1704,7 +1677,7 @@
             ctx.shadowBlur = 0;
           }
 
-          // Swarm Launcher
+          // Swarm Shooter Node
           ctx.fillStyle = '#00f0ff';
           ctx.beginPath();
           ctx.arc(swarm.shooter.x, swarm.shooter.y, 8.5, 0, Math.PI * 2);
@@ -1713,13 +1686,13 @@
           ctx.fillStyle = '#00f0ff';
           ctx.font = 'bold 11px monospace';
           ctx.textAlign = 'center';
-          ctx.fillText(`x${swarm.ballCount}`, swarm.shooter.x, swarm.shooter.y + 18);
+          ctx.fillText(`x${swarm.ballCount}`, swarm.shooter.x, swarm.shooter.y - 14);
 
-          // Chunky Swarm Balls
+          // Chunky Glowing Swarm Balls
           for (let b of swarm.balls) {
-            ctx.fillStyle = swarm.isTractorRecalling ? '#ffe600' : '#00f0ff';
+            ctx.fillStyle = '#00f0ff';
             ctx.shadowBlur = 8;
-            ctx.shadowColor = ctx.fillStyle;
+            ctx.shadowColor = '#00f0ff';
             ctx.beginPath();
             ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
             ctx.fill();
@@ -1734,7 +1707,7 @@
           updateSwarmEngine();
         }
 
-        // Particles
+        // Particle Bursts
         for (let i = particles.length - 1; i >= 0; i--) {
           const pt = particles[i];
           pt.x += pt.vx;
@@ -1785,7 +1758,8 @@
 
     document.getElementById('btn-restart').addEventListener('click', () => {
       initAudioEngine();
-      startRetro();
+      if (hudLevel.textContent === 'SWARM') startSwarm();
+      else startRetro();
     });
 
     btnRevive.addEventListener('click', () => {
