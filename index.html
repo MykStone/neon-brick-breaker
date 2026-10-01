@@ -104,7 +104,7 @@
       display: block;
       touch-action: none;
     }
-    #overlay, #gameover-screen, #quest-modal {
+    #overlay, #gameover-screen {
       position: absolute;
       inset: 0;
       background: rgba(3, 5, 12, 0.94);
@@ -252,7 +252,7 @@
       <div class="hud-badge">🪙 <span id="hud-tokens" class="hud-tokens">0</span></div>
       <div class="hud-badge">LEVEL: <span id="hud-level" class="hud-gold">1</span></div>
       <div class="hud-btn-group">
-        <button id="hud-music-btn" class="hud-ctrl-btn" title="Toggle Synthwave Beat">🎵 ON</button>
+        <button id="hud-music-btn" class="hud-ctrl-btn" title="Toggle Synthwave Groove">🎵 ON</button>
         <button id="hud-mute-btn" class="hud-ctrl-btn" title="Toggle SFX">🔊</button>
         <button id="hud-menu-btn" class="hud-ctrl-btn">MENU</button>
       </div>
@@ -297,7 +297,7 @@
 
   <script>
     /* ==============================================================
-       1. CRAZYGAMES SDK v3 INTEGRATION & LIFECYCLE
+       1. CRAZYGAMES SDK v3 INTEGRATION
        ============================================================== */
     let crazyGamesReady = false;
     let isAdPlaying = false;
@@ -316,7 +316,6 @@
         try {
           await window.CrazyGames.SDK.init();
           crazyGamesReady = true;
-          console.log("[StoneBuilt] CrazyGames SDK initialized. Env:", window.CrazyGames.SDK.environment);
 
           if (isCrazyGamesEnvironment() && window.CrazyGames.SDK.game?.settings) {
             portalMuted = !!window.CrazyGames.SDK.game.settings.muteAudio;
@@ -329,9 +328,7 @@
               enforceAudioPolicy();
             });
           }
-        } catch (e) {
-          console.log("[StoneBuilt] Local preview mode active.");
-        }
+        } catch (e) {}
       }
     }
     initCrazyGames();
@@ -379,7 +376,7 @@
       const safetyTimer = setTimeout(() => { finishAd(); }, 3500);
 
       const callbacks = {
-        adStarted: () => console.log("[StoneBuilt] Midgame Ad started"),
+        adStarted: () => {},
         adFinished: () => { clearTimeout(safetyTimer); finishAd(); },
         adError: (err) => { clearTimeout(safetyTimer); finishAd(); }
       };
@@ -417,7 +414,7 @@
       }, 4000);
 
       const callbacks = {
-        adStarted: () => console.log("[StoneBuilt] Rewarded Ad active"),
+        adStarted: () => {},
         adFinished: () => {
           clearTimeout(safetyTimer);
           finishReward();
@@ -441,26 +438,42 @@
     }
 
     /* ==============================================================
-       2. 128 BPM SYNTHWAVE SOUND ENGINE (PROCEDURAL WEB AUDIO)
+       2. REALISTIC 128 BPM ANALOG SYNTHWAVE AUDIO ENGINE
        ============================================================== */
     let audioCtx = null;
     let masterGainNode = null;
+    let masterCompressor = null;
+    let noiseBuffer = null;
     let musicTimer = null;
     let musicStep = 0;
 
     const BPM = 128;
     const STEP_TIME = (60 / BPM) / 4; // 16th notes
 
-    // 1980s Retro Bassline Frequencies (Key of Am: A1, C2, D2, F1, G1)
-    const BASS_NOTES = [110, 110, 130.81, 146.83, 110, 110, 87.31, 98.00];
+    // Realistic Analog Bass Frequencies (Am - F - C - G Progression)
+    const BASS_ROOTS = [55, 55, 43.65, 43.65, 65.41, 65.41, 49.00, 49.00];
 
     function initAudioEngine() {
       if (!audioCtx) {
         try {
           const AudioClass = window.AudioContext || window.webkitAudioContext;
           audioCtx = new AudioClass();
+
+          // Master Studio Compressor (Gives punch and weight like a finished record)
+          masterCompressor = audioCtx.createDynamicsCompressor();
+          masterCompressor.threshold.setValueAtTime(-18, audioCtx.currentTime);
+          masterCompressor.knee.setValueAtTime(12, audioCtx.currentTime);
+          masterCompressor.ratio.setValueAtTime(8, audioCtx.currentTime);
+          masterCompressor.attack.setValueAtTime(0.003, audioCtx.currentTime);
+          masterCompressor.release.setValueAtTime(0.15, audioCtx.currentTime);
+
           masterGainNode = audioCtx.createGain();
-          masterGainNode.connect(audioCtx.destination);
+          masterGainNode.connect(masterCompressor);
+          masterCompressor.connect(audioCtx.destination);
+
+          // Build White Noise Buffer for Realistic Snare
+          buildWhiteNoiseBuffer();
+
           enforceAudioPolicy();
           startSynthwaveLoop();
         } catch (e) {
@@ -468,6 +481,15 @@
         }
       } else if (audioCtx.state === 'suspended') {
         audioCtx.resume().catch(() => {});
+      }
+    }
+
+    function buildWhiteNoiseBuffer() {
+      const bufferSize = audioCtx.sampleRate * 0.5;
+      noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
       }
     }
 
@@ -497,53 +519,157 @@
         if (!musicEnabled || isAdPlaying || userMuted || portalMuted || gameState === 'MENU') return;
         if (!audioCtx || audioCtx.state !== 'running') return;
 
-        // 128 BPM Bass Arpeggiator
-        if (musicStep % 2 === 0) {
-          const noteIndex = Math.floor(musicStep / 2) % BASS_NOTES.length;
-          playSynthBass(BASS_NOTES[noteIndex]);
+        // 1. Pumping 808 Sub Kick on 1 and 3 (beats 0, 4, 8, 12)
+        if (musicStep % 4 === 0) {
+          play808Kick();
         }
 
-        // 80s Snare / Hi-Hat pulse on beats
-        if (musicStep % 4 === 2) {
-          playNoiseSnare();
+        // 2. Realistic 80s Snare on 2 and 4 (beats 4, 12 in 8-step measure)
+        if (musicStep % 8 === 4) {
+          playRealSnare();
+        }
+
+        // 3. Crisp Hi-Hat Shuffle on every off-beat 16th note
+        if (musicStep % 2 === 1) {
+          playHiHat();
+        }
+
+        // 4. Warm Dual-Oscillator Moog Bassline
+        if (musicStep % 2 === 0) {
+          const chordIndex = Math.floor(musicStep / 4) % BASS_ROOTS.length;
+          const octave = (musicStep % 4 === 2) ? 2 : 1;
+          playWarmMoogBass(BASS_ROOTS[chordIndex] * octave);
         }
 
         musicStep = (musicStep + 1) % 32;
       }, STEP_TIME * 1000);
     }
 
-    function playSynthBass(freq) {
+    // REAL STUDIO 808 KICK DRUM (Sub-bass pitch drop)
+    function play808Kick() {
       try {
+        const now = audioCtx.currentTime;
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.045, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.14);
+
+        // Rapid pitch drop: 150 Hz -> 38 Hz (Produces chest-thumping punch)
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(38, now + 0.09);
+
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
         osc.connect(gain);
         gain.connect(masterGainNode);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.14);
+        osc.start(now);
+        osc.stop(now + 0.28);
       } catch (e) {}
     }
 
-    function playNoiseSnare() {
+    // REAL 80s LINNDRUM SNARE (Filtered Noise Buffer + Tone Body)
+    function playRealSnare() {
+      if (!noiseBuffer) return;
       try {
+        const now = audioCtx.currentTime;
+
+        // 1. Noise Snap (Crack)
+        const noiseSource = audioCtx.createBufferSource();
+        noiseSource.buffer = noiseBuffer;
+
+        const noiseFilter = audioCtx.createBiquadFilter();
+        noiseFilter.type = 'bandpass';
+        noiseFilter.frequency.setValueAtTime(1200, now);
+        noiseFilter.Q.setValueAtTime(1.5, now);
+
+        const noiseGain = audioCtx.createGain();
+        noiseGain.gain.setValueAtTime(0.25, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+
+        noiseSource.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        noiseGain.connect(masterGainNode);
+        noiseSource.start(now);
+        noiseSource.stop(now + 0.16);
+
+        // 2. Tonal Body (Thump)
         const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(220, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
-        osc.connect(gain);
-        gain.connect(masterGainNode);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.08);
+        const oscGain = audioCtx.createGain();
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
+
+        oscGain.gain.setValueAtTime(0.18, now);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+        osc.connect(oscGain);
+        oscGain.connect(masterGainNode);
+        osc.start(now);
+        osc.stop(now + 0.08);
       } catch (e) {}
     }
 
-    // Dynamic Retro SFX
-    function playTone(freq, type = 'sine', duration = 0.08, vol = 0.12) {
+    // CRISP STUDIO HI-HAT
+    function playHiHat() {
+      if (!noiseBuffer) return;
+      try {
+        const now = audioCtx.currentTime;
+        const source = audioCtx.createBufferSource();
+        source.buffer = noiseBuffer;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'highpass';
+        filter.frequency.setValueAtTime(7000, now);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(masterGainNode);
+        source.start(now);
+        source.stop(now + 0.04);
+      } catch (e) {}
+    }
+
+    // DUAL-OSCILLATOR ANALOG MOOG BASS (Detuned with Resonant Low-Pass Filter)
+    function playWarmMoogBass(freq) {
+      try {
+        const now = audioCtx.currentTime;
+
+        // Two detuned sawtooth oscillators for analog thickness
+        const osc1 = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        osc1.type = 'sawtooth';
+        osc2.type = 'sawtooth';
+
+        osc1.frequency.setValueAtTime(freq, now);
+        osc2.frequency.setValueAtTime(freq * 1.008, now); // Slight detune
+
+        // Resonant Moog-style Low-pass Filter Sweep
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.Q.setValueAtTime(5.5, now);
+        filter.frequency.setValueAtTime(1200, now);
+        filter.frequency.exponentialRampToValueAtTime(260, now + 0.16);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.14, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+        osc1.connect(filter);
+        osc2.connect(filter);
+        filter.connect(gain);
+        gain.connect(masterGainNode);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 0.18);
+        osc2.stop(now + 0.18);
+      } catch (e) {}
+    }
+
+    // PUNCHY ARCADE SFX
+    function playTone(freq, type = 'sine', duration = 0.08, vol = 0.14) {
       if (isAdPlaying || userMuted || portalMuted) return;
       initAudioEngine();
       try {
@@ -591,12 +717,10 @@
     let gameState = 'MENU';
     let score = 0;
     let reviveUsedThisSession = false;
-    let currentSector = 1;
 
     // Tokens & Quests
     let arcadeTokens = 0;
     let bricksDestroyedTotal = 0;
-    let highestComboThisRun = 0;
 
     try {
       arcadeTokens = parseInt(localStorage.getItem('sbc_tokens') || '0', 10);
@@ -637,7 +761,7 @@
     let popups = [];
     let shakeTimer = 0;
     let shakeMag = 0;
-    let gridOffset = 0; // Animated Synthwave Floor
+    let gridOffset = 0;
 
     function triggerShake(magnitude = 6, duration = 12) {
       shakeMag = magnitude;
@@ -667,7 +791,6 @@
       hudScore.textContent = score;
       retro.lives = 3;
       retro.level = 1;
-      currentSector = 1;
       hudLevel.textContent = retro.level;
       reviveUsedThisSession = false;
       retro.combo = 0;
@@ -680,7 +803,6 @@
       triggerCrazyGamesStart();
     }
 
-    // Procedural Symmetric Geometric Architecture
     function generateProceduralStage(lvl) {
       retro.bricks = [];
       const cols = 8;
@@ -689,7 +811,6 @@
       const bW = (W - (pad * (cols + 1))) / cols;
       const bH = 16;
 
-      // Color Palette by Sector
       let sectorColors = ['#00f0ff', '#ff007f', '#39ff14', '#ffe600'];
       if (lvl > 5) sectorColors = ['#ff007f', '#ffe600', '#b026ff', '#00f0ff'];
       if (lvl > 10) sectorColors = ['#39ff14', '#00f0ff', '#ff5500', '#ffe600'];
@@ -700,23 +821,17 @@
         for (let c = 0; c < cols / 2; c++) {
           let spawn = true;
 
-          // Archetype 1: Pyramid of Power
           if (archetype === 1 && (c < (rows - r - 2))) spawn = false;
-          // Archetype 2: The Equalizer Columns
           if (archetype === 2 && (c % 2 === 0 && r > 4)) spawn = false;
-          // Archetype 3: The Invader Diamond
           if (archetype === 3 && (r + c < 2 || r - c > 3)) spawn = false;
-          // Archetype 4: Fortified Vault
           if (archetype === 4 && (r === 2 && c === 1)) spawn = false;
 
           if (spawn) {
             let hp = 1;
-            if (lvl >= 2 && r <= 1) hp = 2; // Armored top rows
+            if (lvl >= 2 && r <= 1) hp = 2;
             if (lvl >= 5 && r === 0) hp = 3;
 
             const color = sectorColors[r % sectorColors.length];
-
-            // Bilateral symmetry (Mirror Left to Right)
             const xLeft = pad + c * (bW + pad);
             const xRight = pad + (cols - 1 - c) * (bW + pad);
             const y = 45 + r * (bH + pad);
@@ -738,7 +853,6 @@
       retro.powerUps = [];
       retro.combo = 0;
 
-      // Tuned 128 BPM Launch Velocity (7.0 Kinetic Speed)
       retro.balls = [{
         x: W / 2,
         y: H - 55,
@@ -757,7 +871,6 @@
       addPopup(W / 2, H / 2 - 30, '+150 SECTOR BONUS!', '#ffe600');
       addPopup(W / 2, H / 2, `STAGE ${retro.level} CLEARED!`, '#39ff14');
 
-      // Milestone Token Rewards
       if (retro.level === 3) addTokens(5, "Stage 3 Complete");
       if (retro.level === 7) addTokens(15, "Sector Master");
 
@@ -836,7 +949,7 @@
     }
 
     /* ==============================================================
-       6. INPUTS & CONTROLS (DESKTOP & MOBILE)
+       6. INPUTS & CONTROLS
        ============================================================== */
     function getCanvasCoords(e) {
       const rect = canvas.getBoundingClientRect();
@@ -965,22 +1078,20 @@
     function updateRetroEngine() {
       retro.paddle.y = H - 28;
 
-      // 1. CONTINUOUS MEGA PLASMA CUTTING BEAM (Active & Auto-Firing)
+      // CONTINUOUS MEGA PLASMA CUTTING BEAM
       if (retro.paddle.hasMegaLaser) {
         retro.paddle.laserTime -= 0.016;
         if (retro.paddle.laserTime <= 0) {
           retro.paddle.hasMegaLaser = false;
         } else {
-          // Play continuous plasma buzz
           if (Math.random() < 0.3) sndLaserBeam();
 
-          // Searing beam coordinates (cuts straight up from paddle center)
           const beamX = retro.paddle.x + retro.paddle.w / 2;
           const beamWidth = 26;
 
           for (let b of retro.bricks) {
             if (b.alive && beamX + beamWidth / 2 > b.x && beamX - beamWidth / 2 < b.x + b.w) {
-              b.hp -= 0.08; // Continuous laser cutting power
+              b.hp -= 0.08;
               if (b.hp <= 0) {
                 b.alive = false;
                 addScore(25);
@@ -993,7 +1104,7 @@
         }
       }
 
-      // 2. KINETIC BALL PHYSICS & COLLISION
+      // KINETIC BALL PHYSICS
       for (let i = retro.balls.length - 1; i >= 0; i--) {
         const b = retro.balls[i];
         if (b.stuck) continue;
@@ -1005,15 +1116,13 @@
         b.x += b.vx;
         b.y += b.vy;
 
-        // Wall Reflections
         if (b.x - b.r <= 0) { b.x = b.r + 1; b.vx = Math.abs(b.vx); sndHit(300); }
         else if (b.x + b.r >= W) { b.x = W - b.r - 1; b.vx = -Math.abs(b.vx); sndHit(300); }
         if (b.y - b.r <= 0) { b.y = b.r + 1; b.vy = Math.abs(b.vy); sndHit(300); }
 
-        // Paddle Collision (With Kinetic Heat Boost)
         if (b.y + b.r >= retro.paddle.y && b.y - b.r <= retro.paddle.y + retro.paddle.h && b.x >= retro.paddle.x && b.x <= retro.paddle.x + retro.paddle.w && b.vy > 0) {
           sndPaddle();
-          retro.combo = 0; // Reset combo on paddle contact
+          retro.combo = 0;
           const hit = (b.x - (retro.paddle.x + retro.paddle.w / 2)) / (retro.paddle.w / 2);
           const currentSpd = Math.max(6.8, Math.min(10.5, Math.hypot(b.vx, b.vy)));
           b.vx = hit * 6.5;
@@ -1022,7 +1131,6 @@
           b.y = retro.paddle.y - b.r;
         }
 
-        // Brick Impacts
         for (let brk of retro.bricks) {
           if (!brk.alive) continue;
           if (b.x + b.r > brk.x && b.x - b.r < brk.x + brk.w && b.y + b.r > brk.y && b.y - b.r < brk.y + brk.h) {
@@ -1030,7 +1138,6 @@
             retro.combo++;
             bricksDestroyedTotal++;
 
-            // Kinetic Heat Speedup (+2% per consecutive hit)
             b.vx *= 1.02;
             b.vy *= 1.02;
 
@@ -1040,7 +1147,6 @@
               spawnSparks(brk.x + brk.w / 2, brk.y + brk.h / 2, brk.color, 12);
               addPopup(brk.x + brk.w / 2, brk.y, `+${15 * Math.min(4, retro.combo)}`, brk.color);
 
-              // Power-up Capsule Spawns
               if (Math.random() < 0.24) {
                 const types = ['BEAM', 'WIDE', 'MULTI'];
                 retro.powerUps.push({
@@ -1059,7 +1165,6 @@
         if (b.y - b.r > H) retro.balls.splice(i, 1);
       }
 
-      // Ball Drain Check
       if (retro.balls.length === 0) {
         retro.lives--;
         sndDie();
@@ -1072,7 +1177,6 @@
         }
       }
 
-      // Power-up Pickups
       for (let i = retro.powerUps.length - 1; i >= 0; i--) {
         const p = retro.powerUps[i];
         p.y += p.vy;
@@ -1080,7 +1184,7 @@
           sndPower();
           if (p.type === 'BEAM') {
             retro.paddle.hasMegaLaser = true;
-            retro.paddle.laserTime = 8.0; // 8 seconds of continuous cutting power
+            retro.paddle.laserTime = 8.0;
             addPopup(p.x, p.y - 12, 'MEGA PLASMA BEAM (8s)', '#00f0ff');
           } else if (p.type === 'WIDE') {
             retro.paddle.w = 130;
@@ -1095,7 +1199,6 @@
         } else if (p.y > H) retro.powerUps.splice(i, 1);
       }
 
-      // Stage Clear
       if (retro.bricks.length > 0 && retro.bricks.every(b => !b.alive)) {
         advanceRetroLevel();
       }
@@ -1216,7 +1319,7 @@
 
         ctx.clearRect(0, 0, W, H);
 
-        // 1. ANIMATED SYNTHWAVE HORIZON GRID FLOOR
+        // Animated Synthwave Horizon Grid
         gridOffset = (gridOffset + 1.2) % 30;
         ctx.strokeStyle = '#00f0ff18';
         ctx.lineWidth = 1;
@@ -1234,22 +1337,18 @@
         }
         ctx.stroke();
 
-        // 2. RENDER RETRO CAMPAIGN
+        // RENDER RETRO CAMPAIGN
         if (gameState === 'PLAYING_RETRO') {
-          // Render Beveled Neon Bricks
           for (let b of retro.bricks) {
             if (!b.alive) continue;
             ctx.fillStyle = b.color;
             ctx.shadowBlur = 12;
             ctx.shadowColor = b.color;
-
-            // Draw Beveled Border & Core
             ctx.fillRect(b.x, b.y, b.w, b.h);
             ctx.fillStyle = 'rgba(255,255,255,0.25)';
-            ctx.fillRect(b.x + 2, b.y + 2, b.w - 4, 3); // Specular highlight
+            ctx.fillRect(b.x + 2, b.y + 2, b.w - 4, 3);
             ctx.shadowBlur = 0;
 
-            // Multi-hit crack indicators
             if (b.hp > 1) {
               ctx.fillStyle = '#ffffff';
               ctx.font = 'bold 9px monospace';
@@ -1264,18 +1363,14 @@
             ctx.save();
             ctx.shadowBlur = 24;
             ctx.shadowColor = '#00f0ff';
-            
-            // Outer Plasma Flare
             ctx.fillStyle = 'rgba(0, 240, 255, 0.45)';
             ctx.fillRect(beamX - 16, 0, 32, retro.paddle.y);
-
-            // Core Blinding White Searing Laser
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(beamX - 5, 0, 10, retro.paddle.y);
             ctx.restore();
           }
 
-          // Cyber Paddle with Ion Thrusters
+          // Cyber Paddle
           ctx.fillStyle = retro.paddle.hasMegaLaser ? '#ff007f' : '#00f0ff';
           ctx.shadowBlur = 16;
           ctx.shadowColor = ctx.fillStyle;
@@ -1332,7 +1427,6 @@
           updateRetroEngine();
 
         } else if (gameState === 'PLAYING_SWARM') {
-          // Render Swarm Bricks
           for (let b of swarm.bricks) {
             if (!b.alive) continue;
             const bx = SWARM_PAD + b.c * (SWARM_BW + SWARM_PAD);
@@ -1351,7 +1445,6 @@
             ctx.fillText(b.isTNT ? '💣' : b.hp, bx + SWARM_BW / 2, by + SWARM_BH / 2);
           }
 
-          // Trajectory Aiming Line
           if (swarm.aiming && !swarm.launching) {
             ctx.strokeStyle = '#00f0ff';
             ctx.shadowBlur = 12;
@@ -1365,7 +1458,6 @@
             ctx.shadowBlur = 0;
           }
 
-          // Swarm Launcher Node
           ctx.fillStyle = '#00f0ff';
           ctx.beginPath();
           ctx.arc(swarm.shooter.x, swarm.shooter.y, 7, 0, Math.PI * 2);
@@ -1413,7 +1505,7 @@
         ctx.restore();
 
       } catch (err) {
-        console.error("[StoneBuilt Engine Guard Caught Error]:", err);
+        console.error("[StoneBuilt Engine Guard]:", err);
       }
     }
 
@@ -1445,7 +1537,6 @@
           gameState = 'PLAYING_SWARM';
           swarm.bricks = swarm.bricks.filter(b => b.row < 22);
           swarm.balls = [];
-          swarm.launching = false;
           swarm.ballCount += 3;
           addPopup(W / 2, H / 2, 'SURGE CLEARED!', '#00f0ff');
         } else {
