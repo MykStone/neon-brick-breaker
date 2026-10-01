@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>StoneBuilt Arcade - Neon Breaker Suite</title>
+  <title>StoneBuilt Arcade - Neon Breaker Suite 2.0</title>
   
   <!-- CrazyGames SDK v3 Universal -->
   <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
@@ -19,7 +19,7 @@
     html, body {
       width: 100%;
       height: 100%;
-      background-color: #05070f;
+      background-color: #03050c;
       color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
       display: flex;
@@ -34,37 +34,44 @@
       max-width: 480px;
       height: 100%;
       max-height: 780px;
-      background: #080b16;
-      border: 2px solid #00f0ff44;
-      box-shadow: 0 0 35px rgba(0, 240, 255, 0.25);
+      background: radial-gradient(circle at center, #090e1f 0%, #03050c 100%);
+      border: 2px solid #00f0ff55;
+      box-shadow: 0 0 35px rgba(0, 240, 255, 0.3), inset 0 0 20px rgba(0, 240, 255, 0.1);
       display: flex;
       flex-direction: column;
     }
     #top-hud {
-      height: 50px;
+      height: 52px;
       width: 100%;
-      padding: 0 14px;
+      padding: 0 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #0b0f1e;
-      border-bottom: 2px solid #00f0ff33;
-      font-size: 12px;
+      background: #080c1b;
+      border-bottom: 2px solid #00f0ff44;
+      font-size: 11px;
       font-weight: 800;
       letter-spacing: 1px;
       z-index: 10;
     }
+    .hud-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: monospace;
+      font-size: 13px;
+    }
     .hud-accent {
       color: #00f0ff;
-      font-family: monospace;
-      font-size: 15px;
+      text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
     }
     .hud-gold {
       color: #ffe600;
-      font-family: monospace;
-      font-size: 14px;
-      font-weight: 900;
-      text-shadow: 0 0 8px rgba(255, 230, 0, 0.4);
+      text-shadow: 0 0 8px rgba(255, 230, 0, 0.6);
+    }
+    .hud-tokens {
+      color: #ff007f;
+      text-shadow: 0 0 8px rgba(255, 0, 127, 0.6);
     }
     .hud-btn-group {
       display: flex;
@@ -72,10 +79,10 @@
       align-items: center;
     }
     .hud-ctrl-btn {
-      background: #141b30;
+      background: #10172e;
       border: 1px solid #00f0ff66;
       color: #00f0ff;
-      padding: 6px 10px;
+      padding: 6px 9px;
       border-radius: 6px;
       font-size: 11px;
       font-weight: 800;
@@ -97,10 +104,10 @@
       display: block;
       touch-action: none;
     }
-    #overlay, #gameover-screen {
+    #overlay, #gameover-screen, #quest-modal {
       position: absolute;
       inset: 0;
-      background: rgba(6, 8, 16, 0.95);
+      background: rgba(3, 5, 12, 0.94);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -115,38 +122,39 @@
       color: #ff007f;
       letter-spacing: 3px;
       text-transform: uppercase;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
+      text-shadow: 0 0 10px #ff007f;
     }
     .main-title {
-      font-size: 30px;
+      font-size: 32px;
       font-weight: 900;
       color: #00f0ff;
-      text-shadow: 0 0 18px #00f0ff;
+      text-shadow: 0 0 20px #00f0ff, 0 0 40px rgba(0,240,255,0.4);
       letter-spacing: 2px;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     .menu-sub {
       font-size: 12px;
       color: #94a3b8;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
     }
     .menu-button-stack {
       width: 100%;
       max-width: 320px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
     .menu-card-btn {
-      background: #0e1424;
+      background: #090e1f;
       border: 2px solid;
       border-radius: 12px;
-      padding: 16px;
+      padding: 14px 16px;
       text-align: left;
       cursor: pointer;
       display: block;
       width: 100%;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
       transition: transform 0.1s, box-shadow 0.2s;
     }
     .menu-card-btn:active {
@@ -156,16 +164,16 @@
       border-color: #ff007f;
     }
     .card-retro:hover {
-      box-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
+      box-shadow: 0 0 25px rgba(255, 0, 127, 0.4);
     }
     .card-swarm {
       border-color: #00f0ff;
     }
     .card-swarm:hover {
-      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
     }
     .btn-header {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       letter-spacing: 1px;
       margin-bottom: 4px;
@@ -176,11 +184,12 @@
       line-height: 1.4;
     }
     .gameover-val {
-      font-size: 40px;
+      font-size: 42px;
       font-weight: 900;
       color: #ffe600;
       font-family: monospace;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
+      text-shadow: 0 0 15px rgba(255, 230, 0, 0.5);
     }
     .hi-score-tag {
       font-size: 13px;
@@ -200,7 +209,7 @@
       width: 100%;
       max-width: 250px;
       margin-bottom: 10px;
-      box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
     }
     .action-btn:active {
       transform: scale(0.97);
@@ -217,15 +226,12 @@
       width: 100%;
       max-width: 250px;
       margin-bottom: 10px;
-      box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+      box-shadow: 0 0 20px rgba(255, 0, 127, 0.5);
       display: none;
-    }
-    .revive-btn:active {
-      transform: scale(0.97);
     }
     .sub-action-btn {
       background: transparent;
-      border: 1px solid #64748b;
+      border: 1px solid #475569;
       color: #94a3b8;
       padding: 10px 20px;
       font-size: 12px;
@@ -242,12 +248,12 @@
   <div id="cabinet">
     <!-- Top HUD -->
     <div id="top-hud">
-      <div>SCORE: <span id="hud-score" class="hud-accent">0</span></div>
-      <div>BEST: <span id="hud-best" class="hud-gold">0</span></div>
-      <div id="hud-center">MODE: <span id="hud-mode" class="hud-accent">ARCADE</span></div>
+      <div class="hud-badge">🏆 <span id="hud-score" class="hud-accent">0</span></div>
+      <div class="hud-badge">🪙 <span id="hud-tokens" class="hud-tokens">0</span></div>
+      <div class="hud-badge">LEVEL: <span id="hud-level" class="hud-gold">1</span></div>
       <div class="hud-btn-group">
-        <button id="hud-mute-btn" class="hud-ctrl-btn" title="Toggle Sound">🔊</button>
-        <button id="hud-speed-btn" class="hud-ctrl-btn" style="display:none;">1X</button>
+        <button id="hud-music-btn" class="hud-ctrl-btn" title="Toggle Synthwave Beat">🎵 ON</button>
+        <button id="hud-mute-btn" class="hud-ctrl-btn" title="Toggle SFX">🔊</button>
         <button id="hud-menu-btn" class="hud-ctrl-btn">MENU</button>
       </div>
     </div>
@@ -260,24 +266,24 @@
       <div id="overlay">
         <div class="brand-eyebrow">StoneBuilt Entertainment</div>
         <div class="main-title">Neon Breaker</div>
-        <div class="menu-sub">Choose Your Arcade Engine</div>
+        <div class="menu-sub">StoneBuilt 2.0 Arcade Edition</div>
 
         <div class="menu-button-stack">
           <button id="btn-retro" class="menu-card-btn card-retro">
-            <div class="btn-header" style="color:#ff007f;">🕹️ CLASSIC RETRO</div>
-            <div class="btn-body">Paddle controls, falling lasers/multiball, and authentic 80s brick physics.</div>
+            <div class="btn-header" style="color:#ff007f;">🕹️ CLASSIC CAMPAIGN</div>
+            <div class="btn-body">Infinite procedural sectors, mega plasma cutting beam, kinetic heat fireball.</div>
           </button>
 
           <button id="btn-swarm" class="menu-card-btn card-swarm">
-            <div class="btn-header" style="color:#00f0ff;">⚡ MODERN SWARM</div>
-            <div class="btn-body">Bank-shot aiming laser, dense micro-bricks, and explosive TNT chain reactions.</div>
+            <div class="btn-header" style="color:#00f0ff;">⚡ MODERN SWARM ARENA</div>
+            <div class="btn-body">Bank-shot aiming slider, dense micro-bricks, and explosive TNT chain blasts.</div>
           </button>
         </div>
       </div>
 
       <!-- Game Over Screen -->
       <div id="gameover-screen" style="display:none;">
-        <div class="brand-eyebrow" style="color:#ff007f;">GAME OVER</div>
+        <div class="brand-eyebrow" style="color:#ff007f;">RUN COMPLETE</div>
         <div id="gameover-mode-label" class="main-title" style="font-size:22px; color:#fff;">FINAL SCORE</div>
         <div id="gameover-score-val" class="gameover-val">0</div>
         <div id="gameover-best-tag" class="hi-score-tag">ALL-TIME BEST: 0</div>
@@ -291,50 +297,13 @@
 
   <script>
     /* ==============================================================
-       1. CRAZYGAMES SDK v3 ENGINE & AUDIO-PAUSE LOCK
+       1. CRAZYGAMES SDK v3 INTEGRATION & LIFECYCLE
        ============================================================== */
     let crazyGamesReady = false;
     let isAdPlaying = false;
     let portalMuted = false;
     let userMuted = false;
-
-    // Master Web Audio Context & Gain Node
-    let audioCtx = null;
-    let masterGainNode = null;
-
-    function initAudioEngine() {
-      if (!audioCtx) {
-        try {
-          const AudioClass = window.AudioContext || window.webkitAudioContext;
-          audioCtx = new AudioClass();
-          masterGainNode = audioCtx.createGain();
-          masterGainNode.connect(audioCtx.destination);
-          enforceAudioPolicy();
-        } catch (e) {
-          console.warn("[StoneBuilt] Web Audio not available:", e);
-        }
-      }
-    }
-
-    function enforceAudioPolicy() {
-      const shouldMute = isAdPlaying || portalMuted || userMuted;
-      if (masterGainNode && audioCtx) {
-        const now = audioCtx.currentTime;
-        masterGainNode.gain.setValueAtTime(masterGainNode.gain.value, now);
-        masterGainNode.gain.linearRampToValueAtTime(shouldMute ? 0 : 1, now + 0.05);
-
-        if (shouldMute && audioCtx.state === 'running') {
-          audioCtx.suspend().catch(() => {});
-        } else if (!shouldMute && audioCtx.state === 'suspended') {
-          audioCtx.resume().catch(() => {});
-        }
-      }
-      
-      const muteBtn = document.getElementById('hud-mute-btn');
-      if (muteBtn) {
-        muteBtn.textContent = (userMuted || portalMuted) ? '🔇' : '🔊';
-      }
-    }
+    let musicEnabled = true;
 
     function isCrazyGamesEnvironment() {
       if (!window.CrazyGames?.SDK) return false;
@@ -347,7 +316,7 @@
         try {
           await window.CrazyGames.SDK.init();
           crazyGamesReady = true;
-          console.log("[StoneBuilt] CrazyGames SDK initialized. Environment:", window.CrazyGames.SDK.environment);
+          console.log("[StoneBuilt] CrazyGames SDK initialized. Env:", window.CrazyGames.SDK.environment);
 
           if (isCrazyGamesEnvironment() && window.CrazyGames.SDK.game?.settings) {
             portalMuted = !!window.CrazyGames.SDK.game.settings.muteAudio;
@@ -361,7 +330,7 @@
             });
           }
         } catch (e) {
-          console.log("[StoneBuilt] Standalone mode (Vercel preview):", e);
+          console.log("[StoneBuilt] Local preview mode active.");
         }
       }
     }
@@ -388,7 +357,6 @@
       }
     }
 
-    // Midgame Video Ad with 3.5s safety release timeout
     function triggerCrazyGamesAd(onComplete) {
       if (!crazyGamesReady || !isCrazyGamesEnvironment() || !window.CrazyGames?.SDK?.ad?.requestAd) {
         if (onComplete) onComplete();
@@ -411,9 +379,9 @@
       const safetyTimer = setTimeout(() => { finishAd(); }, 3500);
 
       const callbacks = {
-        adStarted: () => { console.log("[StoneBuilt] Midgame Ad started"); },
+        adStarted: () => console.log("[StoneBuilt] Midgame Ad started"),
         adFinished: () => { clearTimeout(safetyTimer); finishAd(); },
-        adError: (err) => { clearTimeout(safetyTimer); console.warn("[StoneBuilt] Ad skipped:", err); finishAd(); }
+        adError: (err) => { clearTimeout(safetyTimer); finishAd(); }
       };
 
       try {
@@ -424,7 +392,6 @@
       }
     }
 
-    // Rewarded Video Ad with Revive Reward Hook
     function triggerCrazyGamesRewarded(onRewardGranted, onAdClosed) {
       if (!crazyGamesReady || !isCrazyGamesEnvironment() || !window.CrazyGames?.SDK?.ad?.requestAd) {
         if (onRewardGranted) onRewardGranted();
@@ -450,7 +417,7 @@
       }, 4000);
 
       const callbacks = {
-        adStarted: () => { console.log("[StoneBuilt] Rewarded Ad playing"); },
+        adStarted: () => console.log("[StoneBuilt] Rewarded Ad active"),
         adFinished: () => {
           clearTimeout(safetyTimer);
           finishReward();
@@ -473,12 +440,113 @@
       }
     }
 
-    // --- SYNTHESIZED 8-BIT AUDIO ENGINE ---
-    function playTone(freq, type = 'sine', duration = 0.08, vol = 0.1) {
+    /* ==============================================================
+       2. 128 BPM SYNTHWAVE SOUND ENGINE (PROCEDURAL WEB AUDIO)
+       ============================================================== */
+    let audioCtx = null;
+    let masterGainNode = null;
+    let musicTimer = null;
+    let musicStep = 0;
+
+    const BPM = 128;
+    const STEP_TIME = (60 / BPM) / 4; // 16th notes
+
+    // 1980s Retro Bassline Frequencies (Key of Am: A1, C2, D2, F1, G1)
+    const BASS_NOTES = [110, 110, 130.81, 146.83, 110, 110, 87.31, 98.00];
+
+    function initAudioEngine() {
+      if (!audioCtx) {
+        try {
+          const AudioClass = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AudioClass();
+          masterGainNode = audioCtx.createGain();
+          masterGainNode.connect(audioCtx.destination);
+          enforceAudioPolicy();
+          startSynthwaveLoop();
+        } catch (e) {
+          console.warn("[StoneBuilt] Audio init warning:", e);
+        }
+      } else if (audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
+    }
+
+    function enforceAudioPolicy() {
+      const shouldMute = isAdPlaying || portalMuted || userMuted;
+      if (masterGainNode && audioCtx) {
+        const now = audioCtx.currentTime;
+        masterGainNode.gain.setValueAtTime(masterGainNode.gain.value, now);
+        masterGainNode.gain.linearRampToValueAtTime(shouldMute ? 0 : 1, now + 0.05);
+
+        if (shouldMute && audioCtx.state === 'running') {
+          audioCtx.suspend().catch(() => {});
+        } else if (!shouldMute && audioCtx.state === 'suspended') {
+          audioCtx.resume().catch(() => {});
+        }
+      }
+      
+      const muteBtn = document.getElementById('hud-mute-btn');
+      if (muteBtn) {
+        muteBtn.textContent = (userMuted || portalMuted) ? '🔇' : '🔊';
+      }
+    }
+
+    function startSynthwaveLoop() {
+      if (musicTimer) clearInterval(musicTimer);
+      musicTimer = setInterval(() => {
+        if (!musicEnabled || isAdPlaying || userMuted || portalMuted || gameState === 'MENU') return;
+        if (!audioCtx || audioCtx.state !== 'running') return;
+
+        // 128 BPM Bass Arpeggiator
+        if (musicStep % 2 === 0) {
+          const noteIndex = Math.floor(musicStep / 2) % BASS_NOTES.length;
+          playSynthBass(BASS_NOTES[noteIndex]);
+        }
+
+        // 80s Snare / Hi-Hat pulse on beats
+        if (musicStep % 4 === 2) {
+          playNoiseSnare();
+        }
+
+        musicStep = (musicStep + 1) % 32;
+      }, STEP_TIME * 1000);
+    }
+
+    function playSynthBass(freq) {
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.045, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.14);
+        osc.connect(gain);
+        gain.connect(masterGainNode);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.14);
+      } catch (e) {}
+    }
+
+    function playNoiseSnare() {
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(masterGainNode);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } catch (e) {}
+    }
+
+    // Dynamic Retro SFX
+    function playTone(freq, type = 'sine', duration = 0.08, vol = 0.12) {
       if (isAdPlaying || userMuted || portalMuted) return;
       initAudioEngine();
       try {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const noteGain = audioCtx.createGain();
         osc.type = type;
@@ -492,24 +560,25 @@
       } catch (e) {}
     }
 
-    const sndHit = (f = 460) => playTone(f, 'triangle', 0.05, 0.12);
-    const sndPaddle = () => playTone(380, 'sine', 0.08, 0.15);
-    const sndLaser = () => playTone(920, 'sawtooth', 0.09, 0.08);
-    const sndPower = () => playTone(780, 'square', 0.16, 0.1);
-    const sndBomb = () => playTone(110, 'sawtooth', 0.35, 0.22);
-    const sndDie = () => playTone(140, 'sawtooth', 0.4, 0.15);
+    const sndHit = (f = 480) => playTone(f, 'triangle', 0.05, 0.15);
+    const sndPaddle = () => playTone(360, 'sine', 0.08, 0.18);
+    const sndLaserBeam = () => playTone(820 + Math.random() * 80, 'sawtooth', 0.04, 0.09);
+    const sndPower = () => playTone(740, 'square', 0.18, 0.12);
+    const sndBomb = () => playTone(90, 'sawtooth', 0.4, 0.25);
+    const sndDie = () => playTone(120, 'sawtooth', 0.45, 0.18);
 
-    // --- DOM REFERENCES ---
+    /* ==============================================================
+       3. DOM REFERENCES & ENGINE STATE
+       ============================================================== */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const overlay = document.getElementById('overlay');
     const gameoverScreen = document.getElementById('gameover-screen');
     const hudScore = document.getElementById('hud-score');
-    const hudBest = document.getElementById('hud-best');
-    const hudMode = document.getElementById('hud-mode');
-    const hudCenter = document.getElementById('hud-center');
+    const hudTokens = document.getElementById('hud-tokens');
+    const hudLevel = document.getElementById('hud-level');
     const hudMuteBtn = document.getElementById('hud-mute-btn');
-    const hudSpeedBtn = document.getElementById('hud-speed-btn');
+    const hudMusicBtn = document.getElementById('hud-music-btn');
     const hudMenuBtn = document.getElementById('hud-menu-btn');
     const gameoverScoreVal = document.getElementById('gameover-score-val');
     const gameoverModeLabel = document.getElementById('gameover-mode-label');
@@ -522,16 +591,24 @@
     let gameState = 'MENU';
     let score = 0;
     let reviveUsedThisSession = false;
+    let currentSector = 1;
 
-    // --- PERSISTENT HIGH SCORE ENGINE ---
+    // Tokens & Quests
+    let arcadeTokens = 0;
+    let bricksDestroyedTotal = 0;
+    let highestComboThisRun = 0;
+
+    try {
+      arcadeTokens = parseInt(localStorage.getItem('sbc_tokens') || '0', 10);
+      if (isNaN(arcadeTokens)) arcadeTokens = 0;
+    } catch (e) { arcadeTokens = 0; }
+    hudTokens.textContent = arcadeTokens;
+
     let hiScore = 0;
     try {
       hiScore = parseInt(localStorage.getItem('sbc_neon_hiscore') || '0', 10);
       if (isNaN(hiScore)) hiScore = 0;
-    } catch (e) {
-      hiScore = 0;
-    }
-    hudBest.textContent = hiScore;
+    } catch (e) { hiScore = 0; }
 
     function addScore(points) {
       score += points;
@@ -539,7 +616,6 @@
 
       if (score > hiScore) {
         hiScore = score;
-        hudBest.textContent = hiScore;
         try {
           localStorage.setItem('sbc_neon_hiscore', hiScore.toString());
         } catch (e) {}
@@ -547,11 +623,21 @@
       }
     }
 
+    function addTokens(amount, reason) {
+      arcadeTokens += amount;
+      hudTokens.textContent = arcadeTokens;
+      try {
+        localStorage.setItem('sbc_tokens', arcadeTokens.toString());
+      } catch (e) {}
+      addPopup(W / 2, H / 2 - 40, `+${amount} TOKENS! (${reason})`, '#ffe600');
+      triggerHappyTime();
+    }
+
     let particles = [];
     let popups = [];
-
     let shakeTimer = 0;
     let shakeMag = 0;
+    let gridOffset = 0; // Animated Synthwave Floor
 
     function triggerShake(magnitude = 6, duration = 12) {
       shakeMag = magnitude;
@@ -559,43 +645,34 @@
     }
 
     function addPopup(x, y, text, color = '#00f0ff') {
-      popups.push({
-        x: x,
-        y: y,
-        text: text,
-        color: color,
-        life: 1.0,
-        vy: -1.6
-      });
+      popups.push({ x: x, y: y, text: text, color: color, life: 1.0, vy: -1.6 });
     }
 
-    // =====================================
-    // 1. CLASSIC RETRO ENGINE
-    // =====================================
+    /* ==============================================================
+       4. PROCEDURAL CAMPAIGN ENGINE (INFINITE ARCHITECTURE)
+       ============================================================== */
     const retro = {
       lives: 3,
       level: 1,
-      paddle: { w: 85, h: 12, x: 187, y: 655, hasLasers: false },
+      paddle: { w: 88, h: 14, x: 186, y: 655, hasMegaLaser: false, laserTime: 0 },
       balls: [],
       bricks: [],
       powerUps: [],
-      lasers: [],
-      laserTimeout: null,
-      wideTimeout: null
+      combo: 0
     };
 
     function startRetro() {
       gameState = 'PLAYING_RETRO';
-      hudMode.textContent = 'RETRO';
-      hudSpeedBtn.style.display = 'none';
       score = 0;
       hudScore.textContent = score;
-      hudBest.textContent = hiScore;
       retro.lives = 3;
       retro.level = 1;
+      currentSector = 1;
+      hudLevel.textContent = retro.level;
       reviveUsedThisSession = false;
-      hudCenter.innerHTML = `LIVES: <span style="color:#ff007f;">❤️❤️❤️</span>`;
-      initRetroBricks();
+      retro.combo = 0;
+
+      generateProceduralStage(retro.level);
       resetRetroBall();
       overlay.style.display = 'none';
       gameoverScreen.style.display = 'none';
@@ -603,45 +680,71 @@
       triggerCrazyGamesStart();
     }
 
-    function initRetroBricks() {
+    // Procedural Symmetric Geometric Architecture
+    function generateProceduralStage(lvl) {
       retro.bricks = [];
-      const cols = 7, rows = 6;
-      const pad = 6;
+      const cols = 8;
+      const rows = Math.min(8, 4 + Math.floor(lvl / 3));
+      const pad = 5;
       const bW = (W - (pad * (cols + 1))) / cols;
       const bH = 16;
-      const colors = ['#ff007f', '#ff5500', '#ffe600', '#39ff14', '#00f0ff', '#b026ff'];
+
+      // Color Palette by Sector
+      let sectorColors = ['#00f0ff', '#ff007f', '#39ff14', '#ffe600'];
+      if (lvl > 5) sectorColors = ['#ff007f', '#ffe600', '#b026ff', '#00f0ff'];
+      if (lvl > 10) sectorColors = ['#39ff14', '#00f0ff', '#ff5500', '#ffe600'];
+
+      const archetype = lvl % 5;
 
       for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          retro.bricks.push({
-            x: pad + c * (bW + pad),
-            y: 40 + r * (bH + pad),
-            w: bW,
-            h: bH,
-            color: colors[r % colors.length],
-            hp: (retro.level >= 2 && r === 0) ? 2 : 1,
-            alive: true
-          });
+        for (let c = 0; c < cols / 2; c++) {
+          let spawn = true;
+
+          // Archetype 1: Pyramid of Power
+          if (archetype === 1 && (c < (rows - r - 2))) spawn = false;
+          // Archetype 2: The Equalizer Columns
+          if (archetype === 2 && (c % 2 === 0 && r > 4)) spawn = false;
+          // Archetype 3: The Invader Diamond
+          if (archetype === 3 && (r + c < 2 || r - c > 3)) spawn = false;
+          // Archetype 4: Fortified Vault
+          if (archetype === 4 && (r === 2 && c === 1)) spawn = false;
+
+          if (spawn) {
+            let hp = 1;
+            if (lvl >= 2 && r <= 1) hp = 2; // Armored top rows
+            if (lvl >= 5 && r === 0) hp = 3;
+
+            const color = sectorColors[r % sectorColors.length];
+
+            // Bilateral symmetry (Mirror Left to Right)
+            const xLeft = pad + c * (bW + pad);
+            const xRight = pad + (cols - 1 - c) * (bW + pad);
+            const y = 45 + r * (bH + pad);
+
+            retro.bricks.push({ x: xLeft, y: y, w: bW, h: bH, hp: hp, maxHp: hp, color: color, alive: true });
+            if (xLeft !== xRight) {
+              retro.bricks.push({ x: xRight, y: y, w: bW, h: bH, hp: hp, maxHp: hp, color: color, alive: true });
+            }
+          }
         }
       }
     }
 
     function resetRetroBall() {
-      // Clear any pending power-up timers
-      if (retro.laserTimeout) { clearTimeout(retro.laserTimeout); retro.laserTimeout = null; }
-      if (retro.wideTimeout) { clearTimeout(retro.wideTimeout); retro.wideTimeout = null; }
-
-      retro.paddle.w = 85;
-      retro.paddle.hasLasers = false;
-      retro.paddle.x = (W - 85) / 2;
-      retro.lasers = [];
+      retro.paddle.w = 88;
+      retro.paddle.hasMegaLaser = false;
+      retro.paddle.laserTime = 0;
+      retro.paddle.x = (W - 88) / 2;
       retro.powerUps = [];
+      retro.combo = 0;
+
+      // Tuned 128 BPM Launch Velocity (7.0 Kinetic Speed)
       retro.balls = [{
         x: W / 2,
         y: H - 55,
-        vx: 3.5 * (Math.random() > 0.5 ? 1 : -1),
-        vy: -5.5,
-        r: 6,
+        vx: 3.8 * (Math.random() > 0.5 ? 1 : -1),
+        vy: -6.2,
+        r: 6.5,
         stuck: true,
         trail: []
       }];
@@ -649,20 +752,25 @@
 
     function advanceRetroLevel() {
       triggerHappyTime();
-      triggerShake(6, 12);
-      addScore(100);
-      addPopup(W / 2, H / 2 - 30, '+100 LEVEL BONUS!', '#ffe600');
-      addPopup(W / 2, H / 2, 'LEVEL CLEAR!', '#39ff14');
+      triggerShake(8, 16);
+      addScore(150);
+      addPopup(W / 2, H / 2 - 30, '+150 SECTOR BONUS!', '#ffe600');
+      addPopup(W / 2, H / 2, `STAGE ${retro.level} CLEARED!`, '#39ff14');
+
+      // Milestone Token Rewards
+      if (retro.level === 3) addTokens(5, "Stage 3 Complete");
+      if (retro.level === 7) addTokens(15, "Sector Master");
 
       retro.level++;
-      initRetroBricks();
+      hudLevel.textContent = retro.level;
+      generateProceduralStage(retro.level);
       resetRetroBall();
     }
 
-    // =====================================
-    // 2. MODERN SWARM ENGINE
-    // =====================================
-    const SWARM_COLS = 16; 
+    /* =====================================
+       5. MODERN SWARM ENGINE (SUITE ENGINE 2)
+       ===================================== */
+    const SWARM_COLS = 16;
     const SWARM_PAD = 3;
     const SWARM_BW = (W - (SWARM_PAD * (SWARM_COLS + 1))) / SWARM_COLS;
     const SWARM_BH = 17;
@@ -680,38 +788,28 @@
       launchTimer: 0,
       launchedCount: 0,
       ballsReturned: 0,
-      newShooterX: null,
-      speed: 1
+      newShooterX: null
     };
 
     function startSwarm() {
       gameState = 'PLAYING_SWARM';
-      hudMode.textContent = 'SWARM';
-      hudSpeedBtn.style.display = 'block';
-      hudSpeedBtn.textContent = '1X';
-      swarm.speed = 1;
       score = 0;
       hudScore.textContent = score;
-      hudBest.textContent = hiScore;
       swarm.level = 1;
       swarm.ballCount = 5;
       swarm.balls = [];
       swarm.shooter.x = W / 2;
-      swarm.shooter.y = H - 30;
       swarm.aiming = false;
       swarm.launching = false;
       reviveUsedThisSession = false;
-      hudCenter.innerHTML = `BALLS: <span class="hud-accent">${swarm.ballCount}</span>`;
+      hudLevel.textContent = 'SWARM';
       swarm.bricks = [];
       swarm.pickups = [];
 
-      for (let i = 0; i < 5; i++) {
-        addSwarmWave();
-      }
+      for (let i = 0; i < 5; i++) addSwarmWave();
 
       overlay.style.display = 'none';
       gameoverScreen.style.display = 'none';
-
       triggerCrazyGamesStart();
     }
 
@@ -724,88 +822,32 @@
       for (let c = 0; c < SWARM_COLS; c++) {
         const rand = Math.random();
         if (rand < 0.46) {
-          let hp = 1;
-          if (swarm.level === 1) {
-            hp = Math.random() < 0.35 ? 2 : 1;
-          } else {
-            hp = Math.max(1, Math.round(swarm.level * (0.8 + Math.random() * 1.2)));
-          }
-
+          let hp = Math.max(1, Math.round(swarm.level * (0.8 + Math.random() * 1.2)));
           const isTNT = Math.random() < 0.08;
           swarm.bricks.push({
-            c: c,
-            row: 1,
-            w: SWARM_BW,
-            h: SWARM_BH,
-            hp: hp,
-            maxHp: hp,
-            isTNT: isTNT,
-            alive: true
+            c: c, row: 1, w: SWARM_BW, h: SWARM_BH,
+            hp: hp, maxHp: hp, isTNT: isTNT, alive: true
           });
         } else if (!spawnedPickup && rand < 0.52) {
           spawnedPickup = true;
-          swarm.pickups.push({
-            c: c,
-            row: 1,
-            w: SWARM_BW,
-            h: SWARM_BH,
-            collected: false
-          });
+          swarm.pickups.push({ c: c, row: 1, w: SWARM_BW, h: SWARM_BH, collected: false });
         }
       }
     }
 
-    function getBrickColors(hp, isTNT) {
-      if (isTNT) return { fill: '#ff4400', border: '#ffaa00', text: '#fff' };
-      if (hp <= 2) return { fill: '#0a1d37', border: '#00f0ff', text: '#00f0ff' };
-      if (hp <= 6) return { fill: '#0b2b26', border: '#39ff14', text: '#39ff14' };
-      if (hp <= 14) return { fill: '#332a05', border: '#ffe600', text: '#ffe600' };
-      if (hp <= 28) return { fill: '#331122', border: '#ff007f', text: '#ff007f' };
-      return { fill: '#280d38', border: '#b026ff', text: '#b026ff' };
-    }
-
-    function spawnSparks(x, y, color, count = 8) {
-      for (let i = 0; i < count; i++) {
-        particles.push({
-          x: x,
-          y: y,
-          vx: (Math.random() - 0.5) * 8,
-          vy: (Math.random() - 0.5) * 8,
-          r: Math.random() * 2 + 1,
-          color: color,
-          life: 1
-        });
-      }
-    }
-
-    // =====================================
-    // TOUCH & POINTER INPUTS
-    // =====================================
+    /* ==============================================================
+       6. INPUTS & CONTROLS (DESKTOP & MOBILE)
+       ============================================================== */
     function getCanvasCoords(e) {
       const rect = canvas.getBoundingClientRect();
       const scaleX = W / rect.width;
       const scaleY = H / rect.height;
-      let cx = e.clientX;
-      let cy = e.clientY;
+      let cx = e.clientX, cy = e.clientY;
       if (e.touches && e.touches.length > 0) {
         cx = e.touches[0].clientX;
         cy = e.touches[0].clientY;
       }
-      return {
-        x: (cx - rect.left) * scaleX,
-        y: (cy - rect.top) * scaleY
-      };
-    }
-
-    function updateAimAngle(pt) {
-      const dx = pt.x - swarm.shooter.x;
-      const dy = pt.y - swarm.shooter.y;
-      if (dy < -12) {
-        let angle = Math.atan2(dy, dx);
-        angle = Math.max(-Math.PI * 0.96, Math.min(-Math.PI * 0.04, angle));
-        swarm.aimAngle = angle;
-        swarm.aiming = true;
-      }
+      return { x: (cx - rect.left) * scaleX, y: (cy - rect.top) * scaleY };
     }
 
     function onPointerDown(e) {
@@ -819,15 +861,8 @@
           retro.balls[0].stuck = false;
           sndPaddle();
         }
-        if (retro.paddle.hasLasers) {
-          sndLaser();
-          retro.lasers.push({ x: retro.paddle.x + 8, y: retro.paddle.y - 4, vy: -9 });
-          retro.lasers.push({ x: retro.paddle.x + retro.paddle.w - 8, y: retro.paddle.y - 4, vy: -9 });
-        }
-      } else if (gameState === 'PLAYING_SWARM') {
-        if (!swarm.launching) {
-          updateAimAngle(pt);
-        }
+      } else if (gameState === 'PLAYING_SWARM' && !swarm.launching) {
+        updateAimAngle(pt);
       }
     }
 
@@ -840,10 +875,8 @@
         if (retro.balls[0] && retro.balls[0].stuck) {
           retro.balls[0].x = retro.paddle.x + retro.paddle.w / 2;
         }
-      } else if (gameState === 'PLAYING_SWARM') {
-        if (!swarm.launching && swarm.aiming) {
-          updateAimAngle(pt);
-        }
+      } else if (gameState === 'PLAYING_SWARM' && !swarm.launching && swarm.aiming) {
+        updateAimAngle(pt);
       }
     }
 
@@ -860,48 +893,42 @@
       }
     }
 
+    function updateAimAngle(pt) {
+      const dx = pt.x - swarm.shooter.x;
+      const dy = pt.y - swarm.shooter.y;
+      if (dy < -14) {
+        let angle = Math.atan2(dy, dx);
+        angle = Math.max(-Math.PI * 0.96, Math.min(-Math.PI * 0.04, angle));
+        swarm.aimAngle = angle;
+        swarm.aiming = true;
+      }
+    }
+
     canvas.addEventListener('mousedown', onPointerDown);
     window.addEventListener('mousemove', onPointerMove);
     window.addEventListener('mouseup', onPointerUp);
 
-    canvas.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      onPointerDown(e);
-    }, { passive: false });
-
-    canvas.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      onPointerMove(e);
-    }, { passive: false });
-
-    window.addEventListener('touchend', () => {
-      onPointerUp();
-    });
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); onPointerDown(e); }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); onPointerMove(e); }, { passive: false });
+    window.addEventListener('touchend', onPointerUp);
 
     window.addEventListener('keydown', (e) => {
       if (isAdPlaying) return;
       initAudioEngine();
-      if (e.code === 'Space') {
-        if (gameState === 'PLAYING_RETRO') {
-          if (retro.balls[0] && retro.balls[0].stuck) {
-            retro.balls[0].stuck = false;
-            sndPaddle();
-          }
-          if (retro.paddle.hasLasers) {
-            sndLaser();
-            retro.lasers.push({ x: retro.paddle.x + 8, y: retro.paddle.y - 4, vy: -9 });
-            retro.lasers.push({ x: retro.paddle.x + retro.paddle.w - 8, y: retro.paddle.y - 4, vy: -9 });
-          }
+      if (e.code === 'Space' && gameState === 'PLAYING_RETRO') {
+        if (retro.balls[0] && retro.balls[0].stuck) {
+          retro.balls[0].stuck = false;
+          sndPaddle();
         }
       }
       if (gameState === 'PLAYING_RETRO') {
         if (e.code === 'ArrowLeft') {
-          retro.paddle.x = Math.max(0, retro.paddle.x - 32);
-          if (retro.balls[0] && retro.balls[0].stuck) retro.balls[0].x = retro.paddle.x + retro.paddle.w / 2;
+          retro.paddle.x = Math.max(0, retro.paddle.x - 34);
+          if (retro.balls[0]?.stuck) retro.balls[0].x = retro.paddle.x + retro.paddle.w / 2;
         }
         if (e.code === 'ArrowRight') {
-          retro.paddle.x = Math.min(W - retro.paddle.w, retro.paddle.x + 32);
-          if (retro.balls[0] && retro.balls[0].stuck) retro.balls[0].x = retro.paddle.x + retro.paddle.w / 2;
+          retro.paddle.x = Math.min(W - retro.paddle.w, retro.paddle.x + 34);
+          if (retro.balls[0]?.stuck) retro.balls[0].x = retro.paddle.x + retro.paddle.w / 2;
         }
       }
     });
@@ -913,10 +940,11 @@
       enforceAudioPolicy();
     });
 
-    hudSpeedBtn.addEventListener('click', (e) => {
+    hudMusicBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      swarm.speed = swarm.speed === 1 ? 2 : (swarm.speed === 2 ? 3 : 1);
-      hudSpeedBtn.textContent = swarm.speed + 'X';
+      initAudioEngine();
+      musicEnabled = !musicEnabled;
+      hudMusicBtn.textContent = musicEnabled ? '🎵 ON' : '🎵 OFF';
     });
 
     function showGameOver(modeTitle) {
@@ -924,260 +952,220 @@
       gameoverModeLabel.textContent = `${modeTitle} GAME OVER`;
       gameoverScoreVal.textContent = score;
       gameoverBestTag.textContent = `ALL-TIME BEST: ${hiScore}`;
-      
-      if (!reviveUsedThisSession) {
-        btnRevive.style.display = 'block';
-      } else {
-        btnRevive.style.display = 'none';
-      }
-
+      btnRevive.style.display = !reviveUsedThisSession ? 'block' : 'none';
       gameoverScreen.style.display = 'flex';
 
       triggerCrazyGamesStop();
       triggerCrazyGamesAd();
     }
 
-    // =====================================
-    // RETRO GAMEPLAY UPDATE
-    // =====================================
+    /* ==============================================================
+       7. RETRO GAMEPLAY & CONTINUOUS CUTTING LASER LOGIC
+       ============================================================== */
     function updateRetroEngine() {
       retro.paddle.y = H - 28;
 
-      // Laser Update
-      for (let i = retro.lasers.length - 1; i >= 0; i--) {
-        const l = retro.lasers[i];
-        l.y += l.vy;
-        if (l.y < 0) { retro.lasers.splice(i, 1); continue; }
-        for (let b of retro.bricks) {
-          if (b.alive && l.x > b.x && l.x < b.x + b.w && l.y > b.y && l.y < b.y + b.h) {
-            b.hp--;
-            if (b.hp <= 0) {
-              b.alive = false;
-              addScore(20);
-              spawnSparks(b.x + b.w / 2, b.y + b.h / 2, b.color);
-              addPopup(b.x + b.w / 2, b.y, '+20', '#ff007f');
+      // 1. CONTINUOUS MEGA PLASMA CUTTING BEAM (Active & Auto-Firing)
+      if (retro.paddle.hasMegaLaser) {
+        retro.paddle.laserTime -= 0.016;
+        if (retro.paddle.laserTime <= 0) {
+          retro.paddle.hasMegaLaser = false;
+        } else {
+          // Play continuous plasma buzz
+          if (Math.random() < 0.3) sndLaserBeam();
+
+          // Searing beam coordinates (cuts straight up from paddle center)
+          const beamX = retro.paddle.x + retro.paddle.w / 2;
+          const beamWidth = 26;
+
+          for (let b of retro.bricks) {
+            if (b.alive && beamX + beamWidth / 2 > b.x && beamX - beamWidth / 2 < b.x + b.w) {
+              b.hp -= 0.08; // Continuous laser cutting power
+              if (b.hp <= 0) {
+                b.alive = false;
+                addScore(25);
+                bricksDestroyedTotal++;
+                spawnSparks(b.x + b.w / 2, b.y + b.h / 2, b.color, 16);
+                addPopup(b.x + b.w / 2, b.y, '+25', '#ff007f');
+              }
             }
-            sndHit(750);
-            retro.lasers.splice(i, 1);
-            break;
           }
         }
       }
 
-      // Ball Update
+      // 2. KINETIC BALL PHYSICS & COLLISION
       for (let i = retro.balls.length - 1; i >= 0; i--) {
         const b = retro.balls[i];
         if (b.stuck) continue;
 
         if (!b.trail) b.trail = [];
-        b.trail.push({ x: b.x, y: b.y });
-        if (b.trail.length > 5) b.trail.shift();
+        b.trail.push({ x: b.x, y: b.y, combo: retro.combo });
+        if (b.trail.length > 7) b.trail.shift();
 
         b.x += b.vx;
         b.y += b.vy;
 
-        // Left / Right Walls
-        if (b.x - b.r <= 0) {
-          b.x = b.r + 1;
-          b.vx = Math.abs(b.vx);
-          if (Math.abs(b.vx) < 1.5) b.vx = 2.4;
-          sndHit(300);
-        } else if (b.x + b.r >= W) {
-          b.x = W - b.r - 1;
-          b.vx = -Math.abs(b.vx);
-          if (Math.abs(b.vx) < 1.5) b.vx = -2.4;
-          sndHit(300);
-        }
+        // Wall Reflections
+        if (b.x - b.r <= 0) { b.x = b.r + 1; b.vx = Math.abs(b.vx); sndHit(300); }
+        else if (b.x + b.r >= W) { b.x = W - b.r - 1; b.vx = -Math.abs(b.vx); sndHit(300); }
+        if (b.y - b.r <= 0) { b.y = b.r + 1; b.vy = Math.abs(b.vy); sndHit(300); }
 
-        // Top Wall
-        if (b.y - b.r <= 0) {
-          b.y = b.r + 1;
-          b.vy = Math.abs(b.vy);
-          sndHit(300);
-        }
-
-        // Paddle Collision (Safe Math)
+        // Paddle Collision (With Kinetic Heat Boost)
         if (b.y + b.r >= retro.paddle.y && b.y - b.r <= retro.paddle.y + retro.paddle.h && b.x >= retro.paddle.x && b.x <= retro.paddle.x + retro.paddle.w && b.vy > 0) {
           sndPaddle();
+          retro.combo = 0; // Reset combo on paddle contact
           const hit = (b.x - (retro.paddle.x + retro.paddle.w / 2)) / (retro.paddle.w / 2);
-          const currentSpd = Math.max(5.5, Math.hypot(b.vx, b.vy));
-          b.vx = hit * 6;
+          const currentSpd = Math.max(6.8, Math.min(10.5, Math.hypot(b.vx, b.vy)));
+          b.vx = hit * 6.5;
           const remSq = Math.max(16, currentSpd * currentSpd - b.vx * b.vx);
           b.vy = -Math.sqrt(remSq);
           b.y = retro.paddle.y - b.r;
         }
 
-        // Brick Collision
+        // Brick Impacts
         for (let brk of retro.bricks) {
           if (!brk.alive) continue;
           if (b.x + b.r > brk.x && b.x - b.r < brk.x + brk.w && b.y + b.r > brk.y && b.y - b.r < brk.y + brk.h) {
             brk.hp--;
+            retro.combo++;
+            bricksDestroyedTotal++;
+
+            // Kinetic Heat Speedup (+2% per consecutive hit)
+            b.vx *= 1.02;
+            b.vy *= 1.02;
+
             if (brk.hp <= 0) {
               brk.alive = false;
-              addScore(15);
-              spawnSparks(brk.x + brk.w / 2, brk.y + brk.h / 2, brk.color);
-              addPopup(brk.x + brk.w / 2, brk.y, '+15', '#00f0ff');
-              if (Math.random() < 0.22) {
-                const types = ['MULTI', 'LASER', 'WIDE'];
+              addScore(15 * Math.min(4, retro.combo));
+              spawnSparks(brk.x + brk.w / 2, brk.y + brk.h / 2, brk.color, 12);
+              addPopup(brk.x + brk.w / 2, brk.y, `+${15 * Math.min(4, retro.combo)}`, brk.color);
+
+              // Power-up Capsule Spawns
+              if (Math.random() < 0.24) {
+                const types = ['BEAM', 'WIDE', 'MULTI'];
                 retro.powerUps.push({
-                  x: brk.x + brk.w / 2,
-                  y: brk.y + brk.h / 2,
+                  x: brk.x + brk.w / 2, y: brk.y + brk.h / 2,
                   type: types[Math.floor(Math.random() * types.length)],
-                  vy: 2.2
+                  vy: 2.4
                 });
               }
             }
-            sndHit(520);
+            sndHit(500 + Math.min(300, retro.combo * 20));
             b.vy *= -1;
             break;
           }
         }
 
-        if (b.y - b.r > H) {
-          retro.balls.splice(i, 1);
-        }
+        if (b.y - b.r > H) retro.balls.splice(i, 1);
       }
 
-      // Ball Loss Check
+      // Ball Drain Check
       if (retro.balls.length === 0) {
         retro.lives--;
         sndDie();
-        triggerShake(8, 14);
+        triggerShake(10, 16);
         if (retro.lives <= 0) {
-          showGameOver('CLASSIC RETRO');
+          showGameOver('CLASSIC CAMPAIGN');
           return;
         } else {
-          let str = '';
-          for (let l = 0; l < retro.lives; l++) str += '❤️';
-          hudCenter.innerHTML = `LIVES: <span style="color:#ff007f;">${str}</span>`;
           resetRetroBall();
         }
       }
 
-      // Powerups Update with Clean Timers
+      // Power-up Pickups
       for (let i = retro.powerUps.length - 1; i >= 0; i--) {
         const p = retro.powerUps[i];
         p.y += p.vy;
         if (p.y >= retro.paddle.y && p.y <= retro.paddle.y + retro.paddle.h && p.x >= retro.paddle.x && p.x <= retro.paddle.x + retro.paddle.w) {
           sndPower();
-          if (p.type === 'WIDE') {
-            retro.paddle.w = 125;
-            if (retro.wideTimeout) clearTimeout(retro.wideTimeout);
-            retro.wideTimeout = setTimeout(() => {
-              retro.paddle.w = 85;
-              retro.wideTimeout = null;
-            }, 9000);
-            addPopup(p.x, p.y - 10, 'WIDE PADDLE (9s)', '#ffe600');
-          } else if (p.type === 'LASER') {
-            retro.paddle.hasLasers = true;
-            if (retro.laserTimeout) clearTimeout(retro.laserTimeout);
-            retro.laserTimeout = setTimeout(() => {
-              retro.paddle.hasLasers = false;
-              retro.laserTimeout = null;
-            }, 10000);
-            addPopup(p.x, p.y - 10, 'LASERS ACTIVE (10s)', '#ff007f');
+          if (p.type === 'BEAM') {
+            retro.paddle.hasMegaLaser = true;
+            retro.paddle.laserTime = 8.0; // 8 seconds of continuous cutting power
+            addPopup(p.x, p.y - 12, 'MEGA PLASMA BEAM (8s)', '#00f0ff');
+          } else if (p.type === 'WIDE') {
+            retro.paddle.w = 130;
+            setTimeout(() => { retro.paddle.w = 88; }, 10000);
+            addPopup(p.x, p.y - 12, 'WIDE PADDLE (10s)', '#ffe600');
           } else if (p.type === 'MULTI' && retro.balls[0]) {
-            retro.balls.push({ x: retro.balls[0].x, y: retro.balls[0].y, vx: -3, vy: -4, r: 6, stuck: false, trail: [] });
-            retro.balls.push({ x: retro.balls[0].x, y: retro.balls[0].y, vx: 3, vy: -4, r: 6, stuck: false, trail: [] });
-            addPopup(p.x, p.y - 10, 'MULTIBALL', '#39ff14');
+            retro.balls.push({ x: retro.balls[0].x, y: retro.balls[0].y, vx: -3.5, vy: -5, r: 6.5, stuck: false, trail: [] });
+            retro.balls.push({ x: retro.balls[0].x, y: retro.balls[0].y, vx: 3.5, vy: -5, r: 6.5, stuck: false, trail: [] });
+            addPopup(p.x, p.y - 12, 'TRIPLE MULTIBALL', '#39ff14');
           }
           retro.powerUps.splice(i, 1);
         } else if (p.y > H) retro.powerUps.splice(i, 1);
       }
 
-      // Bulletproof Level Clear Detection
+      // Stage Clear
       if (retro.bricks.length > 0 && retro.bricks.every(b => !b.alive)) {
         advanceRetroLevel();
       }
     }
 
-    // =====================================
-    // SWARM GAMEPLAY UPDATE
-    // =====================================
+    /* ==============================================================
+       8. SWARM ARENA UPDATE
+       ============================================================== */
     function updateSwarmEngine() {
       if (swarm.launching && swarm.launchedCount < swarm.ballCount) {
         swarm.launchTimer++;
         if (swarm.launchTimer % 3 === 0) {
           const spd = 8.5;
           swarm.balls.push({
-            x: swarm.shooter.x,
-            y: swarm.shooter.y,
+            x: swarm.shooter.x, y: swarm.shooter.y,
             vx: Math.cos(swarm.aimAngle) * spd,
             vy: Math.sin(swarm.aimAngle) * spd,
-            r: 3.5,
-            trail: []
+            r: 3.5, trail: []
           });
           swarm.launchedCount++;
         }
       }
 
-      for (let s = 0; s < swarm.speed; s++) {
-        for (let i = swarm.balls.length - 1; i >= 0; i--) {
-          const b = swarm.balls[i];
+      for (let i = swarm.balls.length - 1; i >= 0; i--) {
+        const b = swarm.balls[i];
+        b.x += b.vx;
+        b.y += b.vy;
 
-          if (!b.trail) b.trail = [];
-          b.trail.push({ x: b.x, y: b.y });
-          if (b.trail.length > 4) b.trail.shift();
+        if (b.x - b.r <= 0) { b.x = b.r + 1; b.vx = Math.abs(b.vx); }
+        else if (b.x + b.r >= W) { b.x = W - b.r - 1; b.vx = -Math.abs(b.vx); }
+        if (b.y - b.r <= 0) { b.y = b.r + 1; b.vy = Math.abs(b.vy); }
 
-          b.x += b.vx;
-          b.y += b.vy;
+        for (let brk of swarm.bricks) {
+          if (!brk.alive) continue;
+          const bx = SWARM_PAD + brk.c * (SWARM_BW + SWARM_PAD);
+          const by = 40 + brk.row * (SWARM_BH + SWARM_PAD);
 
-          if (b.x - b.r <= 0) { b.x = b.r + 1; b.vx = Math.abs(b.vx); }
-          else if (b.x + b.r >= W) { b.x = W - b.r - 1; b.vx = -Math.abs(b.vx); }
-          if (b.y - b.r <= 0) { b.y = b.r + 1; b.vy = Math.abs(b.vy); }
+          if (b.x + b.r > bx && b.x - b.r < bx + SWARM_BW && b.y + b.r > by && b.y - b.r < by + SWARM_BH) {
+            brk.hp--;
+            addScore(1);
+            sndHit(450 + Math.min(300, brk.hp * 8));
 
-          for (let brk of swarm.bricks) {
-            if (!brk.alive) continue;
-            const bx = SWARM_PAD + brk.c * (SWARM_BW + SWARM_PAD);
-            const by = 40 + brk.row * (SWARM_BH + SWARM_PAD);
+            if (brk.isTNT && brk.hp <= 0) {
+              sndBomb();
+              triggerShake(12, 18);
+              spawnSparks(bx + SWARM_BW / 2, by + SWARM_BH / 2, '#ff5500', 35);
+              addPopup(bx + SWARM_BW / 2, by, 'MEGA BOOM!', '#ffaa00');
 
-            if (b.x + b.r > bx && b.x - b.r < bx + SWARM_BW && b.y + b.r > by && b.y - b.r < by + SWARM_BH) {
-              brk.hp--;
-              addScore(1);
-              sndHit(450 + Math.min(300, brk.hp * 8));
-
-              if (brk.isTNT && brk.hp <= 0) {
-                sndBomb();
-                triggerShake(10, 16);
-                spawnSparks(bx + SWARM_BW / 2, by + SWARM_BH / 2, '#ff5500', 35);
-                addPopup(bx + SWARM_BW / 2, by, 'BOOM!', '#ffaa00');
-
-                for (let other of swarm.bricks) {
-                  if (other.alive && Math.abs(other.c - brk.c) <= 1 && Math.abs(other.row - brk.row) <= 1) {
-                    other.hp -= 20;
-                    addScore(5);
-                    if (other.hp <= 0) other.alive = false;
-                  }
+              for (let other of swarm.bricks) {
+                if (other.alive && Math.abs(other.c - brk.c) <= 1 && Math.abs(other.row - brk.row) <= 1) {
+                  other.hp -= 20;
+                  addScore(5);
+                  if (other.hp <= 0) other.alive = false;
                 }
               }
-
-              if (brk.hp <= 0) {
-                brk.alive = false;
-                spawnSparks(bx + SWARM_BW / 2, by + SWARM_BH / 2, '#00f0ff', 8);
-              }
-              b.vy *= -1;
-              break;
             }
-          }
 
-          for (let p of swarm.pickups) {
-            if (p.collected) continue;
-            const px = SWARM_PAD + p.c * (SWARM_BW + SWARM_PAD) + SWARM_BW / 2;
-            const py = 40 + p.row * (SWARM_BH + SWARM_PAD) + SWARM_BH / 2;
-            if (Math.hypot(b.x - px, b.y - py) < 12) {
-              p.collected = true;
-              swarm.ballCount++;
-              sndPower();
-              spawnSparks(px, py, '#39ff14', 8);
-              addPopup(px, py - 6, '+1 BALL', '#39ff14');
+            if (brk.hp <= 0) {
+              brk.alive = false;
+              spawnSparks(bx + SWARM_BW / 2, by + SWARM_BH / 2, '#00f0ff', 8);
             }
+            b.vy *= -1;
+            break;
           }
+        }
 
-          if (b.y + b.r >= H - 15) {
-            if (swarm.newShooterX === null) swarm.newShooterX = b.x;
-            swarm.balls.splice(i, 1);
-            swarm.ballsReturned++;
-          }
+        if (b.y + b.r >= H - 15) {
+          if (swarm.newShooterX === null) swarm.newShooterX = b.x;
+          swarm.balls.splice(i, 1);
+          swarm.ballsReturned++;
         }
       }
 
@@ -1186,24 +1174,34 @@
         swarm.shooter.x = Math.max(25, Math.min(W - 25, swarm.newShooterX || W / 2));
         swarm.level++;
         addSwarmWave();
-        hudCenter.innerHTML = `BALLS: <span class="hud-accent">${swarm.ballCount}</span>`;
 
         for (let b of swarm.bricks) {
           if (b.alive && b.row >= 26) {
-            triggerShake(12, 20);
-            showGameOver('MODERN SWARM');
+            triggerShake(14, 22);
+            showGameOver('SWARM ARENA');
             return;
           }
         }
       }
     }
 
-    // =====================================
-    // BULLETPROOF RENDER LOOP
-    // =====================================
+    function spawnSparks(x, y, color, count = 10) {
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: x, y: y,
+          vx: (Math.random() - 0.5) * 8,
+          vy: (Math.random() - 0.5) * 8,
+          r: Math.random() * 2.5 + 1,
+          color: color, life: 1
+        });
+      }
+    }
+
+    /* ==============================================================
+       9. MASTER RENDER ENGINE (SYNTHWAVE NEON AESTHETIC)
+       ============================================================== */
     function draw() {
       requestAnimationFrame(draw);
-
       if (isAdPlaying) return;
 
       try {
@@ -1218,30 +1216,83 @@
 
         ctx.clearRect(0, 0, W, H);
 
+        // 1. ANIMATED SYNTHWAVE HORIZON GRID FLOOR
+        gridOffset = (gridOffset + 1.2) % 30;
+        ctx.strokeStyle = '#00f0ff18';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 40) {
+          ctx.moveTo(x, H - 120);
+          ctx.lineTo((x - W / 2) * 2.2 + W / 2, H);
+        }
+        for (let y = H - 120; y <= H; y += 18) {
+          const py = y + (gridOffset * 0.6);
+          if (py <= H) {
+            ctx.moveTo(0, py);
+            ctx.lineTo(W, py);
+          }
+        }
+        ctx.stroke();
+
+        // 2. RENDER RETRO CAMPAIGN
         if (gameState === 'PLAYING_RETRO') {
+          // Render Beveled Neon Bricks
           for (let b of retro.bricks) {
             if (!b.alive) continue;
             ctx.fillStyle = b.color;
-            ctx.shadowBlur = 10;
+            ctx.shadowBlur = 12;
             ctx.shadowColor = b.color;
-            ctx.fillRect(b.x, b.y, b.w, b.h);
-          }
-          ctx.shadowBlur = 0;
 
-          ctx.fillStyle = retro.paddle.hasLasers ? '#ff007f' : '#00f0ff';
-          ctx.shadowBlur = 14;
+            // Draw Beveled Border & Core
+            ctx.fillRect(b.x, b.y, b.w, b.h);
+            ctx.fillStyle = 'rgba(255,255,255,0.25)';
+            ctx.fillRect(b.x + 2, b.y + 2, b.w - 4, 3); // Specular highlight
+            ctx.shadowBlur = 0;
+
+            // Multi-hit crack indicators
+            if (b.hp > 1) {
+              ctx.fillStyle = '#ffffff';
+              ctx.font = 'bold 9px monospace';
+              ctx.textAlign = 'center';
+              ctx.fillText('◆', b.x + b.w / 2, b.y + b.h - 4);
+            }
+          }
+
+          // RENDER ROARING CONTINUOUS MEGA PLASMA CUTTING BEAM
+          if (retro.paddle.hasMegaLaser) {
+            const beamX = retro.paddle.x + retro.paddle.w / 2;
+            ctx.save();
+            ctx.shadowBlur = 24;
+            ctx.shadowColor = '#00f0ff';
+            
+            // Outer Plasma Flare
+            ctx.fillStyle = 'rgba(0, 240, 255, 0.45)';
+            ctx.fillRect(beamX - 16, 0, 32, retro.paddle.y);
+
+            // Core Blinding White Searing Laser
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(beamX - 5, 0, 10, retro.paddle.y);
+            ctx.restore();
+          }
+
+          // Cyber Paddle with Ion Thrusters
+          ctx.fillStyle = retro.paddle.hasMegaLaser ? '#ff007f' : '#00f0ff';
+          ctx.shadowBlur = 16;
           ctx.shadowColor = ctx.fillStyle;
           ctx.fillRect(retro.paddle.x, retro.paddle.y, retro.paddle.w, retro.paddle.h);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(retro.paddle.x + 4, retro.paddle.y + 2, retro.paddle.w - 8, 3);
           ctx.shadowBlur = 0;
 
-          ctx.fillStyle = '#ff007f';
-          for (let l of retro.lasers) ctx.fillRect(l.x, l.y, 4, 10);
-
+          // Powerup Capsules
           for (let p of retro.powerUps) {
-            ctx.fillStyle = p.type === 'LASER' ? '#ff007f' : (p.type === 'MULTI' ? '#39ff14' : '#ffe600');
+            ctx.fillStyle = p.type === 'BEAM' ? '#00f0ff' : (p.type === 'MULTI' ? '#39ff14' : '#ffe600');
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = ctx.fillStyle;
             ctx.beginPath();
             ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
             ctx.fill();
+            ctx.shadowBlur = 0;
             ctx.fillStyle = '#060810';
             ctx.font = 'bold 9px monospace';
             ctx.textAlign = 'center';
@@ -1249,19 +1300,22 @@
             ctx.fillText(p.type[0], p.x, p.y);
           }
 
+          // Kinetic Heat Ball & Fiery Particle Comet Trail
           for (let b of retro.balls) {
             if (b.trail) {
               for (let t = 0; t < b.trail.length; t++) {
-                const alpha = (t + 1) / b.trail.length * 0.45;
-                ctx.fillStyle = `rgba(255, 230, 0, ${alpha})`;
+                const alpha = (t + 1) / b.trail.length * 0.55;
+                const trailColor = retro.combo > 5 ? `rgba(255, 230, 0, ${alpha})` : `rgba(0, 240, 255, ${alpha})`;
+                ctx.fillStyle = trailColor;
                 ctx.beginPath();
-                ctx.arc(b.trail[t].x, b.trail[t].y, b.r * 0.7, 0, Math.PI * 2);
+                ctx.arc(b.trail[t].x, b.trail[t].y, b.r * 0.75, 0, Math.PI * 2);
                 ctx.fill();
               }
             }
-            ctx.fillStyle = '#ffe600';
-            ctx.shadowBlur = 12;
-            ctx.shadowColor = '#ffe600';
+            const ballColor = retro.combo > 8 ? '#ffe600' : (retro.combo > 4 ? '#ff007f' : '#00f0ff');
+            ctx.fillStyle = ballColor;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = ballColor;
             ctx.beginPath();
             ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
             ctx.fill();
@@ -1272,178 +1326,87 @@
             ctx.fillStyle = '#00f0ff';
             ctx.font = 'bold 12px monospace';
             ctx.textAlign = 'center';
-            ctx.fillText(`LEVEL ${retro.level} - TAP OR SPACE TO LAUNCH`, W / 2, H - 75);
+            ctx.fillText(`STAGE ${retro.level} - TAP OR SPACE TO LAUNCH`, W / 2, H - 75);
           }
 
           updateRetroEngine();
 
         } else if (gameState === 'PLAYING_SWARM') {
+          // Render Swarm Bricks
           for (let b of swarm.bricks) {
-            if (!brkAlive(b)) continue;
+            if (!b.alive) continue;
             const bx = SWARM_PAD + b.c * (SWARM_BW + SWARM_PAD);
             const by = 40 + b.row * (SWARM_BH + SWARM_PAD);
-            const cStyle = getBrickColors(b.hp, b.isTNT);
 
-            ctx.fillStyle = cStyle.fill;
-            ctx.strokeStyle = cStyle.border;
+            ctx.fillStyle = b.isTNT ? '#ff4400' : '#0a1d37';
+            ctx.strokeStyle = b.isTNT ? '#ffaa00' : '#00f0ff';
             ctx.lineWidth = 1.4;
-            ctx.shadowBlur = 6;
-            ctx.shadowColor = cStyle.border;
             ctx.fillRect(bx, by, SWARM_BW, SWARM_BH);
             ctx.strokeRect(bx, by, SWARM_BW, SWARM_BH);
-            ctx.shadowBlur = 0;
 
-            ctx.fillStyle = cStyle.text;
-            if (b.isTNT) {
-              ctx.font = 'bold 10px sans-serif';
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillText('💣', bx + SWARM_BW / 2, by + SWARM_BH / 2);
-            } else {
-              ctx.font = 'bold 8.5px monospace';
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillText(b.hp, bx + SWARM_BW / 2, by + SWARM_BH / 2);
-            }
-          }
-
-          for (let p of swarm.pickups) {
-            if (p.collected) continue;
-            const px = SWARM_PAD + p.c * (SWARM_BW + SWARM_PAD) + SWARM_BW / 2;
-            const py = 40 + p.row * (SWARM_BH + SWARM_PAD) + SWARM_BH / 2;
-            ctx.fillStyle = '#39ff14';
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#39ff14';
-            ctx.beginPath();
-            ctx.arc(px, py, 6, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = '#060810';
-            ctx.font = 'bold 8px monospace';
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 8.5px monospace';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('+', px, py);
+            ctx.fillText(b.isTNT ? '💣' : b.hp, bx + SWARM_BW / 2, by + SWARM_BH / 2);
           }
 
+          // Trajectory Aiming Line
           if (swarm.aiming && !swarm.launching) {
-            let curX = swarm.shooter.x;
-            let curY = swarm.shooter.y;
-            let dirX = Math.cos(swarm.aimAngle);
-            let dirY = Math.sin(swarm.aimAngle);
-            const ballR = 3.5;
-            let totalDist = 520;
-
             ctx.strokeStyle = '#00f0ff';
             ctx.shadowBlur = 12;
             ctx.shadowColor = '#00f0ff';
             ctx.setLineDash([5, 5]);
-            ctx.lineWidth = 2.2;
             ctx.beginPath();
-            ctx.moveTo(curX, curY);
-
-            for (let bounce = 0; bounce < 2; bounce++) {
-              let hitT = totalDist;
-              let hitWall = 'NONE';
-
-              if (dirX < 0) {
-                const t = (ballR - curX) / dirX;
-                if (t > 0 && t < hitT) { hitT = t; hitWall = 'X'; }
-              } else if (dirX > 0) {
-                const t = (W - ballR - curX) / dirX;
-                if (t > 0 && t < hitT) { hitT = t; hitWall = 'X'; }
-              }
-
-              if (dirY < 0) {
-                const t = (ballR - curY) / dirY;
-                if (t > 0 && t < hitT) { hitT = t; hitWall = 'Y'; }
-              }
-
-              const nextX = curX + dirX * hitT;
-              const nextY = curY + dirY * hitT;
-              ctx.lineTo(nextX, nextY);
-
-              if (hitWall === 'X') {
-                curX = nextX;
-                curY = nextY;
-                dirX = -dirX;
-                totalDist -= hitT;
-              } else {
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(nextX, nextY, 4, 0, Math.PI * 2);
-                ctx.fillStyle = '#00f0ff';
-                ctx.fill();
-                break;
-              }
-            }
-
+            ctx.moveTo(swarm.shooter.x, swarm.shooter.y);
+            ctx.lineTo(swarm.shooter.x + Math.cos(swarm.aimAngle) * 450, swarm.shooter.y + Math.sin(swarm.aimAngle) * 450);
             ctx.stroke();
             ctx.setLineDash([]);
             ctx.shadowBlur = 0;
           }
 
+          // Swarm Launcher Node
           ctx.fillStyle = '#00f0ff';
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = '#00f0ff';
           ctx.beginPath();
-          ctx.arc(swarm.shooter.x, swarm.shooter.y, 6.5, 0, Math.PI * 2);
+          ctx.arc(swarm.shooter.x, swarm.shooter.y, 7, 0, Math.PI * 2);
           ctx.fill();
-          ctx.shadowBlur = 0;
 
           for (let b of swarm.balls) {
-            if (b.trail) {
-              for (let t = 0; t < b.trail.length; t++) {
-                const alpha = (t + 1) / b.trail.length * 0.4;
-                ctx.fillStyle = `rgba(0, 240, 255, ${alpha})`;
-                ctx.beginPath();
-                ctx.arc(b.trail[t].x, b.trail[t].y, b.r * 0.65, 0, Math.PI * 2);
-                ctx.fill();
-              }
-            }
             ctx.fillStyle = '#00f0ff';
-            ctx.shadowBlur = 6;
-            ctx.shadowColor = '#00f0ff';
             ctx.beginPath();
             ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
             ctx.fill();
-            ctx.shadowBlur = 0;
           }
 
           updateSwarmEngine();
         }
 
-        function brkAlive(b) { return b && b.alive; }
-
-        for (let i = popups.length - 1; i >= 0; i--) {
-          const pop = popups[i];
-          pop.y += pop.vy;
-          pop.life -= 0.025;
-          if (pop.life <= 0) {
-            popups.splice(i, 1);
-            continue;
-          }
-          ctx.fillStyle = pop.color;
-          ctx.globalAlpha = Math.max(0, pop.life);
-          ctx.font = 'bold 12px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText(pop.text, pop.x, pop.y);
-        }
-        ctx.globalAlpha = 1;
-
+        // Particle Bursts
         for (let i = particles.length - 1; i >= 0; i--) {
           const pt = particles[i];
           pt.x += pt.vx;
           pt.y += pt.vy;
-          pt.life -= 0.04;
-          if (pt.life <= 0) {
-            particles.splice(i, 1);
-            continue;
-          }
+          pt.life -= 0.035;
+          if (pt.life <= 0) { particles.splice(i, 1); continue; }
           ctx.fillStyle = pt.color;
           ctx.globalAlpha = Math.max(0, pt.life);
           ctx.beginPath();
           ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
           ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        // Floating Combo Popups
+        for (let i = popups.length - 1; i >= 0; i--) {
+          const pop = popups[i];
+          pop.y += pop.vy;
+          pop.life -= 0.025;
+          if (pop.life <= 0) { popups.splice(i, 1); continue; }
+          ctx.fillStyle = pop.color;
+          ctx.globalAlpha = Math.max(0, pop.life);
+          ctx.font = 'bold 12px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(pop.text, pop.x, pop.y);
         }
         ctx.globalAlpha = 1;
 
@@ -1454,9 +1417,9 @@
       }
     }
 
-    // =====================================
-    // BUTTON HOOKS & REWARDED AD LOGIC
-    // =====================================
+    /* ==============================================================
+       10. BUTTON HOOKS & REWARDED AD LOGIC
+       ============================================================== */
     document.getElementById('btn-retro').addEventListener('click', () => {
       initAudioEngine();
       startRetro();
@@ -1469,8 +1432,7 @@
 
     document.getElementById('btn-restart').addEventListener('click', () => {
       initAudioEngine();
-      if (hudMode.textContent === 'RETRO') startRetro();
-      else startSwarm();
+      startRetro();
     });
 
     btnRevive.addEventListener('click', () => {
@@ -1479,23 +1441,19 @@
         btnRevive.style.display = 'none';
         gameoverScreen.style.display = 'none';
 
-        if (hudMode.textContent === 'RETRO') {
-          gameState = 'PLAYING_RETRO';
-          retro.lives = 1;
-          hudCenter.innerHTML = `LIVES: <span style="color:#ff007f;">❤️</span>`;
-          resetRetroBall();
-          addPopup(W / 2, H / 2, 'REVIVED!', '#39ff14');
-        } else {
+        if (hudLevel.textContent === 'SWARM') {
           gameState = 'PLAYING_SWARM';
           swarm.bricks = swarm.bricks.filter(b => b.row < 22);
           swarm.balls = [];
           swarm.launching = false;
-          swarm.aiming = false;
           swarm.ballCount += 3;
-          hudCenter.innerHTML = `BALLS: <span class="hud-accent">${swarm.ballCount}</span>`;
           addPopup(W / 2, H / 2, 'SURGE CLEARED!', '#00f0ff');
+        } else {
+          gameState = 'PLAYING_RETRO';
+          retro.lives = 1;
+          resetRetroBall();
+          addPopup(W / 2, H / 2, 'REVIVED (+1 LIFE)!', '#39ff14');
         }
-
         triggerCrazyGamesStart();
       });
     });
