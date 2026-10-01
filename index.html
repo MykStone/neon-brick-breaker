@@ -40,65 +40,72 @@
       display: flex;
       flex-direction: column;
     }
+    /* LARGE, SPACIOUS TOP HUD (74px HEIGHT, BIG TACTILE BUTTONS) */
     #top-hud {
-      height: 60px;
+      height: 74px;
       width: 100%;
-      padding: 0 10px;
+      padding: 0 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       background: #090e21;
-      border-bottom: 2px solid #00f0ff44;
+      border-bottom: 2px solid #00f0ff55;
       z-index: 10;
     }
     .hud-stat-group {
       display: flex;
-      gap: 8px;
+      gap: 12px;
       align-items: center;
+    }
+    .hud-stat-col {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
     .hud-badge {
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 5px;
       font-family: monospace;
-      font-size: 12px;
+      font-size: 13.5px;
       font-weight: 900;
     }
     .hud-accent { color: #00f0ff; text-shadow: 0 0 8px rgba(0, 240, 255, 0.6); }
     .hud-gold { color: #ffe600; text-shadow: 0 0 8px rgba(255, 230, 0, 0.6); }
     .hud-tokens-btn {
       background: #1e0924;
-      border: 1px solid #ff007f;
+      border: 1.5px solid #ff007f;
       color: #ff007f;
-      padding: 4px 7px;
-      border-radius: 6px;
-      font-size: 11px;
+      padding: 5px 8px;
+      border-radius: 8px;
+      font-size: 12px;
       font-weight: 900;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 3px;
-      text-shadow: 0 0 8px rgba(255, 0, 127, 0.6);
+      gap: 4px;
+      box-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
     }
     .hud-tokens-btn:active { transform: scale(0.95); }
     .hud-btn-group {
       display: flex;
-      gap: 5px;
+      gap: 7px;
       align-items: center;
     }
     .hud-ctrl-btn {
       background: #121c3b;
-      border: 1.5px solid #00f0ff66;
+      border: 2px solid #00f0ff66;
       color: #00f0ff;
-      min-width: 34px;
-      height: 34px;
-      border-radius: 7px;
-      font-size: 12px;
-      font-weight: 800;
+      min-width: 40px;
+      height: 40px;
+      border-radius: 9px;
+      font-size: 16px;
+      font-weight: 900;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
     }
     .hud-ctrl-btn:active {
       background: #00f0ff;
@@ -119,7 +126,7 @@
     }
     #swarm-action-bar {
       position: absolute;
-      bottom: 8px;
+      bottom: 10px;
       left: 12px;
       right: 12px;
       display: none;
@@ -129,10 +136,10 @@
     }
     .power-btn {
       flex: 1;
-      background: rgba(10, 17, 40, 0.92);
-      border: 1.8px solid;
+      background: rgba(10, 17, 40, 0.94);
+      border: 2px solid;
       border-radius: 10px;
-      padding: 9px 6px;
+      padding: 10px 6px;
       color: #fff;
       font-size: 11px;
       font-weight: 900;
@@ -241,85 +248,50 @@
       max-width: 250px;
     }
 
-    /* Vault / Goals & Shop Tabs */
-    .vault-tabs {
-      display: flex;
-      width: 100%;
-      max-width: 360px;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
+    /* Vault Tabs */
+    .vault-tabs { display: flex; width: 100%; max-width: 360px; gap: 8px; margin-bottom: 12px; }
     .vault-tab-btn {
-      flex: 1;
-      padding: 8px;
-      background: #090e1f;
-      border: 1.5px solid #475569;
-      color: #94a3b8;
-      font-weight: 800;
-      font-size: 12px;
-      border-radius: 6px;
-      cursor: pointer;
+      flex: 1; padding: 8px; background: #090e1f; border: 1.5px solid #475569;
+      color: #94a3b8; font-weight: 800; font-size: 12px; border-radius: 6px; cursor: pointer;
     }
-    .vault-tab-btn.active {
-      border-color: #00f0ff;
-      color: #00f0ff;
-      background: #121c3b;
-    }
+    .vault-tab-btn.active { border-color: #00f0ff; color: #00f0ff; background: #121c3b; }
     .vault-content-box {
-      width: 100%;
-      max-width: 360px;
-      max-height: 380px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 14px;
+      width: 100%; max-width: 360px; max-height: 380px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;
     }
     .vault-item {
-      background: #090e1f;
-      border: 1px solid #00f0ff33;
-      border-radius: 8px;
-      padding: 10px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      text-align: left;
+      background: #090e1f; border: 1px solid #00f0ff33; border-radius: 8px;
+      padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; text-align: left;
     }
     .vault-item-title { font-size: 12px; font-weight: 800; color: #fff; margin-bottom: 2px; }
     .vault-item-sub { font-size: 10.5px; color: #94a3b8; }
     .vault-claim-btn {
-      background: #ffe600;
-      color: #060810;
-      border: none;
-      padding: 6px 12px;
-      font-size: 11px;
-      font-weight: 900;
-      border-radius: 6px;
-      cursor: pointer;
+      background: #ffe600; color: #060810; border: none; padding: 6px 12px;
+      font-size: 11px; font-weight: 900; border-radius: 6px; cursor: pointer;
     }
-    .vault-claim-btn.disabled {
-      background: #1e293b;
-      color: #64748b;
-      cursor: default;
-    }
+    .vault-claim-btn.disabled { background: #1e293b; color: #64748b; cursor: default; }
   </style>
 </head>
 <body>
 
   <div id="cabinet">
-    <!-- Top HUD -->
+    <!-- Spacious, Big Top HUD -->
     <div id="top-hud">
       <div class="hud-stat-group">
-        <div class="hud-badge">🏆 <span id="hud-score" class="hud-accent">0</span></div>
-        <div class="hud-badge">👑 <span id="hud-best" class="hud-gold">0</span></div>
-        <button id="btn-open-vault" class="hud-tokens-btn" title="Open Token Vault & Goals">🪙 <span id="hud-tokens">0</span></button>
-        <div class="hud-badge">LVL: <span id="hud-level" class="hud-gold">1</span></div>
+        <div class="hud-stat-col">
+          <div class="hud-badge">🏆 <span id="hud-score" class="hud-accent">0</span></div>
+          <div class="hud-badge">👑 <span id="hud-best" class="hud-gold">0</span></div>
+        </div>
+        <div class="hud-stat-col">
+          <button id="btn-open-vault" class="hud-tokens-btn" title="Open Token Vault & Goals">🪙 <span id="hud-tokens">0</span></button>
+          <div class="hud-badge">LVL: <span id="hud-level" class="hud-gold">1</span></div>
+        </div>
       </div>
       <div class="hud-btn-group">
         <button id="hud-pause-btn" class="hud-ctrl-btn" title="Pause Game">⏸️</button>
-        <button id="hud-music-btn" class="hud-ctrl-btn" title="Toggle Music">🎵</button>
+        <button id="hud-music-btn" class="hud-ctrl-btn" title="Toggle Synthwave">🎵</button>
         <button id="hud-mute-btn" class="hud-ctrl-btn" title="Toggle SFX">🔊</button>
-        <button id="hud-menu-btn" class="hud-ctrl-btn" style="min-width: 44px;">MENU</button>
+        <button id="hud-menu-btn" class="hud-ctrl-btn" style="min-width: 52px; font-size:12px;">MENU</button>
       </div>
     </div>
 
@@ -598,7 +570,7 @@
     let noiseBuffer = null;
     let musicTimer = null;
     let musicStep = 0;
-    let lastHitSoundTime = 0; // Eliminates sound buzzing!
+    let lastHitSoundTime = 0;
 
     const BPM = 128;
     const STEP_TIME = (60 / BPM) / 4;
@@ -779,10 +751,9 @@
       } catch (e) {}
     }
 
-    // THROTTLED ARCADE IMPACT SOUND (Zero audio pile-up buzzing!)
     function sndHit(f = 480) {
       const now = performance.now();
-      if (now - lastHitSoundTime < 35) return; // 35ms governor
+      if (now - lastHitSoundTime < 35) return;
       lastHitSoundTime = now;
       playTone(f, 'triangle', 0.04, 0.14);
     }
@@ -809,7 +780,7 @@
     const sndPower = () => playTone(740, 'square', 0.18, 0.12);
     const sndBomb = () => playTone(90, 'sawtooth', 0.4, 0.25);
     const sndDie = () => playTone(120, 'sawtooth', 0.45, 0.18);
-    const sndCoin = () => playTone(987.77, 'sine', 0.25, 0.22); // High-value token ding!
+    const sndCoin = () => playTone(987.77, 'sine', 0.25, 0.22);
 
     /* ==============================================================
        3. DOM REFERENCES & TOP HUD STATE
@@ -844,15 +815,12 @@
     let score = 0;
     let reviveUsedThisSession = false;
 
-    // Tokens, Upgrades & Goals Engine (Persistent)
     let arcadeTokens = 0;
     let totalBricksBroken = 0;
     let maxLevelReached = 1;
     let perkExtraLife = false;
     let perkExtraBalls = false;
     let perkLaserOverclock = false;
-
-    // Goal Claim Flags
     let goalClaimed = [false, false, false, false, false];
 
     try {
@@ -1164,7 +1132,7 @@
     });
 
     /* ==============================================================
-       6. ROBUST INPUT CONTROLS & AIM
+       6. ROBUST INPUT CONTROLS & AIM TRAJECTORY
        ============================================================== */
     function getCanvasCoords(e) {
       const rect = canvas.getBoundingClientRect();
@@ -1363,7 +1331,6 @@
     });
 
     function updateGoalsState() {
-      // Goal 1: 50 Bricks
       const g1Btn = document.getElementById('btn-claim-1');
       const g1Sub = document.getElementById('goal-sub-1');
       g1Sub.textContent = `Progress: ${Math.min(50, totalBricksBroken)} / 50`;
@@ -1375,7 +1342,6 @@
         g1Btn.className = 'vault-claim-btn';
       }
 
-      // Goal 2: 2500 Score
       const g2Btn = document.getElementById('btn-claim-2');
       const g2Sub = document.getElementById('goal-sub-2');
       g2Sub.textContent = `Progress: ${Math.min(2500, hiScore)} / 2500`;
@@ -1387,7 +1353,6 @@
         g2Btn.className = 'vault-claim-btn';
       }
 
-      // Goal 3: 200 Bricks
       const g3Btn = document.getElementById('btn-claim-3');
       const g3Sub = document.getElementById('goal-sub-3');
       g3Sub.textContent = `Progress: ${Math.min(200, totalBricksBroken)} / 200`;
@@ -1399,7 +1364,6 @@
         g3Btn.className = 'vault-claim-btn';
       }
 
-      // Goal 4: Level 5
       const g4Btn = document.getElementById('btn-claim-4');
       const g4Sub = document.getElementById('goal-sub-4');
       g4Sub.textContent = `Progress: ${Math.min(5, maxLevelReached)} / 5`;
@@ -1561,14 +1525,14 @@
             retro.combo++;
             totalBricksBroken++;
             localStorage.setItem('sbc_bricks_total', totalBricksBroken.toString());
-            b.hitCooldown = 2; // Prevents buzzing
+            b.hitCooldown = 2;
 
             b.vx *= 1.02;
             b.vy *= 1.02;
 
             const overlapL = (b.x + b.r) - brk.x;
             const overlapR = (brk.x + brk.w) - (b.x - b.r);
-            const overlapT = (b.y + b.r) - brk.y;
+            const overlapT = (b.y + b.r) - by;
             const overlapB = (brk.y + brk.h) - (b.y - b.r);
             const minOverlap = Math.min(overlapL, overlapR, overlapT, overlapB);
 
@@ -1691,7 +1655,7 @@
             addScore(1);
             totalBricksBroken++;
             localStorage.setItem('sbc_bricks_total', totalBricksBroken.toString());
-            b.hitCooldown = 2; // Mathematically stops machine-gun buzzing!
+            b.hitCooldown = 2;
 
             sndHit(450 + Math.min(320, brk.hp * 6));
 
@@ -1745,7 +1709,6 @@
           }
         }
 
-        // Catch ball only when falling downward to floor
         if (b.vy > 0 && b.y + b.r >= H - 18) {
           if (swarm.newShooterX === null) swarm.newShooterX = b.x;
           swarm.balls.splice(i, 1);
