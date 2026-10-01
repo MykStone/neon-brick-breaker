@@ -28,94 +28,172 @@
       overflow: hidden;
       touch-action: none;
     }
+    /* MASTER DUAL-PANEL CABINET (Expands across your laptop screen!) */
     #cabinet {
       position: relative;
       width: 100%;
-      max-width: 480px;
+      max-width: 860px;
+      height: 96vh;
+      max-height: 740px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    /* THE GIANT SIDE DASHBOARD */
+    #side-dashboard {
+      width: 280px;
       height: 100%;
-      max-height: 780px;
-      background: radial-gradient(circle at center, #0a1128 0%, #03050c 100%);
+      background: #080c1d;
       border: 2px solid #00f0ff55;
-      box-shadow: 0 0 35px rgba(0, 240, 255, 0.3), inset 0 0 20px rgba(0, 240, 255, 0.1);
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.25);
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+      z-index: 10;
     }
-    /* LARGE, SPACIOUS TOP HUD (74px HEIGHT, BIG TACTILE BUTTONS) */
-    #top-hud {
-      height: 74px;
-      width: 100%;
-      padding: 0 12px;
+    .dash-header {
+      text-align: left;
+      border-bottom: 2px solid #00f0ff33;
+      padding-bottom: 10px;
+    }
+    .brand-eyebrow {
+      font-size: 11px;
+      font-weight: 800;
+      color: #ff007f;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px #ff007f;
+    }
+    .dash-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: #00f0ff;
+      text-shadow: 0 0 16px #00f0ff;
+      letter-spacing: 1px;
+    }
+    .dash-stats-box {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 12px 0;
+    }
+    .stat-card {
+      background: #0e152f;
+      border: 1.5px solid #00f0ff33;
+      border-radius: 10px;
+      padding: 10px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #090e21;
-      border-bottom: 2px solid #00f0ff55;
-      z-index: 10;
     }
-    .hud-stat-group {
+    .stat-label {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #94a3b8;
+      letter-spacing: 1px;
+    }
+    .stat-val-score {
+      font-size: 26px;
+      font-weight: 900;
+      color: #00f0ff;
+      font-family: monospace;
+      text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+    }
+    .stat-val-best {
+      font-size: 20px;
+      font-weight: 900;
+      color: #ffe600;
+      font-family: monospace;
+      text-shadow: 0 0 10px rgba(255, 230, 0, 0.6);
+    }
+    .btn-dash-vault {
+      background: #1c0a24;
+      border: 1.8px solid #ff007f;
+      border-radius: 10px;
+      padding: 10px 14px;
       display: flex;
-      gap: 12px;
+      justify-content: space-between;
       align-items: center;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 0 14px rgba(255, 0, 127, 0.4);
     }
-    .hud-stat-col {
+    .btn-dash-vault:active { transform: scale(0.97); }
+    .dash-action-group {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 8px;
     }
-    .hud-badge {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-family: monospace;
-      font-size: 13.5px;
-      font-weight: 900;
-    }
-    .hud-accent { color: #00f0ff; text-shadow: 0 0 8px rgba(0, 240, 255, 0.6); }
-    .hud-gold { color: #ffe600; text-shadow: 0 0 8px rgba(255, 230, 0, 0.6); }
-    .hud-tokens-btn {
-      background: #1e0924;
-      border: 1.5px solid #ff007f;
-      color: #ff007f;
-      padding: 5px 8px;
-      border-radius: 8px;
+    .btn-dash-power {
+      width: 100%;
+      border-radius: 10px;
+      padding: 12px 10px;
       font-size: 12px;
       font-weight: 900;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 4px;
-      box-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      border: 2px solid;
     }
-    .hud-tokens-btn:active { transform: scale(0.95); }
-    .hud-btn-group {
-      display: flex;
-      gap: 7px;
-      align-items: center;
+    .btn-dash-power:active { transform: scale(0.97); }
+    .btn-dash-recall {
+      background: #ffe600;
+      border-color: #ffe600;
+      color: #060810;
+      box-shadow: 0 0 18px rgba(255, 230, 0, 0.6);
+      display: none; /* Shows while balls are flying */
     }
-    .hud-ctrl-btn {
-      background: #121c3b;
-      border: 2px solid #00f0ff66;
+    .btn-dash-nuke {
+      background: #1e0924;
+      border-color: #ff007f;
+      color: #ff007f;
+    }
+    .btn-dash-surge {
+      background: #091a33;
+      border-color: #00f0ff;
       color: #00f0ff;
-      min-width: 40px;
-      height: 40px;
+    }
+    .dash-ctrl-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .btn-dash-ctrl {
+      flex: 1;
+      height: 44px;
+      background: #121c3b;
+      border: 1.8px solid #00f0ff66;
       border-radius: 9px;
-      font-size: 16px;
+      color: #00f0ff;
+      font-size: 18px;
       font-weight: 900;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
     }
-    .hud-ctrl-btn:active {
+    .btn-dash-ctrl:active {
       background: #00f0ff;
       color: #080b16;
       transform: scale(0.95);
     }
+
+    /* RIGHT PANEL: PLAYFIELD CANVAS */
     #canvas-wrap {
       position: relative;
-      flex: 1;
-      width: 100%;
+      width: 460px;
+      height: 100%;
+      background: radial-gradient(circle at center, #0a1128 0%, #03050c 100%);
+      border: 2px solid #00f0ff55;
+      border-radius: 16px;
+      box-shadow: 0 0 35px rgba(0, 240, 255, 0.3);
       overflow: hidden;
     }
     canvas {
@@ -124,36 +202,23 @@
       display: block;
       touch-action: none;
     }
-    #swarm-action-bar {
-      position: absolute;
-      bottom: 10px;
-      left: 12px;
-      right: 12px;
-      display: none;
-      justify-content: space-between;
-      gap: 8px;
-      z-index: 50;
+
+    /* MOBILE FALLBACK (Stacks vertically on phones) */
+    @media (max-width: 768px) {
+      #cabinet {
+        flex-direction: column;
+        max-width: 480px;
+        height: 100%;
+        max-height: 100%;
+      }
+      #side-dashboard {
+        display: none; /* Mobile uses in-game touch overlays */
+      }
+      #canvas-wrap {
+        width: 100%;
+        border-radius: 0;
+      }
     }
-    .power-btn {
-      flex: 1;
-      background: rgba(10, 17, 40, 0.94);
-      border: 2px solid;
-      border-radius: 10px;
-      padding: 10px 6px;
-      color: #fff;
-      font-size: 11px;
-      font-weight: 900;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.6);
-    }
-    .power-btn:active { transform: scale(0.96); }
-    .btn-recall { border-color: #ffe600; color: #ffe600; text-shadow: 0 0 8px rgba(255, 230, 0, 0.6); display: none; }
-    .btn-nuke { border-color: #ff007f; color: #ff007f; text-shadow: 0 0 8px rgba(255, 0, 127, 0.6); }
-    .btn-surge { border-color: #00f0ff; color: #00f0ff; text-shadow: 0 0 8px rgba(0, 240, 255, 0.6); }
 
     /* Modals & Overlays */
     #overlay, #gameover-screen, #pause-screen, #vault-modal {
@@ -164,29 +229,11 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 24px;
       z-index: 100;
       text-align: center;
     }
-    .brand-eyebrow {
-      font-size: 11px;
-      font-weight: 800;
-      color: #ff007f;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-      text-shadow: 0 0 10px #ff007f;
-    }
-    .main-title {
-      font-size: 30px;
-      font-weight: 900;
-      color: #00f0ff;
-      text-shadow: 0 0 20px #00f0ff;
-      letter-spacing: 2px;
-      margin-bottom: 4px;
-    }
-    .menu-sub { font-size: 12px; color: #94a3b8; margin-bottom: 18px; }
-    .menu-button-stack { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 12px; }
+    .menu-button-stack { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 14px; }
     .menu-card-btn {
       background: #090e1f;
       border: 2px solid;
@@ -203,8 +250,6 @@
     .card-swarm { border-color: #00f0ff; }
     .btn-header { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
     .btn-body { font-size: 11px; color: #94a3b8; line-height: 1.4; }
-    .gameover-val { font-size: 40px; font-weight: 900; color: #ffe600; font-family: monospace; margin-bottom: 4px; }
-    .hi-score-tag { font-size: 13px; color: #00f0ff; font-family: monospace; margin-bottom: 14px; }
     
     .action-btn {
       background: #00f0ff;
@@ -217,7 +262,7 @@
       cursor: pointer;
       width: 100%;
       max-width: 250px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       box-shadow: 0 0 18px rgba(0, 240, 255, 0.4);
     }
     .action-btn:active { transform: scale(0.97); }
@@ -232,14 +277,14 @@
       cursor: pointer;
       width: 100%;
       max-width: 250px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       display: none;
     }
     .sub-action-btn {
       background: transparent;
       border: 1px solid #475569;
       color: #94a3b8;
-      padding: 9px 18px;
+      padding: 10px 18px;
       font-size: 12px;
       font-weight: 700;
       border-radius: 6px;
@@ -248,7 +293,7 @@
       max-width: 250px;
     }
 
-    /* Vault Tabs */
+    /* Vault Modal Styles */
     .vault-tabs { display: flex; width: 100%; max-width: 360px; gap: 8px; margin-bottom: 12px; }
     .vault-tab-btn {
       flex: 1; padding: 8px; background: #090e1f; border: 1.5px solid #475569;
@@ -275,42 +320,62 @@
 <body>
 
   <div id="cabinet">
-    <!-- Spacious, Big Top HUD -->
-    <div id="top-hud">
-      <div class="hud-stat-group">
-        <div class="hud-stat-col">
-          <div class="hud-badge">🏆 <span id="hud-score" class="hud-accent">0</span></div>
-          <div class="hud-badge">👑 <span id="hud-best" class="hud-gold">0</span></div>
-        </div>
-        <div class="hud-stat-col">
-          <button id="btn-open-vault" class="hud-tokens-btn" title="Open Token Vault & Goals">🪙 <span id="hud-tokens">0</span></button>
-          <div class="hud-badge">LVL: <span id="hud-level" class="hud-gold">1</span></div>
-        </div>
+    
+    <!-- LEFT PANEL: THE GIANT ARCADE DASHBOARD -->
+    <div id="side-dashboard">
+      <div class="dash-header">
+        <div class="brand-eyebrow">StoneBuilt Arcade</div>
+        <div class="dash-title">Neon Breaker</div>
+        <div id="dash-mode-indicator" style="font-size:12px; color:#00f0ff; font-weight:800; margin-top:3px;">ARCADE CORE</div>
       </div>
-      <div class="hud-btn-group">
-        <button id="hud-pause-btn" class="hud-ctrl-btn" title="Pause Game">⏸️</button>
-        <button id="hud-music-btn" class="hud-ctrl-btn" title="Toggle Synthwave">🎵</button>
-        <button id="hud-mute-btn" class="hud-ctrl-btn" title="Toggle SFX">🔊</button>
-        <button id="hud-menu-btn" class="hud-ctrl-btn" style="min-width: 52px; font-size:12px;">MENU</button>
+
+      <!-- Live Stats & High Score -->
+      <div class="dash-stats-box">
+        <div class="stat-card">
+          <div class="stat-label">🏆 SCORE</div>
+          <div id="dash-score" class="stat-val-score">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">👑 ALL-TIME BEST</div>
+          <div id="dash-best" class="stat-val-best">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">LEVEL / WAVE</div>
+          <div id="dash-level" style="font-size:20px; font-weight:900; color:#ffe600; font-family:monospace;">1</div>
+        </div>
+
+        <!-- Token Vault Button -->
+        <button id="btn-dash-vault" class="btn-dash-vault">
+          <span style="font-weight:900; font-size:12px; letter-spacing:0.5px;">🪙 TOKEN VAULT</span>
+          <span id="dash-tokens" style="font-size:16px; font-weight:900; color:#ffe600; font-family:monospace;">0</span>
+        </button>
+      </div>
+
+      <!-- Tactile Action & Powerup Buttons -->
+      <div class="dash-action-group">
+        <button id="btn-dash-recall" class="btn-dash-power btn-dash-recall">⬇️ RECALL BALLS</button>
+        <button id="btn-dash-nuke" class="btn-dash-power btn-dash-nuke">⚡ EMP NUKE (10🪙)</button>
+        <button id="btn-dash-surge" class="btn-dash-power btn-dash-surge">🚀 +10 BALLS (15🪙)</button>
+      </div>
+
+      <!-- Bottom Controls (Big 44px Buttons) -->
+      <div class="dash-ctrl-row">
+        <button id="btn-dash-pause" class="btn-dash-ctrl" title="Pause Game">⏸️</button>
+        <button id="btn-dash-music" class="btn-dash-ctrl" title="Toggle Music">🎵</button>
+        <button id="btn-dash-mute" class="btn-dash-ctrl" title="Toggle SFX">🔊</button>
+        <button id="btn-dash-menu" class="btn-dash-ctrl" style="font-size:12px; font-weight:900;">MENU</button>
       </div>
     </div>
 
-    <!-- Playfield Canvas Area -->
+    <!-- RIGHT PANEL: PLAYFIELD CANVAS AREA -->
     <div id="canvas-wrap">
       <canvas id="gameCanvas" width="460" height="700"></canvas>
 
-      <!-- Bottom Action Bar (Swarm Mode) -->
-      <div id="swarm-action-bar">
-        <button id="btn-swarm-recall" class="power-btn btn-recall">⬇️ RECALL BALLS</button>
-        <button id="btn-power-nuke" class="power-btn btn-nuke">⚡ EMP NUKE (10🪙)</button>
-        <button id="btn-power-surge" class="power-btn btn-surge">🚀 +10 BALLS (15🪙)</button>
-      </div>
-
-      <!-- Main Menu Screen -->
+      <!-- Main Menu Overlay -->
       <div id="overlay">
         <div class="brand-eyebrow">StoneBuilt Entertainment</div>
-        <div class="main-title">Neon Breaker</div>
-        <div class="menu-sub">StoneBuilt 2.0 Arcade Edition</div>
+        <div class="dash-title" style="font-size:32px; margin-bottom:4px;">Neon Breaker</div>
+        <div style="font-size:12px; color:#94a3b8; margin-bottom:18px;">StoneBuilt 2.0 Arcade Edition</div>
 
         <div class="menu-button-stack">
           <button id="btn-retro" class="menu-card-btn card-retro">
@@ -328,14 +393,13 @@
       <!-- StoneBuilt Token Vault Modal (Goals & Shop) -->
       <div id="vault-modal" style="display:none;">
         <div class="brand-eyebrow">STONEBUILT ARCADE VAULT</div>
-        <div class="main-title" style="font-size:24px; margin-bottom:10px;">TOKEN HEADQUARTERS</div>
+        <div class="dash-title" style="font-size:22px; margin-bottom:10px;">TOKEN HEADQUARTERS</div>
 
         <div class="vault-tabs">
           <button id="tab-btn-goals" class="vault-tab-btn active">🏆 GOALS & REWARDS</button>
           <button id="tab-btn-shop" class="vault-tab-btn">🛒 ARCADE SHOP</button>
         </div>
 
-        <!-- Goals Tab Content -->
         <div id="vault-goals-view" class="vault-content-box">
           <div class="vault-item">
             <div>
@@ -367,7 +431,6 @@
           </div>
         </div>
 
-        <!-- Shop Tab Content -->
         <div id="vault-shop-view" class="vault-content-box" style="display:none;">
           <div class="vault-item">
             <div>
@@ -398,8 +461,8 @@
       <!-- Pause Screen -->
       <div id="pause-screen" style="display:none;">
         <div class="brand-eyebrow">GAME PAUSED</div>
-        <div class="main-title" style="font-size:26px;">SYSTEM HALTED</div>
-        <div class="menu-sub">StoneBuilt Arcade Core</div>
+        <div class="dash-title" style="font-size:26px;">SYSTEM HALTED</div>
+        <div style="font-size:12px; color:#94a3b8; margin-bottom:18px;">StoneBuilt Arcade Core</div>
         <button id="btn-resume" class="action-btn">RESUME GAME</button>
         <button id="btn-pause-menu" class="sub-action-btn">ABORT TO MENU</button>
       </div>
@@ -407,9 +470,9 @@
       <!-- Game Over Screen -->
       <div id="gameover-screen" style="display:none;">
         <div class="brand-eyebrow" style="color:#ff007f;">RUN COMPLETE</div>
-        <div id="gameover-mode-label" class="main-title" style="font-size:22px; color:#fff;">FINAL SCORE</div>
-        <div id="gameover-score-val" class="gameover-val">0</div>
-        <div id="gameover-best-tag" class="hi-score-tag">ALL-TIME BEST: 0</div>
+        <div id="gameover-mode-label" class="dash-title" style="font-size:22px; color:#fff;">FINAL SCORE</div>
+        <div id="gameover-score-val" style="font-size:42px; font-weight:900; color:#ffe600; font-family:monospace; margin-bottom:4px;">0</div>
+        <div id="gameover-best-tag" style="font-size:13px; color:#00f0ff; font-family:monospace; margin-bottom:16px;">ALL-TIME BEST: 0</div>
         
         <button id="btn-revive" class="revive-btn">⚡ REVIVE RUN (WATCH AD)</button>
         <button id="btn-restart" class="action-btn">PLAY AGAIN</button>
@@ -623,7 +686,7 @@
         }
       }
       
-      const muteBtn = document.getElementById('hud-mute-btn');
+      const muteBtn = document.getElementById('btn-dash-mute');
       if (muteBtn) {
         muteBtn.textContent = (userMuted || portalMuted) ? '🔇' : '🔊';
       }
@@ -783,7 +846,7 @@
     const sndCoin = () => playTone(987.77, 'sine', 0.25, 0.22);
 
     /* ==============================================================
-       3. DOM REFERENCES & TOP HUD STATE
+       3. DOM REFERENCES & DASHBOARD WIDGETS
        ============================================================== */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -791,18 +854,23 @@
     const gameoverScreen = document.getElementById('gameover-screen');
     const pauseScreen = document.getElementById('pause-screen');
     const vaultModal = document.getElementById('vault-modal');
-    const swarmActionBar = document.getElementById('swarm-action-bar');
-    const btnSwarmRecall = document.getElementById('btn-swarm-recall');
     
-    const hudScore = document.getElementById('hud-score');
-    const hudBest = document.getElementById('hud-best');
-    const hudTokens = document.getElementById('hud-tokens');
-    const hudLevel = document.getElementById('hud-level');
-    const hudMuteBtn = document.getElementById('hud-mute-btn');
-    const hudMusicBtn = document.getElementById('hud-music-btn');
-    const hudPauseBtn = document.getElementById('hud-pause-btn');
-    const hudMenuBtn = document.getElementById('hud-menu-btn');
+    // Giant Side Dashboard Elements
+    const dashScore = document.getElementById('dash-score');
+    const dashBest = document.getElementById('dash-best');
+    const dashLevel = document.getElementById('dash-level');
+    const dashTokens = document.getElementById('dash-tokens');
+    const dashModeIndicator = document.getElementById('dash-mode-indicator');
     
+    const btnDashRecall = document.getElementById('btn-dash-recall');
+    const btnDashNuke = document.getElementById('btn-dash-nuke');
+    const btnDashSurge = document.getElementById('btn-dash-surge');
+    const btnDashPause = document.getElementById('btn-dash-pause');
+    const btnDashMusic = document.getElementById('btn-dash-music');
+    const btnDashMute = document.getElementById('btn-dash-mute');
+    const btnDashMenu = document.getElementById('btn-dash-menu');
+    const btnDashVault = document.getElementById('btn-dash-vault');
+
     const gameoverScoreVal = document.getElementById('gameover-score-val');
     const gameoverModeLabel = document.getElementById('gameover-mode-label');
     const gameoverBestTag = document.getElementById('gameover-best-tag');
@@ -815,6 +883,7 @@
     let score = 0;
     let reviveUsedThisSession = false;
 
+    // Persistent Economy
     let arcadeTokens = 0;
     let totalBricksBroken = 0;
     let maxLevelReached = 1;
@@ -833,22 +902,22 @@
       goalClaimed = JSON.parse(localStorage.getItem('sbc_claimed_goals') || '[false,false,false,false,false]');
     } catch (e) {}
 
-    hudTokens.textContent = arcadeTokens;
+    dashTokens.textContent = arcadeTokens;
 
     let hiScore = 0;
     try {
       hiScore = parseInt(localStorage.getItem('sbc_neon_hiscore') || '0', 10);
       if (isNaN(hiScore)) hiScore = 0;
     } catch (e) { hiScore = 0; }
-    hudBest.textContent = hiScore;
+    dashBest.textContent = hiScore;
 
     function addScore(points) {
       score += points;
-      hudScore.textContent = score;
+      dashScore.textContent = score;
 
       if (score > hiScore) {
         hiScore = score;
-        hudBest.textContent = hiScore;
+        dashBest.textContent = hiScore;
         try {
           localStorage.setItem('sbc_neon_hiscore', hiScore.toString());
         } catch (e) {}
@@ -859,7 +928,7 @@
 
     function addTokens(amount, reason) {
       arcadeTokens += amount;
-      hudTokens.textContent = arcadeTokens;
+      dashTokens.textContent = arcadeTokens;
       try {
         localStorage.setItem('sbc_tokens', arcadeTokens.toString());
       } catch (e) {}
@@ -899,14 +968,16 @@
     function startRetro() {
       gameState = 'PLAYING_RETRO';
       score = 0;
-      hudScore.textContent = score;
-      hudBest.textContent = hiScore;
+      dashScore.textContent = score;
+      dashBest.textContent = hiScore;
       retro.lives = perkExtraLife ? 4 : 3;
       retro.level = 1;
-      hudLevel.textContent = retro.level;
+      dashLevel.textContent = retro.level;
+      dashModeIndicator.textContent = 'CLASSIC CAMPAIGN';
       reviveUsedThisSession = false;
       retro.combo = 0;
-      swarmActionBar.style.display = 'none';
+
+      btnDashRecall.style.display = 'none';
 
       generateProceduralStage(retro.level);
       resetRetroBall();
@@ -991,7 +1062,7 @@
         maxLevelReached = retro.level;
         localStorage.setItem('sbc_max_level', maxLevelReached.toString());
       }
-      hudLevel.textContent = retro.level;
+      dashLevel.textContent = retro.level;
       updateGoalsState();
 
       generateProceduralStage(retro.level);
@@ -1025,8 +1096,8 @@
     function startSwarm() {
       gameState = 'PLAYING_SWARM';
       score = 0;
-      hudScore.textContent = score;
-      hudBest.textContent = hiScore;
+      dashScore.textContent = score;
+      dashBest.textContent = hiScore;
       swarm.level = 1;
       swarm.ballCount = perkExtraBalls ? 20 : 15;
       swarm.balls = [];
@@ -1035,12 +1106,12 @@
       swarm.aiming = false;
       swarm.launching = false;
       reviveUsedThisSession = false;
-      hudLevel.textContent = 'SWARM';
+      dashLevel.textContent = swarm.level;
+      dashModeIndicator.textContent = 'SWARM ARENA';
       swarm.bricks = [];
       swarm.pickups = [];
 
-      swarmActionBar.style.display = 'flex';
-      btnSwarmRecall.style.display = 'none';
+      btnDashRecall.style.display = 'none';
 
       for (let i = 0; i < 4; i++) addSwarmWave();
 
@@ -1078,7 +1149,7 @@
       }
     }
 
-    btnSwarmRecall.addEventListener('click', (e) => {
+    btnDashRecall.addEventListener('click', (e) => {
       e.stopPropagation();
       initAudioEngine();
       if (swarm.launching && swarm.balls.length > 0) {
@@ -1092,12 +1163,12 @@
       }
     });
 
-    document.getElementById('btn-power-nuke').addEventListener('click', (e) => {
+    btnDashNuke.addEventListener('click', (e) => {
       e.stopPropagation();
       initAudioEngine();
       if (arcadeTokens >= 10 && gameState === 'PLAYING_SWARM') {
         arcadeTokens -= 10;
-        hudTokens.textContent = arcadeTokens;
+        dashTokens.textContent = arcadeTokens;
         localStorage.setItem('sbc_tokens', arcadeTokens.toString());
         
         let nukeCount = 0;
@@ -1116,12 +1187,12 @@
       }
     });
 
-    document.getElementById('btn-power-surge').addEventListener('click', (e) => {
+    btnDashSurge.addEventListener('click', (e) => {
       e.stopPropagation();
       initAudioEngine();
       if (arcadeTokens >= 15 && gameState === 'PLAYING_SWARM') {
         arcadeTokens -= 15;
-        hudTokens.textContent = arcadeTokens;
+        dashTokens.textContent = arcadeTokens;
         localStorage.setItem('sbc_tokens', arcadeTokens.toString());
         swarm.ballCount += 10;
         sndPower();
@@ -1155,7 +1226,7 @@
         swarm.launchTimer = 0;
         swarm.balls = [];
         swarm.newShooterX = null;
-        btnSwarmRecall.style.display = 'flex';
+        btnDashRecall.style.display = 'flex';
       }
     }
 
@@ -1236,21 +1307,21 @@
       }
     });
 
-    hudMuteBtn.addEventListener('click', (e) => {
+    btnDashMute.addEventListener('click', (e) => {
       e.stopPropagation();
       initAudioEngine();
       userMuted = !userMuted;
       enforceAudioPolicy();
     });
 
-    hudMusicBtn.addEventListener('click', (e) => {
+    btnDashMusic.addEventListener('click', (e) => {
       e.stopPropagation();
       initAudioEngine();
       musicEnabled = !musicEnabled;
-      hudMusicBtn.textContent = musicEnabled ? '🎵' : '🔇';
+      btnDashMusic.textContent = musicEnabled ? '🎵' : '🔇';
     });
 
-    hudPauseBtn.addEventListener('click', (e) => {
+    btnDashPause.addEventListener('click', (e) => {
       e.stopPropagation();
       if (gameState === 'MENU') return;
       isGamePaused = !isGamePaused;
@@ -1264,19 +1335,24 @@
       enforceAudioPolicy();
     });
 
-    document.getElementById('btn-pause-menu').addEventListener('click', () => {
+    btnDashMenu.addEventListener('click', () => {
       isGamePaused = false;
       pauseScreen.style.display = 'none';
       gameState = 'MENU';
-      swarmActionBar.style.display = 'none';
+      btnDashRecall.style.display = 'none';
+      dashModeIndicator.textContent = 'ARCADE CORE';
       overlay.style.display = 'flex';
       triggerCrazyGamesStop();
       enforceAudioPolicy();
     });
 
+    document.getElementById('btn-pause-menu').addEventListener('click', () => {
+      btnDashMenu.click();
+    });
+
     function showGameOver(modeTitle) {
       gameState = 'MENU';
-      swarmActionBar.style.display = 'none';
+      btnDashRecall.style.display = 'none';
       gameoverModeLabel.textContent = `${modeTitle} GAME OVER`;
       gameoverScoreVal.textContent = score;
       gameoverBestTag.textContent = `ALL-TIME BEST: ${hiScore}`;
@@ -1290,14 +1366,7 @@
     /* ==============================================================
        7. TOKEN VAULT (GOALS & SHOP) LOGIC
        ============================================================== */
-    const btnOpenVault = document.getElementById('btn-open-vault');
-    const btnCloseVault = document.getElementById('btn-close-vault');
-    const tabBtnGoals = document.getElementById('tab-btn-goals');
-    const tabBtnShop = document.getElementById('tab-btn-shop');
-    const vaultGoalsView = document.getElementById('vault-goals-view');
-    const vaultShopView = document.getElementById('vault-shop-view');
-
-    btnOpenVault.addEventListener('click', () => {
+    btnDashVault.addEventListener('click', () => {
       initAudioEngine();
       updateGoalsState();
       vaultModal.style.display = 'flex';
@@ -1307,7 +1376,7 @@
       }
     });
 
-    btnCloseVault.addEventListener('click', () => {
+    document.getElementById('btn-close-vault').addEventListener('click', () => {
       vaultModal.style.display = 'none';
       if (isGamePaused) {
         isGamePaused = false;
@@ -1315,18 +1384,18 @@
       }
     });
 
-    tabBtnGoals.addEventListener('click', () => {
-      tabBtnGoals.classList.add('active');
-      tabBtnShop.classList.remove('active');
-      vaultGoalsView.style.display = 'flex';
-      vaultShopView.style.display = 'none';
+    document.getElementById('tab-btn-goals').addEventListener('click', () => {
+      document.getElementById('tab-btn-goals').classList.add('active');
+      document.getElementById('tab-btn-shop').classList.remove('active');
+      document.getElementById('vault-goals-view').style.display = 'flex';
+      document.getElementById('vault-shop-view').style.display = 'none';
     });
 
-    tabBtnShop.addEventListener('click', () => {
-      tabBtnShop.classList.add('active');
-      tabBtnGoals.classList.remove('active');
-      vaultShopView.style.display = 'flex';
-      vaultGoalsView.style.display = 'none';
+    document.getElementById('tab-btn-shop').addEventListener('click', () => {
+      document.getElementById('tab-btn-shop').classList.add('active');
+      document.getElementById('tab-btn-goals').classList.remove('active');
+      document.getElementById('vault-shop-view').style.display = 'flex';
+      document.getElementById('vault-goals-view').style.display = 'none';
       updateShopState();
     });
 
@@ -1428,7 +1497,7 @@
         perkExtraLife = true;
         localStorage.setItem('sbc_tokens', arcadeTokens.toString());
         localStorage.setItem('sbc_perk_life', 'true');
-        hudTokens.textContent = arcadeTokens;
+        dashTokens.textContent = arcadeTokens;
         sndCoin();
         updateShopState();
       }
@@ -1440,7 +1509,7 @@
         perkExtraBalls = true;
         localStorage.setItem('sbc_tokens', arcadeTokens.toString());
         localStorage.setItem('sbc_perk_balls', 'true');
-        hudTokens.textContent = arcadeTokens;
+        dashTokens.textContent = arcadeTokens;
         sndCoin();
         updateShopState();
       }
@@ -1452,7 +1521,7 @@
         perkLaserOverclock = true;
         localStorage.setItem('sbc_tokens', arcadeTokens.toString());
         localStorage.setItem('sbc_perk_laser', 'true');
-        hudTokens.textContent = arcadeTokens;
+        dashTokens.textContent = arcadeTokens;
         sndCoin();
         updateShopState();
       }
@@ -1532,7 +1601,7 @@
 
             const overlapL = (b.x + b.r) - brk.x;
             const overlapR = (brk.x + brk.w) - (b.x - b.r);
-            const overlapT = (b.y + b.r) - by;
+            const overlapT = (b.y + b.r) - brk.y;
             const overlapB = (brk.y + brk.h) - (b.y - b.r);
             const minOverlap = Math.min(overlapL, overlapR, overlapT, overlapB);
 
@@ -1553,8 +1622,8 @@
             if (brk.hp <= 0) {
               brk.alive = false;
               addScore(15 * Math.min(4, retro.combo));
-              spawnSparks(brk.x + brk.w / 2, brk.y + brk.h / 2, brk.color, 12);
-              addPopup(brk.x + brk.w / 2, brk.y, `+${15 * Math.min(4, retro.combo)}`, brk.color);
+              spawnSparks(brk.x + b.w / 2, brk.y + b.h / 2, brk.color, 12);
+              addPopup(brk.x + b.w / 2, brk.y, `+${15 * Math.min(4, retro.combo)}`, brk.color);
 
               if (Math.random() < 0.24) {
                 const types = ['BEAM', 'WIDE', 'MULTI'];
@@ -1709,6 +1778,7 @@
           }
         }
 
+        // Catch ball only when falling downward to floor
         if (b.vy > 0 && b.y + b.r >= H - 18) {
           if (swarm.newShooterX === null) swarm.newShooterX = b.x;
           swarm.balls.splice(i, 1);
@@ -1718,13 +1788,14 @@
 
       if (swarm.launching && swarm.ballsReturned >= swarm.ballCount) {
         swarm.launching = false;
-        btnSwarmRecall.style.display = 'none';
+        btnDashRecall.style.display = 'none';
         swarm.shooter.x = Math.max(25, Math.min(W - 25, swarm.newShooterX || W / 2));
         swarm.level++;
         if (swarm.level > maxLevelReached) {
           maxLevelReached = swarm.level;
           localStorage.setItem('sbc_max_level', maxLevelReached.toString());
         }
+        dashLevel.textContent = swarm.level;
         updateGoalsState();
         addSwarmWave();
 
@@ -2060,7 +2131,7 @@
 
     document.getElementById('btn-restart').addEventListener('click', () => {
       initAudioEngine();
-      if (hudLevel.textContent === 'SWARM') startSwarm();
+      if (dashModeIndicator.textContent === 'SWARM ARENA') startSwarm();
       else startRetro();
     });
 
@@ -2070,9 +2141,8 @@
         btnRevive.style.display = 'none';
         gameoverScreen.style.display = 'none';
 
-        if (hudLevel.textContent === 'SWARM') {
+        if (dashModeIndicator.textContent === 'SWARM ARENA') {
           gameState = 'PLAYING_SWARM';
-          swarmActionBar.style.display = 'flex';
           swarm.bricks = swarm.bricks.filter(b => b.row < 20);
           swarm.balls = [];
           swarm.ballCount += 5;
@@ -2088,21 +2158,7 @@
     });
 
     document.getElementById('btn-to-menu').addEventListener('click', () => {
-      gameoverScreen.style.display = 'none';
-      overlay.style.display = 'flex';
-      gameState = 'MENU';
-      swarmActionBar.style.display = 'none';
-      triggerCrazyGamesStop();
-    });
-
-    hudMenuBtn.addEventListener('click', () => {
-      gameState = 'MENU';
-      gameoverScreen.style.display = 'none';
-      pauseScreen.style.display = 'none';
-      vaultModal.style.display = 'none';
-      swarmActionBar.style.display = 'none';
-      overlay.style.display = 'flex';
-      triggerCrazyGamesStop();
+      btnDashMenu.click();
     });
 
     draw();
