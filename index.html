@@ -40,11 +40,10 @@
       display: flex;
       flex-direction: column;
     }
-    /* Spacious Top HUD */
     #top-hud {
-      height: 64px;
+      height: 60px;
       width: 100%;
-      padding: 0 14px;
+      padding: 0 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -54,48 +53,38 @@
     }
     .hud-stat-group {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
     }
     .hud-badge {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       font-family: monospace;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 900;
     }
-    .hud-accent {
-      color: #00f0ff;
-      text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
-    }
-    .hud-gold {
-      color: #ffe600;
-      text-shadow: 0 0 8px rgba(255, 230, 0, 0.6);
-    }
-    .hud-tokens {
-      color: #ff007f;
-      text-shadow: 0 0 8px rgba(255, 0, 127, 0.6);
-    }
+    .hud-accent { color: #00f0ff; text-shadow: 0 0 8px rgba(0, 240, 255, 0.6); }
+    .hud-gold { color: #ffe600; text-shadow: 0 0 8px rgba(255, 230, 0, 0.6); }
+    .hud-tokens { color: #ff007f; text-shadow: 0 0 8px rgba(255, 0, 127, 0.6); }
     .hud-btn-group {
       display: flex;
-      gap: 7px;
+      gap: 6px;
       align-items: center;
     }
     .hud-ctrl-btn {
       background: #121c3b;
       border: 1.5px solid #00f0ff66;
       color: #00f0ff;
-      min-width: 36px;
-      height: 36px;
+      min-width: 35px;
+      height: 35px;
       border-radius: 8px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 800;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
     }
     .hud-ctrl-btn:active {
       background: #00f0ff;
@@ -114,7 +103,6 @@
       display: block;
       touch-action: none;
     }
-    /* Bottom Tactile Action Bar (Swarm Mode) */
     #swarm-action-bar {
       position: absolute;
       bottom: 8px;
@@ -138,28 +126,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 5px;
       box-shadow: 0 4px 18px rgba(0,0,0,0.6);
     }
-    .power-btn:active {
-      transform: scale(0.96);
-    }
-    .btn-recall {
-      border-color: #ffe600;
-      color: #ffe600;
-      text-shadow: 0 0 8px rgba(255, 230, 0, 0.6);
-      display: none;
-    }
-    .btn-nuke {
-      border-color: #ff007f;
-      color: #ff007f;
-      text-shadow: 0 0 8px rgba(255, 0, 127, 0.6);
-    }
-    .btn-surge {
-      border-color: #00f0ff;
-      color: #00f0ff;
-      text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
-    }
+    .power-btn:active { transform: scale(0.96); }
+    .btn-recall { border-color: #ffe600; color: #ffe600; text-shadow: 0 0 8px rgba(255, 230, 0, 0.6); display: none; }
+    .btn-nuke { border-color: #ff007f; color: #ff007f; text-shadow: 0 0 8px rgba(255, 0, 127, 0.6); }
+    .btn-surge { border-color: #00f0ff; color: #00f0ff; text-shadow: 0 0 8px rgba(0, 240, 255, 0.6); }
+
     #overlay, #gameover-screen, #pause-screen {
       position: absolute;
       inset: 0;
@@ -189,18 +163,8 @@
       letter-spacing: 2px;
       margin-bottom: 4px;
     }
-    .menu-sub {
-      font-size: 12px;
-      color: #94a3b8;
-      margin-bottom: 20px;
-    }
-    .menu-button-stack {
-      width: 100%;
-      max-width: 320px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
+    .menu-sub { font-size: 12px; color: #94a3b8; margin-bottom: 20px; }
+    .menu-button-stack { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 14px; }
     .menu-card-btn {
       background: #090e1f;
       border: 2px solid;
@@ -213,46 +177,15 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.5);
       transition: transform 0.1s, box-shadow 0.2s;
     }
-    .menu-card-btn:active {
-      transform: scale(0.97);
-    }
-    .card-retro {
-      border-color: #ff007f;
-    }
-    .card-retro:hover {
-      box-shadow: 0 0 25px rgba(255, 0, 127, 0.4);
-    }
-    .card-swarm {
-      border-color: #00f0ff;
-    }
-    .card-swarm:hover {
-      box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
-    }
-    .btn-header {
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: 1px;
-      margin-bottom: 4px;
-    }
-    .btn-body {
-      font-size: 11px;
-      color: #94a3b8;
-      line-height: 1.4;
-    }
-    .gameover-val {
-      font-size: 42px;
-      font-weight: 900;
-      color: #ffe600;
-      font-family: monospace;
-      margin-bottom: 6px;
-      text-shadow: 0 0 15px rgba(255, 230, 0, 0.5);
-    }
-    .hi-score-tag {
-      font-size: 13px;
-      color: #00f0ff;
-      font-family: monospace;
-      margin-bottom: 16px;
-    }
+    .menu-card-btn:active { transform: scale(0.97); }
+    .card-retro { border-color: #ff007f; }
+    .card-retro:hover { box-shadow: 0 0 25px rgba(255, 0, 127, 0.4); }
+    .card-swarm { border-color: #00f0ff; }
+    .card-swarm:hover { box-shadow: 0 0 25px rgba(0, 240, 255, 0.4); }
+    .btn-header { font-size: 15px; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px; }
+    .btn-body { font-size: 11px; color: #94a3b8; line-height: 1.4; }
+    .gameover-val { font-size: 42px; font-weight: 900; color: #ffe600; font-family: monospace; margin-bottom: 6px; }
+    .hi-score-tag { font-size: 13px; color: #00f0ff; font-family: monospace; margin-bottom: 16px; }
     .action-btn {
       background: #00f0ff;
       color: #060810;
@@ -267,9 +200,7 @@
       margin-bottom: 10px;
       box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
     }
-    .action-btn:active {
-      transform: scale(0.97);
-    }
+    .action-btn:active { transform: scale(0.97); }
     .revive-btn {
       background: #ff007f;
       color: #fff;
@@ -282,7 +213,6 @@
       width: 100%;
       max-width: 250px;
       margin-bottom: 10px;
-      box-shadow: 0 0 20px rgba(255, 0, 127, 0.5);
       display: none;
     }
     .sub-action-btn {
@@ -343,7 +273,7 @@
 
           <button id="btn-swarm" class="menu-card-btn card-swarm">
             <div class="btn-header" style="color:#00f0ff;">⚡ MODERN SWARM ARENA</div>
-            <div class="btn-body">Bank-shot reflection aim, magnetic tractor beam recall, and high-scaled brick HP.</div>
+            <div class="btn-body">Bank-shot reflection aim, instant recall, and high-scaled brick HP.</div>
           </button>
         </div>
       </div>
@@ -373,7 +303,7 @@
 
   <script>
     /* ==============================================================
-       1. CRAZYGAMES SDK v3 INTEGRATION & LIFECYCLE
+       1. CRAZYGAMES SDK v3 INTEGRATION
        ============================================================== */
     let crazyGamesReady = false;
     let isAdPlaying = false;
@@ -515,7 +445,7 @@
     }
 
     /* ==============================================================
-       2. 128 BPM SYNTHWAVE AUDIO ENGINE
+       2. LOUDER & PUNCHIER 128 BPM SYNTHWAVE AUDIO ENGINE
        ============================================================== */
     let audioCtx = null;
     let masterGainNode = null;
@@ -923,7 +853,7 @@
     }
 
     /* ==============================================================
-       5. MODERN SWARM ENGINE (MAGNETIC TRACTOR BEAM RECALL)
+       5. MODERN SWARM ENGINE (BUILT-IN PHYSICAL EVICTION)
        ============================================================== */
     const SWARM_COLS = 14;
     const SWARM_PAD = 4;
@@ -940,7 +870,6 @@
       aiming: false,
       aimAngle: -Math.PI / 2,
       launching: false,
-      recalling: false, // Magnetic tractor beam state!
       launchTimer: 0,
       launchedCount: 0,
       ballsReturned: 0,
@@ -956,9 +885,9 @@
       swarm.ballCount = 15;
       swarm.balls = [];
       swarm.shooter.x = W / 2;
+      swarm.shooter.y = H - 45;
       swarm.aiming = false;
       swarm.launching = false;
-      swarm.recalling = false;
       reviveUsedThisSession = false;
       hudLevel.textContent = 'SWARM';
       swarm.bricks = [];
@@ -1002,15 +931,17 @@
       }
     }
 
-    // MAGNETIC TRACTOR BEAM ENGAGE
     btnSwarmRecall.addEventListener('click', (e) => {
       e.stopPropagation();
       initAudioEngine();
-      if (swarm.launching && swarm.balls.length > 0 && !swarm.recalling) {
-        swarm.recalling = true;
-        playTone(220, 'sawtooth', 0.35, 0.22);
-        triggerShake(5, 12);
-        addPopup(W / 2, H / 2, '🧲 TRACTOR BEAM ACTIVE!', '#00f0ff');
+      if (swarm.launching && swarm.balls.length > 0) {
+        for (let b of swarm.balls) {
+          b.y = H - 5;
+          b.vx = 0;
+          b.vy = 28;
+        }
+        sndPaddle();
+        addPopup(W / 2, H / 2, '⚡ BALLS RECALLED!', '#ffe600');
       }
     });
 
@@ -1072,7 +1003,6 @@
       if (!swarm.launching && swarm.balls.length === 0) {
         swarm.aiming = false;
         swarm.launching = true;
-        swarm.recalling = false;
         swarm.launchedCount = 0;
         swarm.ballsReturned = 0;
         swarm.launchTimer = 0;
@@ -1265,6 +1195,7 @@
           b.y = retro.paddle.y - b.r;
         }
 
+        // PHYSICAL EVICTION COLLISION ON RETRO BRICKS
         for (let brk of retro.bricks) {
           if (!brk.alive) continue;
           if (b.x + b.r > brk.x && b.x - b.r < brk.x + brk.w && b.y + b.r > brk.y && b.y - b.r < brk.y + brk.h) {
@@ -1272,6 +1203,26 @@
             retro.combo++;
             b.vx *= 1.02;
             b.vy *= 1.02;
+
+            const overlapL = (b.x + b.r) - brk.x;
+            const overlapR = (brk.x + brk.w) - (b.x - b.r);
+            const overlapT = (b.y + b.r) - brk.y;
+            const overlapB = (brk.y + brk.h) - (b.y - b.r);
+            const minOverlap = Math.min(overlapL, overlapR, overlapT, overlapB);
+
+            if (minOverlap === overlapL) {
+              b.x = brk.x - b.r - 0.5;
+              b.vx = -Math.abs(b.vx);
+            } else if (minOverlap === overlapR) {
+              b.x = brk.x + brk.w + b.r + 0.5;
+              b.vx = Math.abs(b.vx);
+            } else if (minOverlap === overlapT) {
+              b.y = brk.y - b.r - 0.5;
+              b.vy = -Math.abs(b.vy);
+            } else {
+              b.y = brk.y + brk.h + b.r + 0.5;
+              b.vy = Math.abs(b.vy);
+            }
 
             if (brk.hp <= 0) {
               brk.alive = false;
@@ -1289,7 +1240,6 @@
               }
             }
             sndHit(500 + Math.min(300, retro.combo * 20));
-            b.vy *= -1;
             break;
           }
         }
@@ -1337,11 +1287,10 @@
     }
 
     /* ==============================================================
-       8. SWARM ARENA (HIGH-SPEED MAGNETIC TRACTOR BEAM RECALL)
+       8. SWARM ARENA UPDATE (TRUE PHYSICAL EVICTION - NO BUZZING!)
        ============================================================== */
     function updateSwarmEngine() {
-      // Stream launch
-      if (swarm.launching && !swarm.recalling && swarm.launchedCount < swarm.ballCount) {
+      if (swarm.launching && swarm.launchedCount < swarm.ballCount) {
         swarm.launchTimer++;
         if (swarm.launchTimer % 3 === 0) {
           const spd = 9.2;
@@ -1356,43 +1305,18 @@
         }
       }
 
-      const targetX = swarm.newShooterX !== null ? swarm.newShooterX : swarm.shooter.x;
-      const targetY = swarm.shooter.y;
-
       for (let i = swarm.balls.length - 1; i >= 0; i--) {
         const b = swarm.balls[i];
-
-        // 1. TRACTOR BEAM ACTIVE: Direct Magnetic Gravity Suction!
-        if (swarm.recalling) {
-          const dx = targetX - b.x;
-          const dy = targetY - b.y;
-          const dist = Math.hypot(dx, dy);
-
-          if (dist < 22) {
-            // Ball successfully captured by launcher!
-            swarm.balls.splice(i, 1);
-            swarm.ballsReturned++;
-            continue;
-          } else {
-            const pullSpeed = 36; // Warp return speed!
-            b.vx = (dx / dist) * pullSpeed;
-            b.vy = (dy / dist) * pullSpeed;
-            b.x += b.vx;
-            b.y += b.vy;
-            continue; // Skip normal wall/brick collision during tractor recall
-          }
-        }
-
-        // 2. NORMAL BALL FLIGHT
         b.x += b.vx;
         b.y += b.vy;
 
-        // Walls
+        // Left / Right Walls
         if (b.x - b.r <= 0) { b.x = b.r + 1; b.vx = Math.abs(b.vx); sndHit(300); }
         else if (b.x + b.r >= W) { b.x = W - b.r - 1; b.vx = -Math.abs(b.vx); sndHit(300); }
+        // Ceiling
         if (b.y - b.r <= 0) { b.y = b.r + 1; b.vy = Math.abs(b.vy); sndHit(300); }
 
-        // Brick Collisions
+        // Brick Impacts with Proper Side-of-Impact Physical Eviction
         for (let brk of swarm.bricks) {
           if (!brk.alive) continue;
           const bx = SWARM_PAD + brk.c * (SWARM_BW + SWARM_PAD);
@@ -1407,8 +1331,29 @@
               const temp = b.vx;
               b.vx = brk.triDir === 'TL' ? -Math.abs(b.vy) : Math.abs(b.vy);
               b.vy = -Math.abs(temp);
+              b.y = by + SWARM_BH + b.r + 1;
             } else {
-              b.vy *= -1;
+              // Calculate Minimum Overlap to find exact collision face
+              const overlapL = (b.x + b.r) - bx;
+              const overlapR = (bx + SWARM_BW) - (b.x - b.r);
+              const overlapT = (b.y + b.r) - by;
+              const overlapB = (by + SWARM_BH) - (b.y - b.r);
+              const minOverlap = Math.min(overlapL, overlapR, overlapT, overlapB);
+
+              // Evict physically so ball NEVER gets stuck inside!
+              if (minOverlap === overlapL) {
+                b.x = bx - b.r - 0.5;
+                b.vx = -Math.abs(b.vx);
+              } else if (minOverlap === overlapR) {
+                b.x = bx + SWARM_BW + b.r + 0.5;
+                b.vx = Math.abs(b.vx);
+              } else if (minOverlap === overlapT) {
+                b.y = by - b.r - 0.5;
+                b.vy = -Math.abs(b.vy);
+              } else {
+                b.y = by + SWARM_BH + b.r + 0.5;
+                b.vy = Math.abs(b.vy);
+              }
             }
 
             if (brk.isTNT && brk.hp <= 0) {
@@ -1434,7 +1379,7 @@
           }
         }
 
-        // Normal Floor Landing (Only when falling downward!)
+        // Catch ball only when falling downward to floor
         if (b.vy > 0 && b.y + b.r >= H - 18) {
           if (swarm.newShooterX === null) swarm.newShooterX = b.x;
           swarm.balls.splice(i, 1);
@@ -1442,10 +1387,8 @@
         }
       }
 
-      // Volley Complete
       if (swarm.launching && swarm.ballsReturned >= swarm.ballCount) {
         swarm.launching = false;
-        swarm.recalling = false;
         btnSwarmRecall.style.display = 'none';
         swarm.shooter.x = Math.max(25, Math.min(W - 25, swarm.newShooterX || W / 2));
         swarm.level++;
@@ -1474,7 +1417,7 @@
     }
 
     /* ==============================================================
-       9. MASTER RENDER ENGINE (GLOWING TRACTOR BEAM VISUALS)
+       9. MASTER RENDER ENGINE
        ============================================================== */
     function draw() {
       requestAnimationFrame(draw);
@@ -1601,7 +1544,6 @@
           updateRetroEngine();
 
         } else if (gameState === 'PLAYING_SWARM') {
-          // Render Swarm Bricks
           for (let b of swarm.bricks) {
             if (!b.alive) continue;
             const bx = SWARM_PAD + b.c * (SWARM_BW + SWARM_PAD);
@@ -1640,7 +1582,8 @@
               ctx.fillStyle = '#ffffff';
               ctx.font = 'bold 9px monospace';
               ctx.textAlign = 'center';
-              ctx.fillText(b.hp, bx + SWARM_BW / 2, by + SWARM_BH / 2);
+              ctx.textBaseline = 'middle';
+              ctx.fillText(b.isTNT ? '💣' : b.hp, bx + SWARM_BW / 2, by + SWARM_BH / 2);
             }
           }
 
@@ -1702,52 +1645,22 @@
             ctx.shadowBlur = 0;
           }
 
-          // RENDER MAGNETIC TRACTOR BEAM VISUALS
-          const targetX = swarm.newShooterX !== null ? swarm.newShooterX : swarm.shooter.x;
-          const targetY = swarm.shooter.y;
-
-          if (swarm.recalling) {
-            ctx.save();
-            ctx.strokeStyle = 'rgba(0, 240, 255, 0.45)';
-            ctx.lineWidth = 2;
-            ctx.shadowBlur = 16;
-            ctx.shadowColor = '#00f0ff';
-
-            // Draw glowing magnetic laser rays to each sucked ball
-            for (let b of swarm.balls) {
-              ctx.beginPath();
-              ctx.moveTo(targetX, targetY);
-              ctx.lineTo(b.x, b.y);
-              ctx.stroke();
-            }
-
-            // Magnetic funnel glow at launcher
-            ctx.fillStyle = 'rgba(0, 240, 255, 0.25)';
-            ctx.beginPath();
-            ctx.arc(targetX, targetY, 28, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
-          }
-
-          // Swarm Launcher
-          ctx.fillStyle = swarm.recalling ? '#ffe600' : '#00f0ff';
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = ctx.fillStyle;
+          // Swarm Shooter Node
+          ctx.fillStyle = '#00f0ff';
           ctx.beginPath();
-          ctx.arc(targetX, targetY, 8.5, 0, Math.PI * 2);
+          ctx.arc(swarm.shooter.x, swarm.shooter.y, 8.5, 0, Math.PI * 2);
           ctx.fill();
-          ctx.shadowBlur = 0;
 
           ctx.fillStyle = '#00f0ff';
           ctx.font = 'bold 11px monospace';
           ctx.textAlign = 'center';
-          ctx.fillText(`x${swarm.ballCount}`, targetX, targetY - 14);
+          ctx.fillText(`x${swarm.ballCount}`, swarm.shooter.x, swarm.shooter.y - 14);
 
-          // Swarm Balls
+          // Chunky Glowing Swarm Balls
           for (let b of swarm.balls) {
-            ctx.fillStyle = swarm.recalling ? '#ffe600' : '#00f0ff';
-            ctx.shadowBlur = swarm.recalling ? 16 : 8;
-            ctx.shadowColor = ctx.fillStyle;
+            ctx.fillStyle = '#00f0ff';
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#00f0ff';
             ctx.beginPath();
             ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
             ctx.fill();
@@ -1762,7 +1675,7 @@
           updateSwarmEngine();
         }
 
-        // Particles
+        // Particle Bursts
         for (let i = particles.length - 1; i >= 0; i--) {
           const pt = particles[i];
           pt.x += pt.vx;
